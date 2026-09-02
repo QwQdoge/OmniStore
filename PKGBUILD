@@ -1,12 +1,13 @@
 pkgname=omnistore-bin
 pkgver=0.1.2
-pkgrel=2
+pkgrel=3
 pkgdesc="OmniStore unified software repository client with Flutter and Python backends"
 arch=('x86_64')
 options=('!strip' '!debug')
 url="https://github.com/QwQdoge/OmniStore"
 license=('MIT')
-depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass' 'python' 'pyalpm')
+depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass'
+         'pacman-contrib' 'python' 'pyalpm')
 optdepends=('meo-release: shared MeoArch application catalog and channel integration'
             'flatpak: install applications from Flatpak remotes')
 makedepends=('python')
@@ -76,6 +77,12 @@ package() {
   }
   install -Dm755 "${pkgdir}/opt/omnistore/backends/meo_stable_rollback.py" \
     "${pkgdir}/usr/lib/omnistore/meo-stable-rollback.py"
+  test -x "${pkgdir}/opt/omnistore/backends/meo_repository_helper.py" || {
+    error "Verified release bundle is missing the Pacman repository helper."
+    return 1
+  }
+  install -Dm755 "${pkgdir}/opt/omnistore/backends/meo_repository_helper.py" \
+    "${pkgdir}/usr/lib/omnistore/meo-repository-helper.py"
 
   # 3. 在系统的 /usr/bin 下建一个软链接
   install -d "${pkgdir}/usr/bin"
@@ -101,6 +108,26 @@ cd /opt/omnistore
 exec /opt/omnistore/backends/python_server "$@"
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-cli"
+  cat > "${pkgdir}/usr/bin/meo-update" <<'EOF'
+#!/bin/sh
+set -eu
+backend=/opt/omnistore/backends/python_server
+command="${1:-help}"
+[ "$#" -eq 0 ] || shift
+case "$command" in
+  check) exec "$backend" --check-updates --json "$@" ;;
+  status) exec "$backend" --update-status --json "$@" ;;
+  plan) exec "$backend" --update-plan --json "$@" ;;
+  background) exec "$backend" --background-update-check --json "$@" ;;
+  apply) exec "$backend" --update all --source all --json "$@" ;;
+  repositories) exec "$backend" --list-custom-repos --json "$@" ;;
+  help|-h|--help)
+    echo 'Usage: meo-update {check|status|plan|background|apply|repositories}'
+    ;;
+  *) echo "Unknown meo-update command: $command" >&2; exit 64 ;;
+esac
+EOF
+  chmod +x "${pkgdir}/usr/bin/meo-update"
   cat > "${pkgdir}/usr/bin/omnistore-cleanup-systemd" <<'EOF'
 #!/bin/sh
 set -eu
@@ -108,10 +135,19 @@ systemctl --user disable --now omnistore-update.timer >/dev/null 2>&1 || true
 systemctl --user stop omnistore-update.service >/dev/null 2>&1 || true
 rm -f "$HOME/.config/systemd/user/omnistore-update.timer"
 rm -f "$HOME/.config/systemd/user/omnistore-update.service"
+rm -f "$HOME/.config/systemd/user/omnistore-update.timer.d/interval.conf"
+rmdir "$HOME/.config/systemd/user/omnistore-update.timer.d" >/dev/null 2>&1 || true
 systemctl --user daemon-reload >/dev/null 2>&1 || true
 echo "OmniStore user systemd units removed."
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-cleanup-systemd"
+
+  install -Dm644 "$_src_dir/data/systemd/user/omnistore-update.service" \
+    "${pkgdir}/usr/lib/systemd/user/omnistore-update.service"
+  install -Dm644 "$_src_dir/data/systemd/user/omnistore-update.timer" \
+    "${pkgdir}/usr/lib/systemd/user/omnistore-update.timer"
+  install -Dm644 "$_src_dir/data/docs/UNIFIED_UPDATES.md" \
+    "${pkgdir}/usr/share/doc/omnistore/UNIFIED_UPDATES.md"
 
   # 4. 安装图标到系统图标库，以便桌面环境自动识别
   install -Dm644 "$_src_dir/omnistore.svg" "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"

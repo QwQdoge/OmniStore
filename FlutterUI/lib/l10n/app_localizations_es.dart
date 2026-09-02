@@ -1013,7 +1013,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      'Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu';
+      'Configura repositorios Pacman/Flatpak, fuentes AppImage o fuentes GitHub/Bitu personalizadas';
+
+  @override
+  String get pacmanRepoType => 'Repositorio Pacman';
+
+  @override
+  String get pacmanRepoSafety =>
+      'Solo se aceptan repositorios HTTPS con firmas de paquetes obligatorias. OmniStore no descarga claves ni ejecuta pacman -Sy; la fuente se aplica en la próxima actualización completa del sistema.';
 
   @override
   String get sourceType => 'Tipo de fuente';

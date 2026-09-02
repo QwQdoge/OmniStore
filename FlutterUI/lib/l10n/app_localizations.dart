@@ -1840,8 +1840,20 @@ abstract class AppLocalizations {
   /// No description provided for @addCustomSourceDesc.
   ///
   /// In en, this message translates to:
-  /// **'Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos'**
+  /// **'Configure custom Pacman/Flatpak repositories, AppImage feeds, or GitHub/Bitu sources'**
   String get addCustomSourceDesc;
+
+  /// No description provided for @pacmanRepoType.
+  ///
+  /// In en, this message translates to:
+  /// **'Pacman repository'**
+  String get pacmanRepoType;
+
+  /// No description provided for @pacmanRepoSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Only HTTPS repositories with required package signatures are accepted. OmniStore never downloads signing keys or runs pacman -Sy. The source takes effect during the next full system upgrade.'**
+  String get pacmanRepoSafety;
 
   /// Label for source type
   ///

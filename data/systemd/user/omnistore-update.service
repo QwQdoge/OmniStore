@@ -1,0 +1,11 @@
+[Unit]
+Description=Check Meo and OmniStore update sources
+Documentation=https://github.com/QwQdoge/OmniStore
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/meo-update background
+TimeoutStartSec=10min
+Restart=no

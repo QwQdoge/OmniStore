@@ -1536,6 +1536,23 @@ class BackendService {
     }
   }
 
+  Future<Map<String, dynamic>> listCustomRepos() async {
+    if (kIsWeb) return {};
+    try {
+      final result = await _safeRun([
+        "--list-custom-repos",
+        "--json",
+      ], timeout: const Duration(seconds: 30));
+      if (result == null || result.exitCode != 0) return {};
+      final decoded = _safeJsonDecode(result.stdout.toString());
+      return decoded is Map
+          ? Map<String, dynamic>.from(decoded)
+          : <String, dynamic>{};
+    } catch (_) {
+      return {};
+    }
+  }
+
   Future<bool> removeCustomRepo(String type, String name) async {
     if (kIsWeb) return true;
     try {

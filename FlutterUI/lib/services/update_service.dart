@@ -19,11 +19,11 @@ import 'task_manager.dart';
 // restarts the Dart Timer when the value has actually changed — so in-app
 // interval changes take effect immediately without restarting the app.
 //
-// Background updates when app is closed: Handled via a systemd user-level timer
-// (omnistore-update.timer) written to ~/.config/systemd/user/ on Linux. The
-// timer runs a one-shot update check; it never installs a restart-looping
-// long-lived service. removeSystemdBackgroundTimer() disables and removes the
-// unit files for app self-uninstall/cleanup flows.
+// Background updates when app is closed: Handled by package-owned systemd user
+// units. Settings writes only an interval drop-in below ~/.config/systemd/user;
+// the service is one-shot and never becomes a restart-looping daemon.
+// removeSystemdBackgroundTimer() disables the timer and removes only that
+// user-owned interval override.
 // Android WorkManager and iOS BackgroundFetch are NOT applicable — OmniStore
 // is a Linux desktop application.
 class UpdateService {
@@ -418,51 +418,30 @@ class UpdateService {
     _updateTimer = null;
   }
 
-  /// Writes a systemd user-level service + timer that runs OmniStore in
-  /// headless mode to check for updates even when the GUI is closed.
-  /// Called whenever the check interval changes.
+  /// Enables the package-owned timer and writes only an interval drop-in.
   Future<void> _setupSystemdBackgroundTimer(int intervalHours) async {
     if (!Platform.isLinux) return;
     try {
+      final packagedTimer = File(
+        '/usr/lib/systemd/user/omnistore-update.timer',
+      );
+      if (!packagedTimer.existsSync()) {
+        debugPrint(
+          'Packaged OmniStore update timer is unavailable; background checks were not enabled.',
+        );
+        return;
+      }
       final systemdDir = Directory(
         p.join(PlatformEnvironment.instance.configHome, 'systemd', 'user'),
       );
-      if (!systemdDir.existsSync()) {
-        systemdDir.createSync(recursive: true);
-      }
-
-      final serviceFile = File(
-        p.join(systemdDir.path, 'omnistore-update.service'),
+      final dropInDir = Directory(
+        p.join(systemdDir.path, 'omnistore-update.timer.d'),
       );
-      final timerFile = File(p.join(systemdDir.path, 'omnistore-update.timer'));
-
-      final exePath = Platform.resolvedExecutable;
-
-      serviceFile.writeAsStringSync('''[Unit]
-Description=OmniStore Background Update Checker
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=$exePath --check-updates-background
-Restart=no
-TimeoutStartSec=10min
-KillMode=process
-''');
-
-      timerFile.writeAsStringSync('''[Unit]
-Description=Run OmniStore Background Update Checker
-
-[Timer]
-OnBootSec=5min
+      dropInDir.createSync(recursive: true);
+      final intervalDropIn = File(p.join(dropInDir.path, 'interval.conf'));
+      intervalDropIn.writeAsStringSync('''[Timer]
+OnUnitInactiveSec=
 OnUnitInactiveSec=${intervalHours.clamp(1, 168)}h
-Persistent=true
-RandomizedDelaySec=5min
-Unit=omnistore-update.service
-
-[Install]
-WantedBy=timers.target
 ''');
 
       await Process.run('systemctl', [
@@ -489,8 +468,8 @@ WantedBy=timers.target
     await removeSystemdBackgroundTimer();
   }
 
-  /// Fully removes OmniStore's user-level systemd background update units.
-  /// Safe to call repeatedly from settings, shutdown cleanup, or uninstall.
+  /// Disables the package-owned timer and removes only the user interval
+  /// override. Package-owned unit files are never deleted here.
   Future<void> removeSystemdBackgroundTimer() async {
     if (!Platform.isLinux) return;
     try {
@@ -510,21 +489,24 @@ WantedBy=timers.target
       final systemdDir = Directory(
         p.join(PlatformEnvironment.instance.configHome, 'systemd', 'user'),
       );
-      for (final unitName in const [
-        'omnistore-update.timer',
-        'omnistore-update.service',
-      ]) {
-        final unitFile = File(p.join(systemdDir.path, unitName));
-        if (unitFile.existsSync()) {
-          unitFile.deleteSync();
-        }
+      final dropInDir = Directory(
+        p.join(systemdDir.path, 'omnistore-update.timer.d'),
+      );
+      final intervalDropIn = File(p.join(dropInDir.path, 'interval.conf'));
+      if (intervalDropIn.existsSync()) {
+        intervalDropIn.deleteSync();
+      }
+      if (dropInDir.existsSync() && dropInDir.listSync().isEmpty) {
+        dropInDir.deleteSync();
       }
 
       await Process.run('systemctl', [
         '--user',
         'daemon-reload',
       ]).timeout(const Duration(seconds: 5));
-      debugPrint('systemd background timer disabled and unit files removed.');
+      debugPrint(
+        'systemd background timer disabled and interval override removed.',
+      );
     } catch (e) {
       debugPrint('Failed to disable systemd background timer: $e');
     }

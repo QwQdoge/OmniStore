@@ -938,7 +938,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源';
+      '配置自定义 Pacman/Flatpak 仓库、AppImage 订阅或 GitHub/Bitu 软件源';
+
+  @override
+  String get pacmanRepoType => 'Pacman 软件仓库';
+
+  @override
+  String get pacmanRepoSafety =>
+      '仅接受 HTTPS 仓库并强制软件包签名。OmniStore 不会下载签名密钥，也不会运行 pacman -Sy；该来源会在下一次完整系统升级时生效。';
 
   @override
   String get sourceType => '软件源类型';
@@ -2291,7 +2298,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get addCustomSourceDesc =>
-      '設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源';
+      '設定自訂 Pacman/Flatpak 倉庫、AppImage 訂閱或 GitHub/Bitu 軟體源';
+
+  @override
+  String get pacmanRepoType => 'Pacman 軟體倉庫';
+
+  @override
+  String get pacmanRepoSafety =>
+      '僅接受 HTTPS 倉庫並強制套件簽章。OmniStore 不會下載簽章金鑰，也不會執行 pacman -Sy；此來源會在下一次完整系統升級時生效。';
 
   @override
   String get sourceType => '軟體源類型';

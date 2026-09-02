@@ -768,7 +768,9 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos",
+  "addCustomSourceDesc": "Configure custom Pacman/Flatpak repositories, AppImage feeds, or GitHub/Bitu sources",
+  "pacmanRepoType": "Pacman repository",
+  "pacmanRepoSafety": "Only HTTPS repositories with required package signatures are accepted. OmniStore never downloads signing keys or runs pacman -Sy. The source takes effect during the next full system upgrade.",
   "sourceType": "Source Type",
   "@sourceType": {
     "description": "Label for source type"

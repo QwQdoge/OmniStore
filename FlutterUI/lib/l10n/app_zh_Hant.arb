@@ -771,7 +771,9 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源",
+  "addCustomSourceDesc": "設定自訂 Pacman/Flatpak 倉庫、AppImage 訂閱或 GitHub/Bitu 軟體源",
+  "pacmanRepoType": "Pacman 軟體倉庫",
+  "pacmanRepoSafety": "僅接受 HTTPS 倉庫並強制套件簽章。OmniStore 不會下載簽章金鑰，也不會執行 pacman -Sy；此來源會在下一次完整系統升級時生效。",
   "sourceType": "軟體源類型",
   "@sourceType": {
     "description": "Label for source type"

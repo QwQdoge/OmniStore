@@ -768,7 +768,9 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "カスタム Flatpak リモート、AppImage フィード、または GitHub/Bitu リポジトリを設定します",
+  "addCustomSourceDesc": "カスタム Pacman/Flatpak リポジトリ、AppImage フィード、GitHub/Bitu ソースを設定します",
+  "pacmanRepoType": "Pacman リポジトリ",
+  "pacmanRepoSafety": "HTTPS リポジトリのみを受け付け、パッケージ署名を必須にします。OmniStore は署名鍵を取得せず、pacman -Sy も実行しません。次回の完全なシステム更新で有効になります。",
   "sourceType": "ソースの種類",
   "@sourceType": {
     "description": "Label for source type"

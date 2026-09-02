@@ -768,7 +768,9 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "Configure remotos de Flatpak personalizados, feeds de AppImage o repositorios de GitHub/Bitu",
+  "addCustomSourceDesc": "Configura repositorios Pacman/Flatpak, fuentes AppImage o fuentes GitHub/Bitu personalizadas",
+  "pacmanRepoType": "Repositorio Pacman",
+  "pacmanRepoSafety": "Solo se aceptan repositorios HTTPS con firmas de paquetes obligatorias. OmniStore no descarga claves ni ejecuta pacman -Sy; la fuente se aplica en la próxima actualización completa del sistema.",
   "sourceType": "Tipo de fuente",
   "@sourceType": {
     "description": "Label for source type"

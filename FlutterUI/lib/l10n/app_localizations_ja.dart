@@ -944,7 +944,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      'カスタム Flatpak リモート、AppImage フィード、または GitHub/Bitu リポジトリを設定します';
+      'カスタム Pacman/Flatpak リポジトリ、AppImage フィード、GitHub/Bitu ソースを設定します';
+
+  @override
+  String get pacmanRepoType => 'Pacman リポジトリ';
+
+  @override
+  String get pacmanRepoSafety =>
+      'HTTPS リポジトリのみを受け付け、パッケージ署名を必須にします。OmniStore は署名鍵を取得せず、pacman -Sy も実行しません。次回の完全なシステム更新で有効になります。';
 
   @override
   String get sourceType => 'ソースの種類';

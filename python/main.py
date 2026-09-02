@@ -69,6 +69,9 @@ async def main():
     cmd.add_argument("--storage-info", action="store_true")
     cmd.add_argument("--export-installed-usage", action="store_true")
     cmd.add_argument("--meo-channel", choices=("status", "beta", "stable"))
+    cmd.add_argument("--update-status", action="store_true")
+    cmd.add_argument("--update-plan", action="store_true")
+    cmd.add_argument("--background-update-check", action="store_true")
     parser.add_argument("--confirm-meo-stable-downgrades", action="store_true")
     parser.add_argument("--meo-stable-plan-hash")
 

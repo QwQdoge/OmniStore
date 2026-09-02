@@ -1,7 +1,9 @@
 import asyncio
 import inspect
 import json
+import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -9,8 +11,18 @@ from core.meo_channel import CommandResult, MeoChannelManager, channel_from_repo
 
 
 def test_channel_helper_does_not_eagerly_import_unrelated_network_sources():
-    assert "core.sources.aur.aur" not in sys.modules
-    assert "core.sources.github.github" not in sys.modules
+    probe = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys, core.meo_channel; "
+            "raise SystemExit(int('core.sources.aur.aur' in sys.modules or "
+            "'core.sources.github.github' in sys.modules))",
+        ],
+        check=False,
+        cwd=Path(__file__).resolve().parents[1],
+    )
+    assert probe.returncode == 0
 
 
 def test_channel_follows_pacman_order_not_a_preference():

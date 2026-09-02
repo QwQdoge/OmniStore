@@ -18,6 +18,11 @@ is supported.
 | config_schema.json | Versioned configuration schema. |
 | verify_release_exporter_contract.py | Release-bundle contract check for the Meo Settings usage export. |
 
+The packaged update integration is documented in
+[`docs/UNIFIED_UPDATES.md`](docs/UNIFIED_UPDATES.md). `meo-update` is the
+shared, versioned entry point used by OmniStore, Meo Settings, and the
+package-owned systemd user timer.
+
 The checked-out source contains Python daemon-mode/update code in python/main.py
 and python/daemon_main.py. It does not contain a Rust daemon source directory
 or a Cargo manifest, so this project must not be described as shipping a Rust
@@ -75,6 +80,17 @@ explicit assembled-bundle target and takes priority; `--output-root` (or
 `MEO_OUTPUT_ROOT`) changes the shared root, while `--build-dir` changes only
 the PyInstaller build tree. This avoids default `release_bundle`,
 `python/build_cache`, and `python/dist` output in the source checkout.
+
+## Meo Account AI release configuration
+
+Every normal Flutter release build must embed the public Account client
+configuration, otherwise the app cannot authenticate or reach the Account AI
+broker. Before `python3 auto_build.py --all`, provide
+`MEO_ACCOUNT_SUPABASE_URL` and `MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY` in the
+build environment. They are public client settings, never an AI provider key,
+service-role key, or user credential. The build deliberately stops if either
+value is missing. An offline developer build may opt out explicitly with
+`--allow-account-disabled`; it must not be presented as Account-capable.
 
 ## Safety and release boundary
 

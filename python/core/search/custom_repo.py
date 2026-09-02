@@ -3,9 +3,11 @@ import logging
 import os
 import re
 import asyncio
-import tempfile
 import shutil
 import subprocess
+import copy
+import json
+from pathlib import Path
 from typing import Dict, List, Any, Optional
 from core.subprocess_utils import safe_subprocess
 
@@ -251,26 +253,40 @@ class CustomRepoManager:
             return repos
 
         try:
-            with open("/etc/pacman.conf", "r", encoding="utf-8", errors="surrogateescape") as f:
-                content = f.read()
-
-            pattern = re.compile(r"^\[([^\]\s]+)\]", re.MULTILINE)
-            matches = list(pattern.finditer(content))
-            standard_repos = {"options", "core", "extra", "community", "multilib"}
-
-            for i, match in enumerate(matches):
-                repo_name = match.group(1).strip()
-                if repo_name in standard_repos:
+            if not shutil.which("pacman-conf"):
+                return repos
+            async with safe_subprocess(
+                "pacman-conf", "--repo-list",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+            ) as process:
+                output, _ = await asyncio.wait_for(process.communicate(), timeout=15)
+            if process.returncode != 0:
+                return repos
+            standard_repos = {"core", "extra", "multilib"}
+            for repo_name in output.decode("utf-8", errors="replace").splitlines():
+                repo_name = repo_name.strip()
+                if not repo_name or repo_name.casefold() in standard_repos:
                     continue
-
-                start = match.end()
-                end = matches[i + 1].start() if i + 1 < len(matches) else len(content)
-                block = content[start:end]
-
-                server_match = re.search(r"^\s*Server\s*=\s*(.+)$", block, re.MULTILINE)
-                url = server_match.group(1).strip() if server_match else ""
-
-                repos.append({"name": repo_name, "url": url})
+                async with safe_subprocess(
+                    "pacman-conf", "--repo", repo_name,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL,
+                ) as detail:
+                    detail_output, _ = await asyncio.wait_for(detail.communicate(), timeout=15)
+                server = ""
+                for line in detail_output.decode("utf-8", errors="replace").splitlines():
+                    if line.startswith("Server = "):
+                        server = line.partition("=")[2].strip()
+                        break
+                repos.append({
+                    "name": repo_name,
+                    "url": server,
+                    "managed": any(
+                        isinstance(item, dict) and item.get("name") == repo_name
+                        for item in self._managed_pacman_repositories()
+                    ),
+                })
         except OSError as e:
             logger.error(f"Failed to parse pacman custom repos: {e}")
         except Exception as e:
@@ -279,26 +295,23 @@ class CustomRepoManager:
         return repos
 
     async def add_pacman_repo(self, name: str, url: str, callback: Any = None) -> bool:
-        """
-        拒绝未签名的自定义 Pacman 软件源（Fail-closed 安全机制）。
-        """
+        """Add one HTTPS repository to OmniStore's isolated managed fragment."""
         async with self._lock:
-            await self._safe_callback(
-                callback,
-                "[ERROR] Custom Pacman repositories are disabled until "
-                "signature verification and keyring enrollment are implemented."
-            )
-            return False
+            if not self._validate_name(name) or not self._validate_url(url) or not url.startswith("https://"):
+                await self._safe_callback(callback, "[ERROR] Pacman repositories require a valid name and HTTPS URL.")
+                return False
+            if name.casefold() in self.OFFICIAL_MEO_REPOSITORIES:
+                await self._safe_callback(callback, "[ERROR] Meo repositories are owned by the channel package.")
+                return False
+            repositories = self._managed_pacman_repositories()
+            if any(item.get("name", "").casefold() == name.casefold() for item in repositories):
+                await self._safe_callback(callback, f"[WARNING] Repository [{name}] is already managed.")
+                return True
+            desired = [*repositories, {"name": name.strip(), "url": url.strip()}]
+            return await self._persist_and_apply_pacman_repositories(repositories, desired, callback)
 
     async def remove_pacman_repo(self, name: str, callback: Any = None) -> bool:
-        """
-        从 /etc/pacman.conf 中安全移除自定义源。
-        防御机制：
-        - 互斥锁防止并发写死锁
-        - 使用 errors="surrogateescape" 无损保留非 UTF-8 字节，严禁使用 errors="replace" 写入 \ufffd 损坏文件
-        - 提权准备检查
-        - 原子写入与备份回滚：如果配置写失败，通过备份恢复 /etc/pacman.conf
-        """
+        """Remove only a repository owned by OmniStore's managed fragment."""
         async with self._lock:
             if not name or not isinstance(name, str) or not self._validate_name(name):
                 await self._safe_callback(callback, "[ERROR] Invalid Pacman repository name.")
@@ -315,115 +328,73 @@ class CustomRepoManager:
                 )
                 return False
 
-            if sys.platform != "linux" or not shutil.which("pacman"):
-                await self._safe_callback(callback, "[ERROR] Pacman package manager is not available.")
+            repositories = self._managed_pacman_repositories()
+            desired = [item for item in repositories if item.get("name", "").casefold() != normalized_name]
+            if len(desired) == len(repositories):
+                await self._safe_callback(callback, "[ERROR] OmniStore can only remove repositories it manages.")
                 return False
+            return await self._persist_and_apply_pacman_repositories(repositories, desired, callback)
 
-            await self._safe_callback(callback, "[INFO] Requesting authorization to modify /etc/pacman.conf...")
+    def _managed_pacman_repositories(self) -> List[Dict[str, str]]:
+        if self.cm is None:
+            return []
+        configured = self.cm.get("custom_repos.pacman", [])
+        if not isinstance(configured, list):
+            return []
+        return [
+            {"name": str(item.get("name", "")).strip(), "url": str(item.get("url", "")).strip()}
+            for item in configured
+            if isinstance(item, dict) and self._validate_name(item.get("name"))
+            and self._validate_url(item.get("url"))
+        ]
 
-            if not self.executor or not hasattr(self.executor, "_ensure_privileged"):
-                await self._safe_callback(callback, "[ERROR] Privilege executor is not available.")
-                return False
+    def _repository_helper(self) -> str:
+        installed = Path("/usr/lib/omnistore/meo-repository-helper.py")
+        if installed.is_file():
+            return str(installed)
+        return str(Path(__file__).resolve().parents[2] / "helpers" / "meo_repository_helper.py")
 
-            if not await self.executor._ensure_privileged(callback):
-                return False
-
-            temp_fd = None
-            temp_path = None
-            backup_fd = None
-            backup_path = None
-            try:
-                if not os.path.exists("/etc/pacman.conf"):
-                    await self._safe_callback(callback, "[ERROR] /etc/pacman.conf does not exist.")
-                    return False
-
-                # 使用 surrogateescape 无损保留非 UTF-8 字节
-                with open("/etc/pacman.conf", "r", encoding="utf-8", errors="surrogateescape") as f:
-                    conf = f.read()
-
-                if f"[{name_clean}]" not in conf:
-                    await self._safe_callback(callback, f"[WARNING] Repository [{name_clean}] does not exist in pacman.conf.")
-                    return True
-
-                pattern = re.compile(rf"^\s*\[{re.escape(name_clean)}\].*?((?=^\s*\[)|$)", re.MULTILINE | re.DOTALL)
-                modified_conf = pattern.sub("", conf)
-                modified_conf = re.sub(r"\n{3,}", "\n\n", modified_conf)
-
-                # 创建旧 pacman.conf 备份文件
-                backup_fd, backup_path = tempfile.mkstemp()
-                with os.fdopen(backup_fd, "w", encoding="utf-8", errors="surrogateescape") as bkf:
-                    bkf.write(conf)
-                backup_fd = None
-
-                # 创建修改后的 pacman.conf 临时文件
-                temp_fd, temp_path = tempfile.mkstemp()
-                with os.fdopen(temp_fd, "w", encoding="utf-8", errors="surrogateescape") as tmpf:
-                    tmpf.write(modified_conf)
-                temp_fd = None
-
-                async with safe_subprocess(
-                    "sudo", "cp", temp_path, "/etc/pacman.conf",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT
-                ) as proc:
-                    await proc.communicate()
-                    copy_success = (proc.returncode == 0)
-
-                if copy_success:
-                    if self.cm is not None:
-                        try:
-                            custom_pacman = self.cm.get("custom_repos.pacman", [])
-                            if isinstance(custom_pacman, list):
-                                custom_pacman = [r for r in custom_pacman if isinstance(r, dict) and r.get("name") != name_clean]
-                                self.cm.set("custom_repos.pacman", custom_pacman)
-                        except (OSError, IOError, KeyError, ValueError, TypeError) as cfg_err:
-                            logger.error(f"Failed to sync custom pacman config, restoring pacman.conf backup: {cfg_err}")
-                            if backup_path and os.path.exists(backup_path):
-                                try:
-                                    async with safe_subprocess(
-                                        "sudo", "cp", backup_path, "/etc/pacman.conf",
-                                        stdout=asyncio.subprocess.PIPE,
-                                        stderr=asyncio.subprocess.DEVNULL
-                                    ) as rb_proc:
-                                        await rb_proc.communicate()
-                                except (OSError, subprocess.SubprocessError) as rb_err:
-                                    logger.error(f"Rollback pacman.conf failed: {rb_err}")
-                            await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
-                            return False
-
-                    await self._safe_callback(callback, f"[INFO] Successfully removed Pacman repository [{name_clean}]. Syncing databases...")
-
-                    async with safe_subprocess(
-                        "sudo", "pacman", "-Sy",
-                        stdout=asyncio.subprocess.PIPE,
-                        stderr=asyncio.subprocess.STDOUT
-                    ) as sync_proc:
-                        await sync_proc.communicate()
-                        return True
-                else:
-                    await self._safe_callback(callback, "[ERROR] Failed to write /etc/pacman.conf.")
-                    return False
-
-            except (OSError, subprocess.SubprocessError) as e:
-                logger.error(f"Failed to remove pacman repo: {e}")
-                await self._safe_callback(callback, f"[ERROR] Failed to remove pacman repo: {e}")
-                return False
-            except Exception as e:
-                logger.exception(f"Unexpected error in remove_pacman_repo: {e}")
-                raise
-            finally:
-                for fd in (temp_fd, backup_fd):
-                    if fd is not None:
-                        try:
-                            os.close(fd)
-                        except Exception:
-                            pass
-                for path in (temp_path, backup_path):
-                    if path and os.path.exists(path):
-                        try:
-                            os.remove(path)
-                        except Exception as clean_err:
-                            logger.warning(f"Failed to remove temporary file {path}: {clean_err}")
+    async def _persist_and_apply_pacman_repositories(self, previous, desired, callback) -> bool:
+        if sys.platform != "linux" or not shutil.which("pacman-conf"):
+            await self._safe_callback(callback, "[ERROR] Pacman configuration tools are not available.")
+            return False
+        if self.cm is None or not self.executor or not hasattr(self.executor, "_ensure_privileged"):
+            await self._safe_callback(callback, "[ERROR] Repository persistence or privilege support is unavailable.")
+            return False
+        old_config = copy.deepcopy(self.cm.data)
+        new_config = copy.deepcopy(self.cm.data)
+        new_config.setdefault("custom_repos", {})["pacman"] = desired
+        if not self.cm.save(new_config):
+            await self._safe_callback(callback, "[ERROR] Could not persist the repository definition.")
+            return False
+        if not await self.executor._ensure_privileged(callback):
+            self.cm.save(old_config)
+            return False
+        environment = await self.executor.privilege_manager.subprocess_environment()
+        payload = json.dumps({
+            "schema": "org.meo.pacman-repositories",
+            "version": 1,
+            "repositories": desired,
+        }).encode("utf-8")
+        try:
+            async with safe_subprocess(
+                "sudo", "-A", self._repository_helper(),
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+                env=environment,
+            ) as process:
+                output, _ = await asyncio.wait_for(process.communicate(payload), timeout=90)
+            if process.returncode == 0:
+                await self._safe_callback(callback, "[INFO] Pacman repository configuration updated. It will take effect in the next full system upgrade.")
+                return True
+            self.cm.save(old_config)
+            await self._safe_callback(callback, f"[ERROR] Repository helper rejected the change: {output.decode('utf-8', errors='replace').strip()}")
+            return False
+        except (OSError, asyncio.TimeoutError, subprocess.SubprocessError) as error:
+            self.cm.save(old_config)
+            await self._safe_callback(callback, f"[ERROR] Could not apply the repository configuration: {error}")
+            return False
 
     # --- AppImage Custom Feeds ---
 

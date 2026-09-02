@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
-
 import 'backend/platform_environment.dart';
 
 List<String> resolveLaunchArguments(List<String> dartArguments) {
@@ -42,11 +40,16 @@ List<String> parseProcCommandLine(List<int> bytes) {
 Future<int> runBackgroundUpdateCheck() async {
   final environment = PlatformEnvironment.instance;
   try {
-    final result = await Process.run(
-      environment.venvPython,
-      environment.buildArgs(const ['--check-updates', '--json']),
-      workingDirectory: environment.workingDir,
-    ).timeout(const Duration(minutes: 8));
+    final packagedOrchestrator = File('/usr/bin/meo-update');
+    final result = packagedOrchestrator.existsSync()
+        ? await Process.run('/usr/bin/meo-update', const [
+            'check',
+          ]).timeout(const Duration(minutes: 8))
+        : await Process.run(
+            environment.venvPython,
+            environment.buildArgs(const ['--check-updates', '--json']),
+            workingDirectory: environment.workingDir,
+          ).timeout(const Duration(minutes: 8));
 
     if (result.exitCode != 0) {
       stderr.writeln('OmniStore update check failed: ${result.stderr}');
@@ -54,7 +57,6 @@ Future<int> runBackgroundUpdateCheck() async {
     }
 
     final updates = parseBackgroundUpdateOutput(result.stdout.toString());
-    await _writeUpdateState(updates);
     if (updates.isNotEmpty) {
       await _notify(updates.length);
     }
@@ -86,27 +88,6 @@ List<Map<String, dynamic>> parseBackgroundUpdateOutput(String output) {
     }
   }
   throw const FormatException('Backend returned no update JSON payload.');
-}
-
-Future<void> _writeUpdateState(List<Map<String, dynamic>> updates) async {
-  final stateRoot =
-      Platform.environment['XDG_STATE_HOME'] ??
-      p.join(
-        Platform.environment['HOME'] ?? Directory.current.path,
-        '.local',
-        'state',
-      );
-  final stateDir = Directory(p.join(stateRoot, 'omnistore'));
-  await stateDir.create(recursive: true);
-  final stateFile = File(p.join(stateDir.path, 'update-state.json'));
-  await stateFile.writeAsString(
-    jsonEncode({
-      'checked_at': DateTime.now().toUtc().toIso8601String(),
-      'count': updates.length,
-      'updates': updates,
-    }),
-    flush: true,
-  );
 }
 
 Future<void> _notify(int count) async {

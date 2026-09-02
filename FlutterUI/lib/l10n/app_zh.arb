@@ -772,7 +772,9 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源",
+  "addCustomSourceDesc": "配置自定义 Pacman/Flatpak 仓库、AppImage 订阅或 GitHub/Bitu 软件源",
+  "pacmanRepoType": "Pacman 软件仓库",
+  "pacmanRepoSafety": "仅接受 HTTPS 仓库并强制软件包签名。OmniStore 不会下载签名密钥，也不会运行 pacman -Sy；该来源会在下一次完整系统升级时生效。",
   "sourceType": "软件源类型",
   "@sourceType": {
     "description": "Label for source type"

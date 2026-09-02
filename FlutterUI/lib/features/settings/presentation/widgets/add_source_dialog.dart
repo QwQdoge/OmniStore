@@ -110,7 +110,9 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -139,6 +141,10 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                   child: Text(widget.l10n.flatpakRemoteType),
                 ),
                 DropdownMenuItem(
+                  value: "pacman",
+                  child: Text(widget.l10n.pacmanRepoType),
+                ),
+                DropdownMenuItem(
                   value: "appimage",
                   child: Text(widget.l10n.appImageFeedType),
                 ),
@@ -150,6 +156,23 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
               },
             ),
             const SizedBox(height: 16),
+            if (_type == "pacman") ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.tertiaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  widget.l10n.pacmanRepoSafety,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onTertiaryContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
@@ -161,7 +184,9 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -193,7 +218,9 @@ class _AddSourceDialogState extends State<AddSourceDialog> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(

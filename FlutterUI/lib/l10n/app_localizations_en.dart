@@ -1011,7 +1011,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      'Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos';
+      'Configure custom Pacman/Flatpak repositories, AppImage feeds, or GitHub/Bitu sources';
+
+  @override
+  String get pacmanRepoType => 'Pacman repository';
+
+  @override
+  String get pacmanRepoSafety =>
+      'Only HTTPS repositories with required package signatures are accepted. OmniStore never downloads signing keys or runs pacman -Sy. The source takes effect during the next full system upgrade.';
 
   @override
   String get sourceType => 'Source Type';

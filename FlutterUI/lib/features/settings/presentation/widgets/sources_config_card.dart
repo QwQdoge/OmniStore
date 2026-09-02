@@ -25,11 +25,78 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
   bool _detectingSources = false;
   final Set<String> _updatingSources = <String>{};
   final Set<String> _updatingPlugins = <String>{};
+  Map<String, dynamic> _customSources = const {};
+  bool _loadingCustomSources = false;
 
   @override
   void initState() {
     super.initState();
     _loadPlugins();
+    _loadCustomSources();
+  }
+
+  Future<void> _loadCustomSources() async {
+    if (kIsWeb) return;
+    setState(() => _loadingCustomSources = true);
+    final sources = await BackendService.instance.listCustomRepos();
+    if (!mounted) return;
+    setState(() {
+      _customSources = sources;
+      _loadingCustomSources = false;
+    });
+  }
+
+  Future<void> _removeCustomSource(String type, String name) async {
+    final l10n = AppLocalizations.of(context)!;
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.delete),
+        content: Text('$name · $type'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true) return;
+    final success = await BackendService.instance.removeCustomRepo(type, name);
+    if (!mounted) return;
+    Toast.show(context, success ? l10n.success : l10n.failed);
+    await _loadCustomSources();
+  }
+
+  List<Widget> _customSourceTiles() {
+    final widgets = <Widget>[];
+    for (final entry in _customSources.entries) {
+      final values = entry.value;
+      if (values is! List) continue;
+      for (final raw in values.whereType<Map>()) {
+        final name = raw['name']?.toString() ?? '';
+        if (name.isEmpty) continue;
+        widgets.add(
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.dns_rounded),
+            title: Text(name),
+            subtitle: Text('${entry.key} · ${raw['url'] ?? ''}'),
+            trailing: raw['managed'] == false && entry.key == 'pacman'
+                ? const Icon(Icons.lock_outline_rounded)
+                : IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    onPressed: () => _removeCustomSource(entry.key, name),
+                  ),
+          ),
+        );
+      }
+    }
+    return widgets;
   }
 
   Future<void> _loadPlugins() async {
@@ -138,11 +205,12 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
     }
   }
 
-  void _showAddSourceDialog(AppLocalizations l10n) {
-    showDialog(
+  Future<void> _showAddSourceDialog(AppLocalizations l10n) async {
+    await showDialog(
       context: context,
       builder: (context) => AddSourceDialog(l10n: l10n),
     );
+    await _loadCustomSources();
   }
 
   @override
@@ -283,6 +351,9 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                     onPressed: () => _showAddSourceDialog(l10n),
                   ),
                 ),
+                if (!kIsWeb && _loadingCustomSources)
+                  const LinearProgressIndicator(minHeight: 2),
+                if (!kIsWeb) ..._customSourceTiles(),
               ],
             ),
           ),

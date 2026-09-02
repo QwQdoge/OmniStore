@@ -167,9 +167,54 @@ def build_python(build_dir):
     subprocess.run(cmd, check=True, cwd=str(PYTHON_PROJECT_DIR))
     print("✅ Python Server Build 成功！")
 
-def build_flutter(platform):
-    cmd = f"flutter build {platform} --release"
-    run_command(cmd, FLUTTER_PROJECT_DIR, f"Flutter {platform} Release build")
+def account_dart_defines(allow_disabled):
+    """Return the public Account configuration required by a release build.
+
+    The publishable key is designed to be embedded in a client, but a provider
+    credential is never accepted here. Requiring both values prevents a release
+    that presents Account UI while silently compiling it into a disabled state.
+    """
+    url = os.environ.get("MEO_ACCOUNT_SUPABASE_URL", "").strip()
+    publishable_key = os.environ.get(
+        "MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY", ""
+    ).strip()
+    if bool(url) != bool(publishable_key):
+        raise RuntimeError(
+            "Set both MEO_ACCOUNT_SUPABASE_URL and "
+            "MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY, or neither."
+        )
+    if not url:
+        if allow_disabled:
+            return []
+        raise RuntimeError(
+            "Meo Account is required for release builds. Set "
+            "MEO_ACCOUNT_SUPABASE_URL and MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY. "
+            "For an intentionally offline developer build, pass "
+            "--allow-account-disabled."
+        )
+    if not url.startswith("https://") or any(ch.isspace() for ch in url):
+        raise RuntimeError("MEO_ACCOUNT_SUPABASE_URL must be a clean HTTPS URL.")
+    if any(ch.isspace() for ch in publishable_key):
+        raise RuntimeError(
+            "MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY must not contain whitespace."
+        )
+    return [
+        f"--dart-define=SUPABASE_URL={url}",
+        f"--dart-define=SUPABASE_PUBLISHABLE_KEY={publishable_key}",
+    ]
+
+
+def build_flutter(platform, account_defines):
+    cmd = ["flutter", "build", platform, "--release", *account_defines]
+    state = "enabled" if account_defines else "intentionally disabled"
+    print(f"\n🚀 [正在执行] Flutter {platform} Release build (Meo Account {state})...")
+    # Do not echo dart-defines: even publishable client values should not be
+    # unnecessarily copied into build logs.
+    result = subprocess.run(cmd, cwd=FLUTTER_PROJECT_DIR)
+    if result.returncode != 0:
+        print(f"❌ Flutter {platform} Release build 失败，程序终止！")
+        sys.exit(1)
+    print(f"✅ Flutter {platform} Release build 成功！")
 
 
 def copy_builtin_source_manifests(bundle_dir):
@@ -256,6 +301,30 @@ def assemble(platform, output_dir, build_dir):
     else:
         print(f"⚠️ can not find Stable rollback helper: {rollback_helper}")
 
+    repository_helper = BASE_DIR / "python" / "helpers" / "meo_repository_helper.py"
+    if repository_helper.is_file():
+        shutil.copy2(repository_helper, target_backend_dir / "meo_repository_helper.py")
+        os.chmod(target_backend_dir / "meo_repository_helper.py", 0o755)
+        print("✅ copy Pacman repository helper")
+    else:
+        print(f"⚠️ can not find Pacman repository helper: {repository_helper}")
+
+    systemd_source = BASE_DIR / "data" / "systemd" / "user"
+    if systemd_source.is_dir():
+        shutil.copytree(
+            systemd_source,
+            flutter_bundle_dir / "data" / "systemd" / "user",
+            dirs_exist_ok=True,
+        )
+        print("✅ copy packaged update-check systemd units")
+
+    update_contract = BASE_DIR / "docs" / "UNIFIED_UPDATES.md"
+    if update_contract.is_file():
+        update_docs_dir = flutter_bundle_dir / "data" / "docs"
+        update_docs_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(update_contract, update_docs_dir / update_contract.name)
+        print("✅ copy unified update contract and attribution")
+
     copy_builtin_source_manifests(flutter_bundle_dir)
 
     icon_src = BASE_DIR / "omnistore.svg"
@@ -303,6 +372,11 @@ def main():
         default=None,
         help="PyInstaller build/spec/work root (overrides MEO_OMNISTORE_BUILD_DIR)",
     )
+    parser.add_argument(
+        "--allow-account-disabled",
+        action="store_true",
+        help="permit an explicitly offline developer build without Meo Account",
+    )
 
     args = parser.parse_args()
 
@@ -312,11 +386,12 @@ def main():
         return
 
     build_dir, output_dir = resolve_output_paths(args)
+    account_defines = account_dart_defines(args.allow_account_disabled)
 
     # APK 不需要 Python 和 Rust 后端
     if args.platform == "apk":
         if args.all or args.flutter:
-            build_flutter("apk")
+            build_flutter("apk", account_defines)
         if args.all or args.assemble:
             assemble("apk", output_dir, build_dir)
         return
@@ -328,7 +403,7 @@ def main():
         build_python(build_dir)
 
     if args.all or args.flutter:
-        build_flutter(args.platform)
+        build_flutter(args.platform, account_defines)
 
     if args.all or args.rust or args.python or args.flutter or args.assemble:
         assemble(args.platform, output_dir, build_dir)
