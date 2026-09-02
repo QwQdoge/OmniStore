@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
@@ -70,6 +71,7 @@ class _AccountPageState extends State<AccountPage> {
     setState(() => _isLoading = true);
     try {
       await AuthService().signInWithPassword(email: email, password: password);
+      TextInput.finishAutofillContext(shouldSave: true);
     } on AuthException catch (e) {
       if (mounted) {
         Toast.show(context, l10n.signInFailed(e.message));
@@ -289,21 +291,25 @@ class _AccountPageState extends State<AccountPage> {
                           ? l10n.syncStatusSubtitle
                           : authService.lastSyncedAt!.toLocal().toString(),
                     ),
-                    trailing: _isSyncing
-                        ? const SizedBox.square(
-                            dimension: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2.5),
-                          )
-                        : Icon(
-                            _lastSyncSucceeded == false
-                                ? Icons.error_rounded
-                                : _lastSyncSucceeded == true
-                                ? Icons.check_circle_rounded
-                                : Icons.cloud_upload_rounded,
-                            color: _lastSyncSucceeded == false
-                                ? colorScheme.error
-                                : colorScheme.primary,
-                          ),
+                    trailing: SmoothSizeSwitcher(
+                      child: _isSyncing
+                          ? const SizedBox.square(
+                              key: ValueKey('syncing'),
+                              dimension: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2.5),
+                            )
+                          : Icon(
+                              _lastSyncSucceeded == false
+                                  ? Icons.error_rounded
+                                  : _lastSyncSucceeded == true
+                                  ? Icons.check_circle_rounded
+                                  : Icons.cloud_upload_rounded,
+                              key: ValueKey('idle'),
+                              color: _lastSyncSucceeded == false
+                                  ? colorScheme.error
+                                  : colorScheme.primary,
+                            ),
+                    ),
                     onTap: _isSyncing ? null : _syncNow,
                   ),
                   Divider(

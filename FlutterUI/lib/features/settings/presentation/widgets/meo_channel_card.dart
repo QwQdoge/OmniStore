@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 
@@ -90,16 +91,28 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
           (item) => '${item['name']}: ${item['installed']} → ${item['stable']}',
         )
         .join('\n');
+    final theme = Theme.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.security_update_good_rounded),
-        title: const Text('Switch to Stable'),
+        clipBehavior: Clip.antiAlias,
+        icon: Icon(
+          Icons.security_update_good_rounded,
+          color: theme.colorScheme.primary,
+          size: 32,
+        ),
+        title: Text(
+          'Switch to Stable',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+          textAlign: TextAlign.center,
+        ),
         content: Text(
           'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n$packages',
         ),
         actions: [
-          TextButton(
+          FilledButton.tonal(
             onPressed: () => Navigator.pop(context, false),
             child: Text(l10n.cancel),
           ),
@@ -244,12 +257,18 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                 IconButton.filledTonal(
                   tooltip: l10n.refresh,
                   onPressed: _busy ? null : _refresh,
-                  icon: _busy
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh_rounded),
+                  icon: SmoothSizeSwitcher(
+                    child: _busy
+                        ? const SizedBox.square(
+                            key: ValueKey('loading'),
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(
+                            Icons.refresh_rounded,
+                            key: ValueKey('idle'),
+                          ),
+                  ),
                 ),
               ],
             ),

@@ -69,7 +69,11 @@ class SearchFilters extends StatelessWidget {
             ),
             ...enabledSources.map((src) {
               final name = _displayName(src);
-              final isSelected = selectedSources.contains(name.toLowerCase());
+              final srcKey = src.toLowerCase();
+              final displayNameKey = name.toLowerCase();
+              final isSelected =
+                  selectedSources.contains(displayNameKey) ||
+                  selectedSources.contains(srcKey);
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: FilterChip(
@@ -79,9 +83,13 @@ class SearchFilters extends StatelessWidget {
                   onSelected: (selected) {
                     final newSources = List<String>.from(selectedSources);
                     if (selected) {
-                      newSources.add(name.toLowerCase());
+                      if (!newSources.contains(srcKey)) newSources.add(srcKey);
+                      if (!newSources.contains(displayNameKey)) {
+                        newSources.add(displayNameKey);
+                      }
                     } else {
-                      newSources.remove(name.toLowerCase());
+                      newSources.remove(srcKey);
+                      newSources.remove(displayNameKey);
                     }
                     onSelectedSourcesChanged(newSources);
                   },
