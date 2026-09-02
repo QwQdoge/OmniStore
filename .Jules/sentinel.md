@@ -40,3 +40,5 @@ Action:
 [Future prevention]
 
 Journal:
+
+.Jules/sentinel.md
