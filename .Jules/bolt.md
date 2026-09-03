@@ -30,7 +30,3 @@ Verification:
 * compare rebuild scope
 * verify memory usage if applicable
 * ensure UI behavior is unchanged
-
-Journal:
-
-.Jules/bolt.md
