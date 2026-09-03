@@ -128,104 +128,101 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: AutofillGroup(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.code_rounded,
-                            size: 28,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              l10n.githubAuthTitle,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: _patController,
-                        enabled: isInteractive,
-                        obscureText: _obscureToken,
-                        autofillHints: const [AutofillHints.password],
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => isInteractive ? _savePat() : null,
-                        decoration: InputDecoration(
-                          labelText: l10n.personalAccessToken,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.primary,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          prefixIcon: const Icon(Icons.vpn_key_rounded),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureToken
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
-                            ),
-                            onPressed: () {
-                              setState(() => _obscureToken = !_obscureToken);
-                            },
-                            tooltip: _obscureToken
-                                ? l10n.showPassword
-                                : l10n.hidePassword,
-                          ),
-                          helperText: l10n.patHelperText,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.code_rounded,
+                          size: 28,
+                          color: colorScheme.primary,
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          FilledButton.icon(
-                            onPressed: isInteractive ? _savePat : null,
-                            icon: SmoothSizeSwitcher(
-                              child: (_isLoading || _isSaving)
-                                  ? SizedBox(
-                                      key: const ValueKey('loading'),
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: colorScheme.onPrimary,
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.save_rounded,
-                                      key: ValueKey('idle'),
-                                    ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            l10n.githubAuthTitle,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
-                            label: Text(l10n.saveToken),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _patController,
+                      enabled: isInteractive,
+                      obscureText: _obscureToken,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => isInteractive ? _savePat() : null,
+                      decoration: InputDecoration(
+                        labelText: l10n.personalAccessToken,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        prefixIcon: const Icon(Icons.vpn_key_rounded),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureToken
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
+                          ),
+                          onPressed: () {
+                            setState(() => _obscureToken = !_obscureToken);
+                          },
+                          tooltip: _obscureToken
+                              ? l10n.showPassword
+                              : l10n.hidePassword,
+                        ),
+                        helperText: l10n.patHelperText,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: isInteractive ? _savePat : null,
+                          icon: SmoothSizeSwitcher(
+                            child: (_isLoading || _isSaving)
+                                ? SizedBox(
+                                    key: const ValueKey('loading'),
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: colorScheme.onPrimary,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.save_rounded,
+                                    key: ValueKey('idle'),
+                                  ),
+                          ),
+                          label: Text(l10n.saveToken),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
