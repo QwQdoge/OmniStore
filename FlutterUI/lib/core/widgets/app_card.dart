@@ -72,14 +72,24 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     );
 
     if (isInteractive) {
-      _ensureControllerInitialized();
+      // ⚡ Bolt: Lazily initialize AnimationController on mouse enter rather than unconditionally in build().
+      // This prevents allocating AnimationControllers, Curves, and ScaleTransitions for
+      // non-hovered cards across large package lists and shelves.
       content = MouseRegion(
-        onEnter: (_) => _controller?.forward(),
+        onEnter: (_) {
+          if (_controller == null) {
+            _ensureControllerInitialized();
+            if (mounted) setState(() {});
+          }
+          _controller?.forward();
+        },
         onExit: (_) => _controller?.reverse(),
-        child: ScaleTransition(
-          scale: _scaleAnimation!,
-          child: RepaintBoundary(child: content),
-        ),
+        child: _scaleAnimation != null
+            ? ScaleTransition(
+                scale: _scaleAnimation!,
+                child: RepaintBoundary(child: content),
+              )
+            : RepaintBoundary(child: content),
       );
     }
 
