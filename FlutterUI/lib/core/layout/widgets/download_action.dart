@@ -45,7 +45,7 @@ class DownloadAction extends StatelessWidget {
               Positioned(
                 top: compact ? 4 : 8,
                 right: compact ? 4 : 8,
-                child: Badge(label: Text(l10n.resultsFound(updates.length))),
+                child: Badge(label: Text('${updates.length}')),
               ),
           ],
         );

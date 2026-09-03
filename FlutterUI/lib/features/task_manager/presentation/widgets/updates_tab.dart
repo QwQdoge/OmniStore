@@ -103,8 +103,7 @@ class UpdatesTab extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Semantics(
-                        label: 'Update available: ${update['name']}',
-                        button: true,
+                        explicitChildNodes: true,
                         child: AppCard(
                           borderRadius: 16,
                           onTap: () async {
