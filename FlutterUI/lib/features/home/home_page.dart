@@ -35,10 +35,19 @@ class _HomePageState extends State<HomePage> {
   final Map<String, ScrollController> _shelfControllers = {};
   String? _aiPickBlurb;
   bool _isAILoading = false;
+  // ⚡ Bolt: Cache categories list to avoid redundant allocations and localization lookups in build()
+  List<CategoryItem> _categories = [];
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchAIPick());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _categories = CategoryService.getCategories(context);
   }
 
   @override
@@ -171,7 +180,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = CategoryService.getCategories(context);
+    final categories = _categories;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(

@@ -20,9 +20,17 @@ class EmptyResults extends StatefulWidget {
 }
 
 class _EmptyResultsState extends State<EmptyResults> {
+  // ⚡ Bolt: Cache categories list to avoid redundant allocations and localization lookups in build()
+  List<CategoryItem> _categories = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _categories = CategoryService.getCategories(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final categories = CategoryService.getCategories(context);
     return EmptyState(
       icon: Icons.search_off_rounded,
       title: widget.l10n.noResults,
@@ -39,7 +47,7 @@ class _EmptyResultsState extends State<EmptyResults> {
             spacing: 8,
             runSpacing: 8,
             alignment: WrapAlignment.center,
-            children: categories
+            children: _categories
                 .map(
                   (cat) => ActionChip(
                     onPressed: () {
