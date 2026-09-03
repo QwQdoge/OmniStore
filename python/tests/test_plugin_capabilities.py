@@ -304,3 +304,69 @@ async def test_scoop_and_brew_get_installed_ids_optimization(monkeypatch):
     assert next(r for r in brew_results if r["name"] == "wget")["installed"] is True
     assert next(r for r in brew_results if r["name"] == "htop")["installed"] is True
     assert next(r for r in brew_results if r["name"] == "ffmpeg")["installed"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_installed_ids_parsing_and_timeouts(monkeypatch, caplog):
+    scoop = ScoopSource()
+    brew = BrewSource()
+    scoop.enabled = True
+    brew.enabled = True
+
+    class NormalProc:
+        def __init__(self, stdout_data):
+            self._stdout_data = stdout_data
+            self.pid = 123
+            self.returncode = 0
+
+        async def communicate(self):
+            return (self._stdout_data, b"")
+
+        async def wait(self):
+            return 0
+
+    class TimeoutProc:
+        def __init__(self):
+            self.pid = 456
+            self.returncode = None
+
+        async def communicate(self):
+            await asyncio.sleep(100)
+            return (b"", b"")
+
+        async def wait(self):
+            return 0
+
+    async def mock_exec_normal(*args, **kwargs):
+        cmd = args[0]
+        if cmd == "scoop":
+            return NormalProc(b"Name Version\n7zip 22.01\ncurl 7.88.0\n")
+        elif cmd == "brew":
+            return NormalProc(b"wget 1.21.4\nhtop 3.2.2\n")
+        return NormalProc(b"")
+
+    monkeypatch.setattr("asyncio.create_subprocess_exec", mock_exec_normal)
+    scoop_ids = await scoop._get_installed_ids()
+    brew_ids = await brew._get_installed_ids()
+    assert scoop_ids == {"7zip", "curl"}
+    assert brew_ids == {"wget", "htop"}
+
+    async def mock_exec_timeout(*args, **kwargs):
+        return TimeoutProc()
+
+    monkeypatch.setattr("asyncio.create_subprocess_exec", mock_exec_timeout)
+
+    async def mock_wait_for(fut, timeout):
+        if asyncio.iscoroutine(fut):
+            fut.close()
+        raise asyncio.TimeoutError()
+
+    monkeypatch.setattr("asyncio.wait_for", mock_wait_for)
+
+    with caplog.at_level("WARNING"):
+        scoop_timeout_ids = await scoop._get_installed_ids()
+        brew_timeout_ids = await brew._get_installed_ids()
+        assert scoop_timeout_ids == set()
+        assert brew_timeout_ids == set()
+        assert "ScoopSource._get_installed_ids timed out" in caplog.text
+        assert "BrewSource._get_installed_ids timed out" in caplog.text

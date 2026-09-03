@@ -1,9 +1,11 @@
 import asyncio
 import inspect
 import json
+import logging
 import os
 import re
 import shutil
+import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -531,7 +533,7 @@ class ScoopSource(UnifiedSource):
             return set()
         try:
             async with safe_subprocess("scoop", "list", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                stdout, _ = await proc.communicate()
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
                 installed = set()
                 for line in _decode_output(stdout or b"").splitlines():
                     line = line.strip()
@@ -541,7 +543,14 @@ class ScoopSource(UnifiedSource):
                     if parts:
                         installed.add(parts[0].lower())
                 return installed
-        except Exception:
+        except asyncio.TimeoutError:
+            logging.warning("ScoopSource._get_installed_ids timed out after 20s.")
+            return set()
+        except (OSError, subprocess.SubprocessError) as e:
+            logging.warning("ScoopSource._get_installed_ids subprocess failed: %s", e)
+            return set()
+        except Exception as e:
+            logging.error("ScoopSource._get_installed_ids unexpected error: %s", e, exc_info=True)
             return set()
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
@@ -706,14 +715,21 @@ class BrewSource(UnifiedSource):
             return set()
         try:
             async with safe_subprocess("brew", "list", "--versions", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                stdout, _ = await proc.communicate()
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
                 installed = set()
                 for line in _decode_output(stdout or b"").splitlines():
                     parts = line.split()
                     if parts and not parts[0].startswith("==>"):
                         installed.add(parts[0].lower())
                 return installed
-        except Exception:
+        except asyncio.TimeoutError:
+            logging.warning("BrewSource._get_installed_ids timed out after 20s.")
+            return set()
+        except (OSError, subprocess.SubprocessError) as e:
+            logging.warning("BrewSource._get_installed_ids subprocess failed: %s", e)
+            return set()
+        except Exception as e:
+            logging.error("BrewSource._get_installed_ids unexpected error: %s", e, exc_info=True)
             return set()
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
