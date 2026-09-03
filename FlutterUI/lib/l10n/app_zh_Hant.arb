@@ -191,9 +191,21 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 套件…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} 更新失敗",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "所有已啟用的軟體源均已更新",
   "enableSystemTray": "啟用系統匣",
   "@enableSystemTray": {
@@ -424,7 +436,7 @@
   "@aiCopyCommand": {
     "description": "Button label to copy generated command"
   },
-  "aiRefineSearch": "使用 AI 精煉搜尋",
+  "aiRefineSearch": "使用 AI 優化搜尋",
   "@aiRefineSearch": {
     "description": "Action to refine search using AI"
   },
@@ -503,7 +515,7 @@
   "resetCacheConfirm": "將清空搜尋歷史與推薦快取。確認繼續？",
   "resetting": "正在重置...",
   "resetSuccess": "快取與歷史記錄已成功清空",
-  "resetFailed": "重置失敗: {error}",
+  "resetFailed": "重置失敗：{error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
@@ -589,7 +601,11 @@
   "pluginCapabilities": "{count} 項功能",
   "@pluginCapabilities": {
     "description": "軟體來源外掛提供的功能數量",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI 回應失敗。",
   "@aiResponseFailed": {
@@ -800,7 +816,7 @@
   "@hintCustomAppName": {
     "description": "Hint for custom app name"
   },
-  "repoOwnerRepo": "軟體源地址（owner/repo）",
+  "repoOwnerRepo": "倉庫地址（owner/repo）",
   "@repoOwnerRepo": {
     "description": "Label for repository owner and name"
   },
@@ -1184,7 +1200,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "條件可用。推薦基於使用習慣和當前設定生成，不會影響具體安裝選項。",
+  "aiPickDisclaimer": "推薦結果僅供參考：基於您的搜尋習慣和當前軟體源設定生成，不會影響您的具體安裝選項。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },
@@ -1308,7 +1324,7 @@
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "請提供 GitHub Classic PAT 或 Fine-grained 權標。",
+  "patHelperText": "請提供 GitHub Classic PAT 或 Fine-grained 權杖。",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
