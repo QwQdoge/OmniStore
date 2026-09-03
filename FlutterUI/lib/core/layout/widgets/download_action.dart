@@ -27,8 +27,7 @@ class DownloadAction extends StatelessWidget {
           children: [
             IconButton(
               tooltip: l10n.downloads,
-              onPressed: () =>
-                  context.read<NavigationController>().setIndex(4),
+              onPressed: () => context.read<NavigationController>().setIndex(4),
               icon: Selector<TaskController, bool>(
                 selector: (context, task) => task.isBusy,
                 builder: (context, isBusy, child) => Icon(
@@ -45,7 +44,7 @@ class DownloadAction extends StatelessWidget {
               Positioned(
                 top: compact ? 4 : 8,
                 right: compact ? 4 : 8,
-                child: Badge(label: Text(l10n.resultsFound(updates.length))),
+                child: Badge(label: Text('${updates.length}')),
               ),
           ],
         );
