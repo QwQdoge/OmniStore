@@ -51,7 +51,7 @@ class AIMarkdownDialog extends StatelessWidget {
     final theme = Theme.of(context);
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      icon: const AiMark(size: 24),
+      icon: const AiMark(size: 32),
       title: Text(
         title,
         style: theme.textTheme.headlineSmall?.copyWith(
@@ -91,7 +91,7 @@ class AICliDialog extends StatelessWidget {
     final theme = Theme.of(context);
     return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      icon: const AiMark(size: 24),
+      icon: const AiMark(size: 32),
       title: Text(
         AppLocalizations.of(context)!.aiCliTitle,
         style: theme.textTheme.headlineSmall?.copyWith(
