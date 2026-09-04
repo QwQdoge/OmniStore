@@ -30,7 +30,8 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(Card), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
@@ -44,7 +45,7 @@ void main() {
     expect(toggleFinder, findsOneWidget);
 
     await tester.tap(toggleFinder);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     textField = tester.widget(find.byType(TextField));
     expect(textField.obscureText, isFalse);
