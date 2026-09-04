@@ -72,9 +72,10 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     );
 
     if (isInteractive) {
-      // ⚡ Bolt: Lazily initialize AnimationController on mouse enter rather than unconditionally in build().
-      // This prevents allocating AnimationControllers, Curves, and ScaleTransitions for
-      // non-hovered cards across large package lists and shelves.
+      // ⚡ Bolt: Lazily initialize AnimationController on hover while keeping ScaleTransition
+      // unconditionally in the widget tree with AlwaysStoppedAnimation(1.0). This prevents
+      // allocating AnimationController/Curves/Tweens for unhovered cards while ensuring the
+      // widget tree hierarchy never changes on hover, avoiding element deactivation/state loss in child widgets.
       content = MouseRegion(
         onEnter: (_) {
           if (_controller == null) {
@@ -84,12 +85,10 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
           _controller?.forward();
         },
         onExit: (_) => _controller?.reverse(),
-        child: _scaleAnimation != null
-            ? ScaleTransition(
-                scale: _scaleAnimation!,
-                child: RepaintBoundary(child: content),
-              )
-            : RepaintBoundary(child: content),
+        child: ScaleTransition(
+          scale: _scaleAnimation ?? const AlwaysStoppedAnimation<double>(1.0),
+          child: RepaintBoundary(child: content),
+        ),
       );
     }
 
