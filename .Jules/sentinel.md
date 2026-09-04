@@ -40,3 +40,11 @@ Action:
 [Future prevention]
 
 Journal:
+
+## 2024-05-18 - [Python Exception Narrowing]
+
+Learning:
+Generic `except Exception` blocks around ConfigManager (like configuration loading/saving) and daemon operations were converting unexpected programming errors (like AttributeError) into silent failures or boolean returns, obscuring bugs.
+
+Action:
+Narrowed exception handling around Configuration I/O and parsing operations in config_loader and daemon_main modules to specific types (OSError, IOError, ValueError, TypeError) to allow proper escalation of programming errors.

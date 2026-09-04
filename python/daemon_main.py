@@ -128,7 +128,7 @@ def load_config():
                 "auto_update": bool(daemon_cfg.get("auto_update", False)),
                 "notifications": bool(daemon_cfg.get("notifications", True))
             }
-    except Exception as e:
+    except (OSError, IOError, ValueError, TypeError) as e:
         logging.error(f"Murphy-proof: Failed to load/parse config, falling back to defaults: {e}")
         return defaults
 
@@ -307,7 +307,7 @@ async def run_update_check(config):
                         with open(tmp_path, "w", encoding="utf-8") as f:
                             json.dump(status, f, indent=2)
                         tmp_path.replace(status_path)
-                    except Exception as e:
+                    except (OSError, IOError) as e:
                         logging.error(f"Murphy-proof: Failed to write status file: {e}")
 
                     if count > 0 and config.get("notifications"):
@@ -317,7 +317,7 @@ async def run_update_check(config):
                     if count > 0 and config.get("auto_update"):
                         await run_auto_updates(updates)
 
-                except Exception as e:
+                except (ValueError, TypeError, OSError, IOError) as e:
                     logging.error(f"Failed to parse update check JSON or write status: {e}")
             else:
                 logging.error(f"Update check failed with code {proc.returncode}: {stderr.decode(errors='replace')}")

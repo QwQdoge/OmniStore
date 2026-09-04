@@ -211,10 +211,10 @@ class ConfigManager:
                 try:
                     validated = ConfigModel(**merged).model_dump()
                     return validated
-                except Exception as ve:
+                except (ValueError, TypeError) as ve:
                     print(f"[Config] Validation Warning: {ve}")
                     return merged
-        except Exception as e:
+        except (OSError, IOError, yaml.YAMLError) as e:
             print(f"[Config] Load Error (falling back to default): {e}")
             return self.default_config
 
@@ -229,7 +229,7 @@ class ConfigManager:
             # 1. Rigorous Schema Validation
             try:
                 cfg = ConfigModel(**cfg).model_dump()
-            except Exception as ve:
+            except (ValueError, TypeError) as ve:
                 print(f"[Config] Save Validation Error: {ve}")
                 # Fault Isolation: Refuse to save invalid config to protect system stability
                 return False
@@ -254,14 +254,14 @@ class ConfigManager:
                 temp_file.replace(self.config_path)
                 self.current_config = cfg
                 return True
-            except Exception as write_e:
+            except (OSError, IOError) as write_e:
                 print(f"[Config] File Write Error: {write_e}")
                 if temp_file.exists():
                     try: temp_file.unlink()
-                    except Exception: pass
+                    except (OSError, IOError): pass
                 return False
 
-        except Exception as e:
+        except (OSError, IOError, ValueError, TypeError) as e:
             print(f"[Config] Save Fatal Error: {e}")
             return False
 
