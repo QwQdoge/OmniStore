@@ -28,41 +28,26 @@ class TerminalDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Dialog(
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
       clipBehavior: Clip.antiAlias,
-      backgroundColor: theme.colorScheme.surfaceContainerHighest,
-      child: SizedBox(
+      icon: Icon(
+        Icons.terminal_rounded,
+        size: 32,
+        color: theme.colorScheme.primary,
+      ),
+      title: Text(
+        l10n.terminalOutput,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+        textAlign: TextAlign.center,
+      ),
+      content: SizedBox(
         width: 600,
         height: 400,
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHigh,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(28.0),
-                  topRight: Radius.circular(28.0),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.terminalOutput,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 18),
-                    tooltip: AppLocalizations.of(context)!.windowClose,
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
             Selector<
               TaskController,
               ({String status, double? progress, bool isBusy})
@@ -131,7 +116,7 @@ class TerminalDialog extends StatelessWidget {
                       return logs.isEmpty
                           ? Center(
                               child: Text(
-                                AppLocalizations.of(context)!.waitingForOutput,
+                                l10n.waitingForOutput,
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontFamily: 'monospace',
@@ -186,6 +171,12 @@ class TerminalDialog extends StatelessWidget {
           ],
         ),
       ),
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.windowClose),
+        ),
+      ],
     );
   }
 }
