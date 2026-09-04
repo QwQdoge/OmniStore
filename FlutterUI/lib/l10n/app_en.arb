@@ -191,9 +191,21 @@
     "description": "update"
   },
   "updatingSourcePackages": "Updating {source} packages…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} update failed",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "All enabled package sources are up to date",
   "enableSystemTray": "Enable system tray",
   "@enableSystemTray": {
@@ -586,7 +598,11 @@
   "pluginCapabilities": "{count} capabilities",
   "@pluginCapabilities": {
     "description": "Number of capabilities exposed by a source plugin",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI failed to respond.",
   "@aiResponseFailed": {
@@ -1372,5 +1388,38 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoChannelTitle": "Meo Update Channel",
+  "meoChannelSubtitle": "Read from the active pacman repository order",
+  "meoChannelBetaNotice": "Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.",
+  "meoChannelStableNotice": "Stable receives fully tested MeoArch release trains.",
+  "repoPriority": "Repository priority: {repos}",
+  "@repoPriority": {
+    "placeholders": {
+      "repos": {
+        "type": "String"
+      }
+    }
+  },
+  "betaWarningPanel": "Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.",
+  "downgradeReviewPending": "{count, plural, =1{Stable is configured, but 1 Meo package downgrade still requires review.} other{Stable is configured, but {count} Meo package downgrades still require review.}}",
+  "@downgradeReviewPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewDowngrades": "Review Downgrades",
+  "switchToStable": "Switch to Stable",
+  "downgradeNotice": "The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n{packages}",
+  "@downgradeNotice": {
+    "placeholders": {
+      "packages": {
+        "type": "String"
+      }
+    }
+  },
+  "channelStable": "Stable",
+  "channelBeta": "Beta"
 }

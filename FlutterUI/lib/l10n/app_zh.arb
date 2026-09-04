@@ -488,15 +488,15 @@
   "skip": "跳过",
   "envCheckTitle": "环境检查",
   "envCheckSubtitle": "确保系统已准备就绪",
-  "envFatalDesc": "当前系统不是 Arch Linux，核心功能受限。",
+  "envFatalDesc": "检测到您的系统非 Arch Linux 衍生版本，大部分核心功能将无法使用。",
   "envWarningDesc": "缺少必要组件，将进行自动配置。",
   "envOkDesc": "系统状态良好，一切就绪！",
   "fixProblems": "一键修复/配置",
   "continueAnyway": "仍然继续",
   "sourceConfigTitle": "软件源配置",
-  "sourceConfigSubtitle": "选择 OmniStore 可以搜索的软件来源",
+  "sourceConfigSubtitle": "选择 OmniStore 检索软件的源路径",
   "enableAur": "启用 AUR (Arch User Repository)",
-  "yayDesc": "启用 AUR 需要安装 yay 助手。",
+  "yayDesc": "启用 AUR 需要安装 yay 辅助工具。",
   "aurWarning": "安全警告：AUR 软件包由社区用户贡献，请确保信任其来源。",
   "bootstrapNote": "浏览无需任何授权；只有配置需要修改系统时才会请求管理员授权。",
   "feedbackDesc": "通过 GitHub 反馈遇到的问题。",
@@ -508,7 +508,7 @@
   "howToGetApiKey": "如何获取 API 密钥？",
   "howToGetApiKeyDesc": "1. Ollama (本地)：直接运行，无需密钥。2. 云端 (OpenAI)：前往官网创建并填写密钥。",
   "gotIt": "知道了",
-  "aiOllamaNote": "确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。",
+  "aiOllamaNote": "提示：若使用 Ollama，请确保其已在后台运行并配置了 OLLAMA_ORIGINS=\"*\" 环境变量。",
   "enterStore": "进入商店",
   "nextStep": "下一步",
   "resetCache": "重置缓存与历史记录",
@@ -551,12 +551,12 @@
     }
   },
   "switchSource": "切换",
-  "flatpakBetterDesc": "发现此应用有 Flatpak 软件源，通常更稳定。",
+  "flatpakBetterDesc": "已检测到此应用的 Flatpak 版本，通常具备更好的稳定性与隔离性。",
   "aiAnalysisPrompt": "发现错误日志，需要 AI 分析吗？",
   "analyzeNow": "立即分析",
-  "cleanOrphans": "清理孤立软件包",
+  "cleanOrphans": "清理无用依赖项（孤立软件包）",
   "securityWarning": "安全风险提示",
-  "aurSecurityDesc": "AUR 是由社区维护的软件源。由于任何人都可以上传软件包，其中可能包含不安全的代码。建议在安装前仔细检查 PKGBUILD。",
+  "aurSecurityDesc": "AUR 为社区用户维护的软件源。因开放上传机制，可能包含未受审核的代码。建议在安装前核对 PKGBUILD 文件。",
   "continueInstall": "继续安装",
   "installInfo": "安装信息",
   "downloadSize": "下载大小",
@@ -1201,7 +1201,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "推荐结果仅供参考：基于您的搜索习惯和当前软件源配置生成，不会影响您的具体安装选项。",
+  "aiPickDisclaimer": "推荐结果仅供参考：根据搜索与安装历史及当前软件源配置生成，不影响具体安装选择。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },
@@ -1241,7 +1241,7 @@
   "@syncStatus": {
     "description": "Description for syncStatus"
   },
-  "syncStatusSubtitle": "点按备份 OmniStore 应用列表",
+  "syncStatusSubtitle": "点击备份 OmniStore 应用列表",
   "@syncStatusSubtitle": {
     "description": "Description for syncStatusSubtitle"
   },
@@ -1392,5 +1392,38 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoChannelTitle": "Meo 更新通道",
+  "meoChannelSubtitle": "从当前 pacman 软件源顺序读取",
+  "meoChannelBetaNotice": "Beta 通道可优先体验最新的 Meo 组件。Arch 系统软件包仍保持默认软件源。",
+  "meoChannelStableNotice": "Stable 通道接收经过完整测试的 MeoArch 稳定发布版本。",
+  "repoPriority": "软件源优先级：{repos}",
+  "@repoPriority": {
+    "placeholders": {
+      "repos": {
+        "type": "String"
+      }
+    }
+  },
+  "betaWarningPanel": "Beta 为手动开启选项，不建议在生产环境或关键系统中使用。Stable 仍为后备软件源。",
+  "downgradeReviewPending": "已配置 Stable 通道，但仍有 {count} 个 Meo 软件包降级项需要审查。",
+  "@downgradeReviewPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewDowngrades": "审查降级项",
+  "switchToStable": "切换至稳定版",
+  "downgradeNotice": "以下官方 Meo 软件包需要降级至稳定版本。Arch 及第三方软件包不会被降级。\n\n{packages}",
+  "@downgradeNotice": {
+    "placeholders": {
+      "packages": {
+        "type": "String"
+      }
+    }
+  },
+  "channelStable": "稳定版",
+  "channelBeta": "Beta 版"
 }
