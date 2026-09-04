@@ -191,9 +191,21 @@
     "description": "Update action label"
   },
   "updatingSourcePackages": "正在更新 {source} 软件包…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} 更新失败",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "所有已启用的软件源均已更新",
   "enableSystemTray": "启用系统托盘",
   "@enableSystemTray": {
@@ -504,7 +516,7 @@
   "resetCacheConfirm": "将清空搜索历史和推荐缓存。确认继续？",
   "resetting": "正在重置...",
   "resetSuccess": "缓存与历史记录已成功清空",
-  "resetFailed": "重置失败: {error}",
+  "resetFailed": "重置失败：{error}",
   "@resetFailed": {
     "placeholders": {
       "error": {
@@ -590,7 +602,11 @@
   "pluginCapabilities": "{count} 项能力",
   "@pluginCapabilities": {
     "description": "软件源插件提供的能力数量",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI 响应失败。",
   "@aiResponseFailed": {
@@ -1185,7 +1201,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "条件可用。推荐基于使用习惯和当前配置生成，不会影响具体安装选项。",
+  "aiPickDisclaimer": "推荐结果仅供参考：基于您的搜索习惯和当前软件源配置生成，不会影响您的具体安装选项。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },

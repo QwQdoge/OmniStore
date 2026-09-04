@@ -654,7 +654,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String resetFailed(String error) {
-    return '重置失败: $error';
+    return '重置失败：$error';
   }
 
   @override
@@ -1216,7 +1216,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get changeRecommendation => '换一个推荐';
 
   @override
-  String get aiPickDisclaimer => '条件可用。推荐基于使用习惯和当前配置生成，不会影响具体安装选项。';
+  String get aiPickDisclaimer => '推荐结果仅供参考：基于您的搜索习惯和当前软件源配置生成，不会影响您的具体安装选项。';
 
   @override
   String get quickStart => '快速开始';
@@ -1867,7 +1867,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiCopyCommand => '複製命令';
 
   @override
-  String get aiRefineSearch => '使用 AI 精煉搜尋';
+  String get aiRefineSearch => '使用 AI 優化搜尋';
 
   @override
   String get aiExplainUpdate => 'AI 解析此更新';
@@ -2007,7 +2007,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String resetFailed(String error) {
-    return '重置失敗: $error';
+    return '重置失敗：$error';
   }
 
   @override
@@ -2315,7 +2315,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hintCustomAppName => '例如：my-custom-app';
 
   @override
-  String get repoOwnerRepo => '軟體源地址（owner/repo）';
+  String get repoOwnerRepo => '倉庫地址（owner/repo）';
 
   @override
   String get sourceUrl => '連結';
@@ -2569,7 +2569,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get changeRecommendation => '換一個推薦';
 
   @override
-  String get aiPickDisclaimer => '條件可用。推薦基於使用習慣和當前設定生成，不會影響具體安裝選項。';
+  String get aiPickDisclaimer => '推薦結果僅供參考：基於您的搜尋習慣和當前軟體源設定生成，不會影響您的具體安裝選項。';
 
   @override
   String get quickStart => '快速開始';
@@ -2660,7 +2660,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get configurePat => 'GitHub 存取權杖（選用）';
 
   @override
-  String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權標。';
+  String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權杖。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 維護，離線時也始終可見';
