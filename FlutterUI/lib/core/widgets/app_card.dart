@@ -43,6 +43,7 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.99).animate(
       CurvedAnimation(parent: _controller!, curve: Curves.easeOutCubic),
     );
+    setState(() {});
   }
 
   @override
@@ -72,14 +73,20 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     );
 
     if (isInteractive) {
-      _ensureControllerInitialized();
+      // ⚡ Bolt: Defer AnimationController initialization until hover (onEnter)
+      // to eliminate ticker and animation allocations for non-hovered cards.
       content = MouseRegion(
-        onEnter: (_) => _controller?.forward(),
+        onEnter: (_) {
+          _ensureControllerInitialized();
+          _controller?.forward();
+        },
         onExit: (_) => _controller?.reverse(),
-        child: ScaleTransition(
-          scale: _scaleAnimation!,
-          child: RepaintBoundary(child: content),
-        ),
+        child: _scaleAnimation != null
+            ? ScaleTransition(
+                scale: _scaleAnimation!,
+                child: RepaintBoundary(child: content),
+              )
+            : RepaintBoundary(child: content),
       );
     }
 
