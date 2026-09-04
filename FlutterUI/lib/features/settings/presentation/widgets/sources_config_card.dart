@@ -184,9 +184,15 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                             ? const SizedBox.square(
                                 key: ValueKey('loading'),
                                 dimension: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
-                            : const Icon(Icons.radar_rounded, size: 18, key: ValueKey('idle')),
+                            : const Icon(
+                                Icons.radar_rounded,
+                                size: 18,
+                                key: ValueKey('idle'),
+                              ),
                       ),
                       label: Text(l10n.autoDetect),
                     ),
@@ -201,6 +207,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                         sourcesMap[src] ?? (src == 'github' || src == 'bitu');
                     return FilterChip(
                       label: Text(_displayName(src)),
+                      tooltip: l10n.sourceFilterSemantics(_displayName(src)),
                       selected: isEnabled,
                       onSelected: _updatingSources.contains(src)
                           ? null

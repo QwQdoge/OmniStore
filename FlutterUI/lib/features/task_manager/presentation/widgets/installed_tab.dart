@@ -45,22 +45,24 @@ class InstalledTab extends StatelessWidget {
                         vertical: 4,
                       ),
                       child: Row(
-                        children: availableFilters
-                            .map(
-                              (s) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(_filterLabel(context, s)),
-                                  selected: selectedSourceFilter == s,
-                                  onSelected: (v) {
-                                    if (v) {
-                                      onSourceFilterSelected(s);
-                                    }
-                                  },
-                                ),
-                              ),
-                            )
-                            .toList(),
+                        children: availableFilters.map((s) {
+                          final labelText = _filterLabel(context, s);
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(labelText),
+                              tooltip: AppLocalizations.of(
+                                context,
+                              )!.sourceFilterSemantics(labelText),
+                              selected: selectedSourceFilter == s,
+                              onSelected: (v) {
+                                if (v) {
+                                  onSourceFilterSelected(s);
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
