@@ -45,8 +45,11 @@ void main() {
     TextField textField = tester.widget(find.byType(TextField));
     expect(textField.obscureText, isTrue);
 
-    // Find visibility toggle button
-    final toggleFinder = find.byTooltip('Show password');
+    // Find visibility toggle button specifically by IconButton and Icon
+    final toggleFinder = find.widgetWithIcon(
+      IconButton,
+      Icons.visibility_rounded,
+    );
     expect(toggleFinder, findsOneWidget);
 
     await tester.ensureVisible(toggleFinder);
@@ -55,6 +58,9 @@ void main() {
 
     textField = tester.widget(find.byType(TextField));
     expect(textField.obscureText, isFalse);
-    expect(find.byTooltip('Hide password'), findsOneWidget);
+    expect(
+      find.widgetWithIcon(IconButton, Icons.visibility_off_rounded),
+      findsOneWidget,
+    );
   });
 }
