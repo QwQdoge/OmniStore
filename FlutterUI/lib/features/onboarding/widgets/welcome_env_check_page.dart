@@ -58,7 +58,13 @@ class WelcomeEnvCheckPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 40),
                       child: Column(
                         children: [
-                          const CircularProgressIndicator(),
+                          const SmoothSizeSwitcher(
+                            child: SizedBox.square(
+                              key: ValueKey('loading'),
+                              dimension: 40,
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             l10n.checkingEnvStatus,

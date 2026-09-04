@@ -491,9 +491,12 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       content = const ListTile(
         key: ValueKey('loading'),
         contentPadding: EdgeInsets.zero,
-        leading: SizedBox.square(
-          dimension: 24,
-          child: CircularProgressIndicator(strokeWidth: 2.5),
+        leading: SmoothSizeSwitcher(
+          child: SizedBox.square(
+            key: ValueKey('loading'),
+            dimension: 24,
+            child: CircularProgressIndicator(strokeWidth: 2.5),
+          ),
         ),
         title: Text('正在读取账号 AI 连接'),
         subtitle: Text('只读取名称、服务商和密钥掩码。'),
