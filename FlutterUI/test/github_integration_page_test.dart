@@ -10,6 +10,11 @@ void main() {
   testWidgets('GitHubIntegrationPage renders correctly and toggles PAT visibility', (
     WidgetTester tester,
   ) async {
+    tester.view.physicalSize = const Size(1280, 1024);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final configRepo = ConfigRepository.test(
       saveDebounce: Duration.zero,
       desktopWriter: (_) async => true,
@@ -44,6 +49,7 @@ void main() {
     final toggleFinder = find.byTooltip('Show password');
     expect(toggleFinder, findsOneWidget);
 
+    await tester.ensureVisible(toggleFinder);
     await tester.tap(toggleFinder);
     await tester.pump(const Duration(milliseconds: 300));
 
