@@ -34,3 +34,11 @@ Verification:
 Journal:
 
 .Jules/bolt.md
+
+## Optimization: Lazy initialization for Hover Animation Controller in AppCard
+
+- **Date:** 2026-09-04
+- **Component:** `AppCard` (`FlutterUI/lib/core/widgets/app_card.dart`)
+- **Optimization:** Deferred initialization of `AnimationController` and `ScaleTransition` until `MouseRegion.onEnter` is triggered, instead of initializing them unconditionally in `build()`.
+- **Reason:** Many grid and list items use `AppCard` across the app. Unconditionally initializing animation controllers in `build()` for all non-hovered list/grid items creates unnecessary ticker, curve, and animation object allocations. Lazy initialization eliminates this overhead.
+- **Verification:** Verified by checking that `AnimationController` is only instantiated on `onEnter` and `ScaleTransition` is conditionally rendered. Tested that UI behavior stays exactly the same, but resource allocation is reduced.
