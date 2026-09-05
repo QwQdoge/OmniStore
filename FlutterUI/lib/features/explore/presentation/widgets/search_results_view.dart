@@ -31,16 +31,8 @@ class SearchResultsView extends StatelessWidget {
     required this.l10n,
   });
 
-  static final AppPackage _prototypeApp = AppPackage(
-    name: 'Prototype',
-    description: 'This is a prototype item for performance',
-    installed: false,
-    primarySource: 'Native',
-    version: '1.0.0',
-    variants: [],
-  );
-
   Widget _buildSkeletonResults() {
+
     const skeletonItem = Padding(
       padding: EdgeInsets.only(bottom: 12),
       child: AppCard(
