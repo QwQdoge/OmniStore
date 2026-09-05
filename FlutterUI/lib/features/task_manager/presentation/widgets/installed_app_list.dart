@@ -24,26 +24,15 @@ class InstalledAppList extends StatelessWidget {
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      prototypeItem: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: AppCard(
-          borderRadius: 16,
-          child: ListTile(
-            leading: const SizedBox(width: 40, height: 40),
-            title: const SizedBox(height: 16),
-            subtitle: const SizedBox(height: 12),
-            trailing: const SizedBox(width: 60, height: 24),
-          ),
-        ),
-      ),
       itemCount: filteredApps.length,
       itemBuilder: (context, index) {
         final app = filteredApps[index];
         final sizeText = app.diskSize ?? app.installedSize ?? app.downloadSize;
+        final l10n = AppLocalizations.of(context)!;
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Semantics(
-            label: 'Installed app: ${app.name}',
+            label: '${l10n.installedApps}: ${app.name}',
             button: true,
             child: AppCard(
               borderRadius: 16,
