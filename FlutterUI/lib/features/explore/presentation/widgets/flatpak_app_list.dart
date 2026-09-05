@@ -79,9 +79,10 @@ class FlatpakAppList extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           prototypeItem: const Padding(
             padding: EdgeInsets.only(bottom: 12),
-            child: AppCard(child: SizedBox(height: 100)),
+            child: AppCard(child: SizedBox(height: 72)),
           ),
           itemCount: apps.length,
+
           itemBuilder: (context, index) {
             final app = apps[index];
             final isSelected = selectedApp?.id == app.id;

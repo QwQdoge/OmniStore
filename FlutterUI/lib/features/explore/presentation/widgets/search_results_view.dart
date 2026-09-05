@@ -88,15 +88,22 @@ class SearchResultsView extends StatelessWidget {
     return ListView.builder(
       key: const ValueKey('results'),
       padding: const EdgeInsets.all(16),
-      prototypeItem: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SearchResultTile(
-          app: _prototypeApp,
-          isDesktop: isDesktop,
-          onTap: () {},
+      prototypeItem: const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          borderRadius: 16,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 4),
+            child: ListTile(
+              leading: SizedBox(width: 40, height: 40),
+              title: SizedBox(height: 16),
+              subtitle: SizedBox(height: 14),
+            ),
+          ),
         ),
       ),
       itemCount: filteredResults.length,
+
       itemBuilder: (context, index) {
         final app = filteredResults[index];
         return SearchResultTile(
