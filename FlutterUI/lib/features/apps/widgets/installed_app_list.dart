@@ -35,14 +35,11 @@ class InstalledAppList extends StatelessWidget {
                   Expanded(child: SizedBox(height: 12)),
                 ],
               ),
-              trailing: AppSourceTag(
-                source: 'pacman',
-                mode: AppSourceTagMode.source,
-              ),
             ),
           ),
         ),
         itemCount: filteredApps.length,
+
         itemBuilder: (context, index) {
           final app = filteredApps[index];
           final heroTag = 'installed-app-${app.name}-${app.primarySource}';
