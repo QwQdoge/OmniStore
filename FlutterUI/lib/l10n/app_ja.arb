@@ -191,9 +191,21 @@
     "description": "update"
   },
   "updatingSourcePackages": "{source} パッケージを更新しています…",
-  "@updatingSourcePackages": {"placeholders": {"source": {"type": "String"}}},
+  "@updatingSourcePackages": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "sourceUpdateFailed": "{source} の更新に失敗しました",
-  "@sourceUpdateFailed": {"placeholders": {"source": {"type": "String"}}},
+  "@sourceUpdateFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
   "enabledSourcesUpdated": "有効なパッケージソースはすべて最新です",
   "enableSystemTray": "システムトレイを有効にする",
   "@enableSystemTray": {
@@ -586,7 +598,11 @@
   "pluginCapabilities": "{count} 個の機能",
   "@pluginCapabilities": {
     "description": "ソースプラグインが提供する機能の数",
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aiResponseFailed": "AI の応答に失敗しました。",
   "@aiResponseFailed": {
@@ -1372,5 +1388,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoChannelTitle": "Meo 更新チャンネル",
+  "meoChannelSubtitle": "アクティブな pacman リポジトリの順序から読み込み",
+  "meoChannelBetaNotice": "Beta は Stable よりも前に新しい Meo コンポーネントを受信します。Arch システムパッケージは通常のリポジトリに維持されます。",
+  "meoChannelStableNotice": "Stable は完全にテストされた MeoArch リリースを受信します。",
+  "repoPriority": "リポジトリの優先順位: {repos}",
+  "betaWarningPanel": "Beta はオプトインであり、クリティカルなシステムには推奨されません。Stable がフォールバックリポジトリとして機能します。",
+  "downgradeReviewPending": "Stable が設定されていますが、{count} 件の Meo パッケージのダウングレードに確認が必要です。",
+  "reviewDowngrades": "ダウングレードを確認",
+  "switchToStable": "Stable に切り替え",
+  "downgradeNotice": "以下の公式 Meo パッケージは Stable バージョンが必要です。Arch およびサードパーティパッケージはダウングレードされません。\n\n{packages}",
+  "channelStable": "Stable",
+  "channelBeta": "Beta"
 }

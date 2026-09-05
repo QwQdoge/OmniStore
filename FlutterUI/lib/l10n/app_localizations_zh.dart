@@ -1355,6 +1355,50 @@ class AppLocalizationsZh extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return '按软件源筛选：$name';
   }
+
+  @override
+  String get meoChannelTitle => 'Meo 更新通道';
+
+  @override
+  String get meoChannelSubtitle => '从当前 pacman 软件源顺序读取';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta 通道可优先体验最新的 Meo 组件。Arch 系统软件包仍保持默认软件源。';
+
+  @override
+  String get meoChannelStableNotice => 'Stable 通道接收经过完整测试的 MeoArch 稳定发布版本。';
+
+  @override
+  String repoPriority(String repos) {
+    return '软件源优先级：$repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta 为手动开启选项，不建议在生产环境或关键系统中使用。Stable 仍为后备软件源。';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return '已配置 Stable 通道，但仍有 $count 个 Meo 软件包降级项需要审查。';
+  }
+
+  @override
+  String get reviewDowngrades => '审查降级项';
+
+  @override
+  String get switchToStable => '切换至稳定版';
+
+  @override
+  String downgradeNotice(String packages) {
+    return '以下官方 Meo 软件包需要降级至稳定版本。Arch 及第三方软件包不会被降级。\n\n$packages';
+  }
+
+  @override
+  String get channelStable => '稳定版';
+
+  @override
+  String get channelBeta => 'Beta 版';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2708,4 +2752,48 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String sourceFilterSemantics(String name) {
     return '按軟體源篩選：$name';
   }
+
+  @override
+  String get meoChannelTitle => 'Meo 更新通道';
+
+  @override
+  String get meoChannelSubtitle => '從目前 pacman 軟體源順序讀取';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta 通道可優先體驗最新的 Meo 元件。Arch 系統套件仍保持預設軟體源。';
+
+  @override
+  String get meoChannelStableNotice => 'Stable 通道接收經過完整測試的 MeoArch 穩定發行版本。';
+
+  @override
+  String repoPriority(String repos) {
+    return '軟體源優先級：$repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta 為手動開啟選項，不建議在生產環境或關鍵系統中使用。Stable 仍為後備軟體源。';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return '已設定 Stable 通道，但仍有 $count 個 Meo 套件降級項需要審查。';
+  }
+
+  @override
+  String get reviewDowngrades => '審查降級項';
+
+  @override
+  String get switchToStable => '切換至穩定版';
+
+  @override
+  String downgradeNotice(String packages) {
+    return '以下官方 Meo 套件需要降級至穩定版本。Arch 及第三方套件不會被降級。\n\n$packages';
+  }
+
+  @override
+  String get channelStable => '穩定版';
+
+  @override
+  String get channelBeta => 'Beta 版';
 }
