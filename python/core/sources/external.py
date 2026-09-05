@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import json
+import logging
 import os
 import re
 import shutil
@@ -526,13 +527,30 @@ class ScoopSource(UnifiedSource):
         super().__init__(name="Scoop", weight=weight)
         self.enabled = shutil.which("scoop") is not None
 
+    async def _get_installed_ids(self) -> set:
+        if not self.enabled:
+            return set()
+        try:
+            async with safe_subprocess("scoop", "list", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                installed = set()
+                for line in stdout.decode(errors="ignore").splitlines():
+                    parts = line.split()
+                    if not parts or parts[0].lower() in {"name", "---"} or set(parts[0]) <= {"-"}:
+                        continue
+                    installed.add(parts[0].lower())
+                return installed
+        except (asyncio.TimeoutError, Exception) as exc:
+            logging.warning(f"Failed to get installed scoop apps: {exc}")
+            return set()
+
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
         try:
             async with safe_subprocess("scoop", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)
-                installed = {item["id"].lower() for item in await self.list_installed()}
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                installed = await self._get_installed_ids()
                 results = []
                 for line in _decode_output(stdout or b"").splitlines():
                     line = line.strip()
@@ -552,7 +570,8 @@ class ScoopSource(UnifiedSource):
                         "variants": [{"source": "Scoop", "id": name, "version": version, "installed": name.lower() in installed}],
                     })
                 return results
-        except Exception:
+        except (asyncio.TimeoutError, Exception) as exc:
+            logging.warning(f"Scoop search failed: {exc}")
             return []
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
@@ -640,7 +659,7 @@ class ScoopSource(UnifiedSource):
                 results = []
                 for line in stdout.decode(errors="ignore").splitlines():
                     parts = line.split()
-                    if not parts or parts[0].lower() in {"name", "---"}:
+                    if not parts or parts[0].lower() in {"name", "---"} or set(parts[0]) <= {"-"}:
                         continue
                     name = parts[0]
                     version = parts[1] if len(parts) > 1 else "Unknown"
@@ -680,13 +699,30 @@ class BrewSource(UnifiedSource):
         super().__init__(name="Homebrew", weight=weight)
         self.enabled = shutil.which("brew") is not None
 
+    async def _get_installed_ids(self) -> set:
+        if not self.enabled:
+            return set()
+        try:
+            async with safe_subprocess("brew", "list", "--versions", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                installed = set()
+                for line in stdout.decode(errors="ignore").splitlines():
+                    parts = line.split()
+                    if not parts:
+                        continue
+                    installed.add(parts[0].lower())
+                return installed
+        except (asyncio.TimeoutError, Exception) as exc:
+            logging.warning(f"Failed to get installed homebrew apps: {exc}")
+            return set()
+
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
         try:
             async with safe_subprocess("brew", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)
-                installed = {item["id"].lower() for item in await self.list_installed()}
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
+                installed = await self._get_installed_ids()
                 results = []
                 for line in _decode_output(stdout or b"").splitlines():
                     name = line.strip()
@@ -702,7 +738,8 @@ class BrewSource(UnifiedSource):
                         "variants": [{"source": "Homebrew", "id": name, "installed": name.lower() in installed}],
                     })
                 return results
-        except Exception:
+        except (asyncio.TimeoutError, Exception) as exc:
+            logging.warning(f"Homebrew search failed: {exc}")
             return []
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
