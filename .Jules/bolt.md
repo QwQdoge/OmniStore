@@ -34,3 +34,9 @@ Verification:
 Journal:
 
 .Jules/bolt.md
+
+## 2025-09-05 - Decoupling package search from installed size calculations
+
+**Learning:** In external package sources like `ScoopSource` and `BrewSource`, invoking `list_installed()` inside `search()` triggered full package directory tree scans (`os.walk`) and spawned per-package CLI subprocesses (`brew --prefix`) for size calculations, blocking search results on every query. Using a lightweight `_get_installed_ids()` method (e.g. `scoop list` or `brew list --versions`) in a single CLI call eliminates filesystem and subprocess overhead during search. Bounding process communications with `asyncio.wait_for(..., timeout=20)` prevents hung processes from stalling search routines.
+
+**Action:** Always decouple package availability / search queries from heavy metadata calculations such as disk size estimation or per-package inspection calls.
