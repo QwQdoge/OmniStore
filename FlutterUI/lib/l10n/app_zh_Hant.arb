@@ -8,7 +8,7 @@
   "explore": "探索",
   "search": "搜尋",
   "settings": "設定",
-  "downloads": "任務與更新",
+  "downloads": "工作與更新",
   "help": "幫助",
   "userAccount": "使用者帳戶",
   "install": "安裝",
@@ -487,15 +487,15 @@
   "skip": "跳過",
   "envCheckTitle": "環境檢查",
   "envCheckSubtitle": "確保系統已準備就緒",
-  "envFatalDesc": "偵測到您的系統非 Arch Linux 衍生版本，大部分核心功能將無法使用。",
+  "envFatalDesc": "系統不是 Arch Linux，核心功能受限。",
   "envWarningDesc": "缺少必要組件，將進行自動設定。",
   "envOkDesc": "系統狀態良好，一切就緒！",
   "fixProblems": "一鍵修復/設定",
   "continueAnyway": "仍然繼續",
   "sourceConfigTitle": "軟體源設定",
-  "sourceConfigSubtitle": "選擇 OmniStore 檢索軟體的源路徑",
+  "sourceConfigSubtitle": "選擇 OmniStore 可以搜尋的軟體源",
   "enableAur": "啟用 AUR (Arch User Repository)",
-  "yayDesc": "啟用 AUR 需要安裝 yay 輔助工具。",
+  "yayDesc": "啟用 AUR 需要安裝 yay 助手。",
   "aurWarning": "安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。",
   "bootstrapNote": "瀏覽不需要任何授權；只有設定需要變更系統時才會要求管理員授權。",
   "feedbackDesc": "透過 GitHub 回報遇到的問題。",
@@ -507,7 +507,7 @@
   "howToGetApiKey": "如何獲取 API 金鑰？",
   "howToGetApiKeyDesc": "1. Ollama (本地)：直接執行，無需金鑰。2. 雲端 (OpenAI)：前往官網建立並填寫金鑰。",
   "gotIt": "知道了",
-  "aiOllamaNote": "提示：若使用 Ollama，請確保其已在背景執行並設定了 OLLAMA_ORIGINS=\"*\" 環境變數。",
+  "aiOllamaNote": "確保 Ollama 已在背景執行並啟用了 OLLAMA_ORIGINS=\"*\" 環境變數。",
   "enterStore": "進入商店",
   "nextStep": "下一步",
   "resetCache": "重置快取與歷史記錄",
@@ -550,12 +550,12 @@
     }
   },
   "switchSource": "切換",
-  "flatpakBetterDesc": "已偵測到此應用程式的 Flatpak 版本，通常具備更好的穩定性與隔離性。",
+  "flatpakBetterDesc": "發現此應用程式有 Flatpak 軟體源，通常更穩定。",
   "aiAnalysisPrompt": "發現錯誤日誌，需要 AI 分析嗎？",
   "analyzeNow": "立即分析",
-  "cleanOrphans": "清理無用依賴項（孤立套件）",
+  "cleanOrphans": "清理孤立套件",
   "securityWarning": "安全風險提示",
-  "aurSecurityDesc": "AUR 為社群使用者維護的軟體源。因開放上傳機制，可能包含未受審核的程式碼。建議在安裝前核對 PKGBUILD 檔案。",
+  "aurSecurityDesc": "AUR 是由社群維護的軟體源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。",
   "continueInstall": "繼續安裝",
   "installInfo": "安裝資訊",
   "downloadSize": "下載大小",
@@ -1200,7 +1200,7 @@
   "@changeRecommendation": {
     "description": "Label for changing AI recommendation"
   },
-  "aiPickDisclaimer": "推薦結果僅供參考：根據搜尋與安裝歷史及目前軟體源設定生成，不影響具體安裝選擇。",
+  "aiPickDisclaimer": "推薦結果僅供參考：基於您的搜尋習慣和當前軟體源設定生成，不會影響您的具體安裝選項。",
   "@aiPickDisclaimer": {
     "description": "Disclaimer for AI recommendations"
   },
@@ -1240,7 +1240,7 @@
   "@syncStatus": {
     "description": "Description for syncStatus"
   },
-  "syncStatusSubtitle": "點擊備份 OmniStore 應用程式清單",
+  "syncStatusSubtitle": "點按備份 OmniStore 應用程式清單",
   "@syncStatusSubtitle": {
     "description": "Description for syncStatusSubtitle"
   },

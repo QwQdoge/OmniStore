@@ -568,7 +568,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get envCheckSubtitle => '确保系统已准备就绪';
 
   @override
-  String get envFatalDesc => '检测到您的系统非 Arch Linux 衍生版本，大部分核心功能将无法使用。';
+  String get envFatalDesc => '当前系统不是 Arch Linux，核心功能受限。';
 
   @override
   String get envWarningDesc => '缺少必要组件，将进行自动配置。';
@@ -586,13 +586,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sourceConfigTitle => '软件源配置';
 
   @override
-  String get sourceConfigSubtitle => '选择 OmniStore 检索软件的源路径';
+  String get sourceConfigSubtitle => '选择 OmniStore 可以搜索的软件来源';
 
   @override
   String get enableAur => '启用 AUR (Arch User Repository)';
 
   @override
-  String get yayDesc => '启用 AUR 需要安装 yay 辅助工具。';
+  String get yayDesc => '启用 AUR 需要安装 yay 助手。';
 
   @override
   String get aurWarning => '安全警告：AUR 软件包由社区用户贡献，请确保信任其来源。';
@@ -629,8 +629,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote =>
-      '提示：若使用 Ollama，请确保其已在后台运行并配置了 OLLAMA_ORIGINS=\"*\" 环境变量。';
+  String get aiOllamaNote => '确保 Ollama 已在后台运行并启用了 OLLAMA_ORIGINS=\"*\" 环境变量。';
 
   @override
   String get enterStore => '进入商店';
@@ -702,7 +701,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get switchSource => '切换';
 
   @override
-  String get flatpakBetterDesc => '已检测到此应用的 Flatpak 版本，通常具备更好的稳定性与隔离性。';
+  String get flatpakBetterDesc => '发现此应用有 Flatpak 软件源，通常更稳定。';
 
   @override
   String get aiAnalysisPrompt => '发现错误日志，需要 AI 分析吗？';
@@ -711,14 +710,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '清理无用依赖项（孤立软件包）';
+  String get cleanOrphans => '清理孤立软件包';
 
   @override
   String get securityWarning => '安全风险提示';
 
   @override
   String get aurSecurityDesc =>
-      'AUR 为社区用户维护的软件源。因开放上传机制，可能包含未受审核的代码。建议在安装前核对 PKGBUILD 文件。';
+      'AUR 是由社区维护的软件源。由于任何人都可以上传软件包，其中可能包含不安全的代码。建议在安装前仔细检查 PKGBUILD。';
 
   @override
   String get continueInstall => '继续安装';
@@ -1217,7 +1216,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get changeRecommendation => '换一个推荐';
 
   @override
-  String get aiPickDisclaimer => '推荐结果仅供参考：根据搜索与安装历史及当前软件源配置生成，不影响具体安装选择。';
+  String get aiPickDisclaimer => '推荐结果仅供参考：基于您的搜索习惯和当前软件源配置生成，不会影响您的具体安装选项。';
 
   @override
   String get quickStart => '快速开始';
@@ -1247,7 +1246,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get syncStatus => '同步状态';
 
   @override
-  String get syncStatusSubtitle => '点击备份 OmniStore 应用列表';
+  String get syncStatusSubtitle => '点按备份 OmniStore 应用列表';
 
   @override
   String get manageAccount => '管理账户';
@@ -1431,7 +1430,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings => '設定';
 
   @override
-  String get downloads => '任務與更新';
+  String get downloads => '工作與更新';
 
   @override
   String get help => '幫助';
@@ -1966,7 +1965,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get envCheckSubtitle => '確保系統已準備就緒';
 
   @override
-  String get envFatalDesc => '偵測到您的系統非 Arch Linux 衍生版本，大部分核心功能將無法使用。';
+  String get envFatalDesc => '系統不是 Arch Linux，核心功能受限。';
 
   @override
   String get envWarningDesc => '缺少必要組件，將進行自動設定。';
@@ -1984,13 +1983,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sourceConfigTitle => '軟體源設定';
 
   @override
-  String get sourceConfigSubtitle => '選擇 OmniStore 檢索軟體的源路徑';
+  String get sourceConfigSubtitle => '選擇 OmniStore 可以搜尋的軟體源';
 
   @override
   String get enableAur => '啟用 AUR (Arch User Repository)';
 
   @override
-  String get yayDesc => '啟用 AUR 需要安裝 yay 輔助工具。';
+  String get yayDesc => '啟用 AUR 需要安裝 yay 助手。';
 
   @override
   String get aurWarning => '安全警告：AUR 套件由社群使用者貢獻，請確保信任其來源。';
@@ -2027,8 +2026,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get gotIt => '知道了';
 
   @override
-  String get aiOllamaNote =>
-      '提示：若使用 Ollama，請確保其已在背景執行並設定了 OLLAMA_ORIGINS=\"*\" 環境變數。';
+  String get aiOllamaNote => '確保 Ollama 已在背景執行並啟用了 OLLAMA_ORIGINS=\"*\" 環境變數。';
 
   @override
   String get enterStore => '進入商店';
@@ -2100,7 +2098,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get switchSource => '切換';
 
   @override
-  String get flatpakBetterDesc => '已偵測到此應用程式的 Flatpak 版本，通常具備更好的穩定性與隔離性。';
+  String get flatpakBetterDesc => '發現此應用程式有 Flatpak 軟體源，通常更穩定。';
 
   @override
   String get aiAnalysisPrompt => '發現錯誤日誌，需要 AI 分析嗎？';
@@ -2109,14 +2107,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get analyzeNow => '立即分析';
 
   @override
-  String get cleanOrphans => '清理無用依賴項（孤立套件）';
+  String get cleanOrphans => '清理孤立套件';
 
   @override
   String get securityWarning => '安全風險提示';
 
   @override
   String get aurSecurityDesc =>
-      'AUR 為社群使用者維護的軟體源。因開放上傳機制，可能包含未受審核的程式碼。建議在安裝前核對 PKGBUILD 檔案。';
+      'AUR 是由社群維護的軟體源。由於任何人都可以上傳套件，其中可能包含不安全的程式碼。建議在安裝前仔細檢查 PKGBUILD。';
 
   @override
   String get continueInstall => '繼續安裝';
@@ -2615,7 +2613,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get changeRecommendation => '換一個推薦';
 
   @override
-  String get aiPickDisclaimer => '推薦結果僅供參考：根據搜尋與安裝歷史及目前軟體源設定生成，不影響具體安裝選擇。';
+  String get aiPickDisclaimer => '推薦結果僅供參考：基於您的搜尋習慣和當前軟體源設定生成，不會影響您的具體安裝選項。';
 
   @override
   String get quickStart => '快速開始';
@@ -2645,7 +2643,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get syncStatus => '同步狀態';
 
   @override
-  String get syncStatusSubtitle => '點擊備份 OmniStore 應用程式清單';
+  String get syncStatusSubtitle => '點按備份 OmniStore 應用程式清單';
 
   @override
   String get manageAccount => '管理帳戶';
