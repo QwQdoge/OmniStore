@@ -1392,5 +1392,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoChannelTitle": "Meo 更新通道",
+  "meoChannelSubtitle": "从当前 pacman 软件源顺序读取",
+  "meoChannelBetaNotice": "Beta 通道可优先体验最新的 Meo 组件。Arch 系统软件包仍保持默认软件源。",
+  "meoChannelStableNotice": "Stable 通道接收经过完整测试的 MeoArch 稳定发布版本。",
+  "repoPriority": "软件源优先级：{repos}",
+  "betaWarningPanel": "Beta 为手动开启选项，不建议在生产环境或关键系统中使用。Stable 仍为后备软件源。",
+  "downgradeReviewPending": "已配置 Stable 通道，但仍有 {count} 个 Meo 软件包降级项需要审查。",
+  "reviewDowngrades": "审查降级项",
+  "switchToStable": "切换至稳定版",
+  "downgradeNotice": "以下官方 Meo 软件包需要降级至稳定版本。Arch 及第三方软件包不会被降级。\n\n{packages}",
+  "channelStable": "稳定版",
+  "channelBeta": "Beta 版"
 }

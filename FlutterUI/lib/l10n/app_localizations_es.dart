@@ -1468,4 +1468,50 @@ class AppLocalizationsEs extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return 'Filtrar por origen: $name';
   }
+
+  @override
+  String get meoChannelTitle => 'Canal de actualización de Meo';
+
+  @override
+  String get meoChannelSubtitle =>
+      'Leído desde el orden de repositorios activo de pacman';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta recibe componentes de Meo más recientes antes que Stable. Los paquetes del sistema Arch permanecen en sus repositorios habituales.';
+
+  @override
+  String get meoChannelStableNotice =>
+      'Stable recibe trenes de publicación de MeoArch totalmente probados.';
+
+  @override
+  String repoPriority(String repos) {
+    return 'Prioridad de repositorios: $repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta es opcional y no se recomienda para sistemas críticos. Stable sigue siendo el repositorio de respaldo.';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return 'Stable está configurado, pero $count degradación(es) de paquetes Meo aún requieren revisión.';
+  }
+
+  @override
+  String get reviewDowngrades => 'Revisar degradaciones';
+
+  @override
+  String get switchToStable => 'Cambiar a Stable';
+
+  @override
+  String downgradeNotice(String packages) {
+    return 'Los siguientes paquetes oficiales de Meo necesitan una versión Stable. Los paquetes de Arch y de terceros no se degradarán.\n\n$packages';
+  }
+
+  @override
+  String get channelStable => 'Stable';
+
+  @override
+  String get channelBeta => 'Beta';
 }

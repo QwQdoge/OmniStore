@@ -1366,4 +1366,48 @@ class AppLocalizationsJa extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return 'ソースで絞り込み: $name';
   }
+
+  @override
+  String get meoChannelTitle => 'Meo 更新チャンネル';
+
+  @override
+  String get meoChannelSubtitle => 'アクティブな pacman リポジトリの順序から読み込み';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta は Stable よりも前に新しい Meo コンポーネントを受信します。Arch システムパッケージは通常のリポジトリに維持されます。';
+
+  @override
+  String get meoChannelStableNotice => 'Stable は完全にテストされた MeoArch リリースを受信します。';
+
+  @override
+  String repoPriority(String repos) {
+    return 'リポジトリの優先順位: $repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta はオプトインであり、クリティカルなシステムには推奨されません。Stable がフォールバックリポジトリとして機能します。';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return 'Stable が設定されていますが、$count 件の Meo パッケージのダウングレードに確認が必要です。';
+  }
+
+  @override
+  String get reviewDowngrades => 'ダウングレードを確認';
+
+  @override
+  String get switchToStable => 'Stable に切り替え';
+
+  @override
+  String downgradeNotice(String packages) {
+    return '以下の公式 Meo パッケージは Stable バージョンが必要です。Arch およびサードパーティパッケージはダウングレードされません。\n\n$packages';
+  }
+
+  @override
+  String get channelStable => 'Stable';
+
+  @override
+  String get channelBeta => 'Beta';
 }

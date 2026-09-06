@@ -2634,6 +2634,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filter by source: {name}'**
   String sourceFilterSemantics(String name);
+
+  /// No description provided for @meoChannelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meo Update Channel'**
+  String get meoChannelTitle;
+
+  /// No description provided for @meoChannelSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read from the active pacman repository order'**
+  String get meoChannelSubtitle;
+
+  /// No description provided for @meoChannelBetaNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.'**
+  String get meoChannelBetaNotice;
+
+  /// No description provided for @meoChannelStableNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable receives fully tested MeoArch release trains.'**
+  String get meoChannelStableNotice;
+
+  /// No description provided for @repoPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Repository priority: {repos}'**
+  String repoPriority(String repos);
+
+  /// No description provided for @betaWarningPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.'**
+  String get betaWarningPanel;
+
+  /// No description provided for @downgradeReviewPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Stable is configured, but 1 Meo package downgrade still requires review.} other{Stable is configured, but {count} Meo package downgrades still require review.}}'**
+  String downgradeReviewPending(int count);
+
+  /// No description provided for @reviewDowngrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Downgrades'**
+  String get reviewDowngrades;
+
+  /// No description provided for @switchToStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Stable'**
+  String get switchToStable;
+
+  /// No description provided for @downgradeNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n{packages}'**
+  String downgradeNotice(String packages);
+
+  /// No description provided for @channelStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get channelStable;
+
+  /// No description provided for @channelBeta.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta'**
+  String get channelBeta;
 }
 
 class _AppLocalizationsDelegate
