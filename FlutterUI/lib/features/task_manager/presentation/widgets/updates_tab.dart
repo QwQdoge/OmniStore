@@ -85,130 +85,123 @@ class UpdatesTab extends StatelessWidget {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  prototypeItem: Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: AppCard(
-                      borderRadius: 16,
-                      child: ListTile(
-                        leading: const SizedBox(width: 44, height: 44),
-                        title: const SizedBox(height: 16),
-                        subtitle: const SizedBox(height: 12),
-                        trailing: const SizedBox(width: 80, height: 32),
-                      ),
-                    ),
-                  ),
                   itemCount: updates.length,
                   itemBuilder: (context, index) {
                     final update = updates[index];
+                    final l10n = AppLocalizations.of(context)!;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Semantics(
-                        label: 'Update available: ${update['name']}',
-                        button: true,
-                        child: AppCard(
-                          borderRadius: 16,
-                          onTap: () async {
-                            final packageRepo = context
-                                .read<PackageRepository>();
-                            final results = await packageRepo.searchPackages(
-                              update['name'],
-                            );
-                            if (!context.mounted) return;
-                            if (results.isNotEmpty) {
-                              final app = results[0];
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => AppDetailsPage(app: app),
-                                ),
+                        container: true,
+                        explicitChildNodes: true,
+                        label: '${l10n.updates}: ${update['name']}',
+                        child: Semantics(
+                          button: true,
+                          child: AppCard(
+                            borderRadius: 16,
+                            onTap: () async {
+                              final packageRepo = context
+                                  .read<PackageRepository>();
+                              final results = await packageRepo.searchPackages(
+                                update['name'],
                               );
-                            }
-                          },
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            title: Text(
-                              update['name'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Row(
-                                children: [
-                                  AppSourceTag(
-                                    source: update['source'] ?? 'Native',
-                                    mode: AppSourceTagMode.source,
-                                    isSmall: true,
+                              if (!context.mounted) return;
+                              if (results.isNotEmpty) {
+                                final app = results[0];
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AppDetailsPage(app: app),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "${update['current_version']} → ${update['new_version']}",
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
+                                );
+                              }
+                            },
+                            child: ListTile(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              title: Text(
+                                update['name'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Row(
+                                  children: [
+                                    AppSourceTag(
+                                      source: update['source'] ?? 'Native',
+                                      mode: AppSourceTagMode.source,
+                                      isSmall: true,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "${update['current_version']} → ${update['new_version']}",
+                                      style: Theme.of(context).textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Selector<SettingsController, bool>(
+                                    selector: (context, settings) =>
+                                        settings.isAIEnabled,
+                                    builder: (context, isAIEnabled, _) {
+                                      if (!isAIEnabled) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return IconButton(
+                                        icon: const AiMark(size: 20),
+                                        tooltip: AppLocalizations.of(
+                                          context,
+                                        )!.aiExplainUpdate,
+                                        onPressed: () => showDialog(
+                                          context: context,
+                                          builder: (_) => AIUpdateSummaryDialog(
+                                            name: update['name'],
+                                            currentVersion:
+                                                update['current_version'],
+                                            nextVersion: update['new_version'],
+                                          ),
                                         ),
+                                      );
+                                    },
+                                  ),
+                                  FilledButton(
+                                    onPressed: () async {
+                                      final taskController = context
+                                          .read<TaskController>();
+                                      final l10n = AppLocalizations.of(context)!;
+                                      if (taskController.isBusy) {
+                                        Toast.show(context, l10n.taskInProgress);
+                                        return;
+                                      }
+                                      onUpdateStarted();
+                                      final success = await taskController
+                                          .runTask(
+                                            '-U',
+                                            update['id'] ?? update['name'],
+                                            update['source'] == 'Pacman'
+                                                ? 'Native'
+                                                : update['source'],
+                                            l10n,
+                                          );
+                                      await onUpdateFinished(success);
+                                    },
+                                    child: Text(
+                                      AppLocalizations.of(context)!.update,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Selector<SettingsController, bool>(
-                                  selector: (context, settings) =>
-                                      settings.isAIEnabled,
-                                  builder: (context, isAIEnabled, _) {
-                                    if (!isAIEnabled) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    return IconButton(
-                                      icon: const AiMark(size: 20),
-                                      tooltip: AppLocalizations.of(
-                                        context,
-                                      )!.aiExplainUpdate,
-                                      onPressed: () => showDialog(
-                                        context: context,
-                                        builder: (_) => AIUpdateSummaryDialog(
-                                          name: update['name'],
-                                          currentVersion:
-                                              update['current_version'],
-                                          nextVersion: update['new_version'],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                FilledButton(
-                                  onPressed: () async {
-                                    final taskController = context
-                                        .read<TaskController>();
-                                    final l10n = AppLocalizations.of(context)!;
-                                    if (taskController.isBusy) {
-                                      Toast.show(context, l10n.taskInProgress);
-                                      return;
-                                    }
-                                    onUpdateStarted();
-                                    final success = await taskController
-                                        .runTask(
-                                          '-U',
-                                          update['id'] ?? update['name'],
-                                          update['source'] == 'Pacman'
-                                              ? 'Native'
-                                              : update['source'],
-                                          l10n,
-                                        );
-                                    await onUpdateFinished(success);
-                                  },
-                                  child: Text(
-                                    AppLocalizations.of(context)!.update,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ),

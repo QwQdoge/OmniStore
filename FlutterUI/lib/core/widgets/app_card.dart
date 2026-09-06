@@ -72,12 +72,17 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     );
 
     if (isInteractive) {
-      _ensureControllerInitialized();
       content = MouseRegion(
-        onEnter: (_) => _controller?.forward(),
+        onEnter: (_) {
+          if (_controller == null) {
+            _ensureControllerInitialized();
+            setState(() {});
+          }
+          _controller?.forward();
+        },
         onExit: (_) => _controller?.reverse(),
         child: ScaleTransition(
-          scale: _scaleAnimation!,
+          scale: _scaleAnimation ?? const AlwaysStoppedAnimation(1.0),
           child: RepaintBoundary(child: content),
         ),
       );

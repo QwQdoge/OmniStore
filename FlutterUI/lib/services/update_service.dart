@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart' as wm;
@@ -520,7 +522,12 @@ OnUnitInactiveSec=${intervalHours.clamp(1, 168)}h
       final updates = await BackendService.instance.checkUpdates().timeout(
         const Duration(seconds: 45),
       );
-      availableUpdates.value = updates;
+      if (!const DeepCollectionEquality().equals(
+        availableUpdates.value,
+        updates,
+      )) {
+        availableUpdates.value = updates;
+      }
 
       final remindEnabled = _config['updates']?['remind_updates'] ?? true;
       final notificationsEnabled = _config['notifications']?['enabled'] ?? true;
