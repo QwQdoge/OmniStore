@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import shutil
+import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -540,7 +541,7 @@ class ScoopSource(UnifiedSource):
                         continue
                     installed.add(parts[0].lower())
                 return installed
-        except (asyncio.TimeoutError, Exception) as exc:
+        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:
             logging.warning(f"Failed to get installed scoop apps: {exc}")
             return set()
 
@@ -570,7 +571,7 @@ class ScoopSource(UnifiedSource):
                         "variants": [{"source": "Scoop", "id": name, "version": version, "installed": name.lower() in installed}],
                     })
                 return results
-        except (asyncio.TimeoutError, Exception) as exc:
+        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:
             logging.warning(f"Scoop search failed: {exc}")
             return []
 
@@ -712,7 +713,7 @@ class BrewSource(UnifiedSource):
                         continue
                     installed.add(parts[0].lower())
                 return installed
-        except (asyncio.TimeoutError, Exception) as exc:
+        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:
             logging.warning(f"Failed to get installed homebrew apps: {exc}")
             return set()
 
@@ -738,7 +739,7 @@ class BrewSource(UnifiedSource):
                         "variants": [{"source": "Homebrew", "id": name, "installed": name.lower() in installed}],
                     })
                 return results
-        except (asyncio.TimeoutError, Exception) as exc:
+        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:
             logging.warning(f"Homebrew search failed: {exc}")
             return []
 

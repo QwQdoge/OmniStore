@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import pytest
+import subprocess
 from unittest.mock import AsyncMock, patch
 
 from core.sources.external import ScoopSource, BrewSource
@@ -99,7 +100,7 @@ async def test_brew_search_does_not_call_list_installed():
 
 
 @pytest.mark.asyncio
-async def test_search_timeout_handles_gracefully(caplog):
+async def test_search_timeout_and_subprocess_errors_handled_gracefully(caplog):
     source = ScoopSource()
     source.enabled = True
 
@@ -113,3 +114,36 @@ async def test_search_timeout_handles_gracefully(caplog):
 
     assert results == []
     assert "Scoop search failed" in caplog.text
+
+    # Test SubprocessError handled gracefully
+    mock_proc.communicate.side_effect = subprocess.SubprocessError("Process failed")
+    with patch("core.sources.external.safe_subprocess") as mock_sub:
+        mock_sub.return_value.__aenter__.return_value = mock_proc
+        results_sub = await source.search("sub_err_app")
+
+    assert results_sub == []
+
+
+@pytest.mark.asyncio
+async def test_unexpected_exceptions_are_not_swallowed():
+    source = ScoopSource()
+    source.enabled = True
+
+    mock_proc = AsyncMock()
+    # Simulate an unexpected programming exception (e.g. TypeError)
+    mock_proc.communicate.side_effect = TypeError("Unexpected programming error in process runner")
+
+    with patch("core.sources.external.safe_subprocess") as mock_sub:
+        mock_sub.return_value.__aenter__.return_value = mock_proc
+        with pytest.raises(TypeError, match="Unexpected programming error"):
+            await source.search("crash_app")
+
+    brew = BrewSource()
+    brew.enabled = True
+    mock_proc_brew = AsyncMock()
+    mock_proc_brew.communicate.side_effect = AttributeError("Unexpected attribute error")
+
+    with patch("core.sources.external.safe_subprocess") as mock_sub:
+        mock_sub.return_value.__aenter__.return_value = mock_proc_brew
+        with pytest.raises(AttributeError, match="Unexpected attribute error"):
+            await brew._get_installed_ids()
