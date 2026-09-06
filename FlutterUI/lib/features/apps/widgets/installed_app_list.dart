@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 
@@ -17,31 +18,12 @@ class InstalledAppList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return RefreshIndicator(
       key: const ValueKey('list'),
       onRefresh: onRefresh,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        prototypeItem: const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: AppCard(
-            child: ListTile(
-              leading: SizedBox(width: 40, height: 40),
-              title: SizedBox(height: 16),
-              subtitle: Row(
-                children: [
-                  SizedBox(width: 40, height: 12),
-                  SizedBox(width: 8),
-                  Expanded(child: SizedBox(height: 12)),
-                ],
-              ),
-              trailing: AppSourceTag(
-                source: 'pacman',
-                mode: AppSourceTagMode.source,
-              ),
-            ),
-          ),
-        ),
         itemCount: filteredApps.length,
         itemBuilder: (context, index) {
           final app = filteredApps[index];
@@ -49,7 +31,8 @@ class InstalledAppList extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Semantics(
-              label: 'Installed app: ${app.name} from ${app.primarySource}',
+              label:
+                  '${l10n.installedApps}: ${app.name} (${app.primarySource})',
               button: true,
               child: AppCard(
                 onTap: () => Navigator.push(
