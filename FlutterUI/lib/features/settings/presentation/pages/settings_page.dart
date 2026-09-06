@@ -40,6 +40,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Semantics(
             label: l10n.general,
+            container: true,
             explicitChildNodes: true,
             child: GeneralSettingsCard(
               showAdvanced: _showAdvanced,
@@ -55,6 +56,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // Storage & Cleanup Card
           Semantics(
             label: l10n.systemCleaning,
+            container: true,
             explicitChildNodes: true,
             child: const StorageCleanupCard(),
           ),
@@ -66,6 +68,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Semantics(
             label: l10n.repositories,
+            container: true,
             explicitChildNodes: true,
             child: const SourcesConfigCard(),
           ),
@@ -77,6 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Semantics(
             label: l10n.updates,
+            container: true,
             explicitChildNodes: true,
             child: const UpdateSettingsCard(),
           ),
@@ -90,6 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Semantics(
             label: l10n.typography,
+            container: true,
             explicitChildNodes: true,
             child: const TypographySettingsCard(),
           ),
@@ -101,6 +106,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ? Semantics(
                     key: const ValueKey('ai_settings'),
                     label: l10n.aiSettings,
+                    container: true,
                     explicitChildNodes: true,
                     child: const AISettingsSection(),
                   )
