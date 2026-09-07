@@ -1,0 +1,49 @@
+name: Python quality
+
+on:
+  pull_request:
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-quality.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-quality.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Resolve and test Python 3.14
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: python
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: python/requirements.txt
+
+      - name: Resolve dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip check
+
+      - name: Run tests
+        run: python -m pytest -q
