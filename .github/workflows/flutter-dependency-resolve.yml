@@ -1,0 +1,42 @@
+name: Resolve Flutter dependency updates
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'FlutterUI/pubspec.yaml'
+      - 'FlutterUI/pubspec.lock'
+      - '.github/workflows/flutter-dependency-resolve.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: FlutterUI
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Resolve latest stable Flutter dependencies
+        run: flutter pub upgrade --major-versions
+      - name: Commit resolver output
+        working-directory: .
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add FlutterUI/pubspec.yaml FlutterUI/pubspec.lock
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(deps): resolve latest stable Flutter dependencies'
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
