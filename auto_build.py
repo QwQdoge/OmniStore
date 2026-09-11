@@ -14,6 +14,26 @@ RUST_PROJECT_DIR = BASE_DIR / "daemon"
 PYTHON_PROJECT_DIR = BASE_DIR / "python"
 FLUTTER_PROJECT_DIR = BASE_DIR / "FlutterUI"
 
+# Built-in sources are loaded lazily from reviewed runtime manifests.
+# PyInstaller cannot discover those imports by tracing main.py, and several
+# source directories are intentional namespace packages, so name every entry
+# module explicitly instead of relying on package discovery.
+PYINSTALLER_SOURCE_MODULES = (
+    "core.sources.pacman",
+    "core.sources.pacman.search",
+    "core.sources.pacman.download",
+    "core.sources.aur.aur",
+    "core.sources.flatpak.flatpak",
+    "core.sources.appimage.appimage",
+    "core.sources.github.github",
+    "core.sources.bitu.bitu",
+)
+
+
+def pyinstaller_source_args():
+    return [argument for module in PYINSTALLER_SOURCE_MODULES
+            for argument in ("--hidden-import", module)]
+
 # =====================================================================
 
 def run_command(cmd, cwd, name):
@@ -162,7 +182,7 @@ def build_python(build_dir):
         "--specpath", str(output_paths["spec"]),
         "--workpath", str(output_paths["work"]),
         "--distpath", str(output_paths["dist"]),
-    ] + extra_args + [str(PYTHON_PROJECT_DIR / "main.py")]
+    ] + pyinstaller_source_args() + extra_args + [str(PYTHON_PROJECT_DIR / "main.py")]
     
     subprocess.run(cmd, check=True, cwd=str(PYTHON_PROJECT_DIR))
     print("✅ Python Server Build 成功！")
