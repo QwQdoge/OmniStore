@@ -1,0 +1,54 @@
+name: Dependency Refresh (temporary)
+
+on:
+  push:
+    branches:
+      - automation/deps-2026-09-14
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: automation/deps-2026-09-14
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Resolve latest stable Flutter dependencies
+        working-directory: FlutterUI
+        run: |
+          flutter pub add 'flutter_secure_storage:^11.1.1'
+          flutter pub upgrade --major-versions
+
+      - name: Analyze and test Flutter
+        working-directory: FlutterUI
+        run: |
+          flutter analyze --no-fatal-infos
+          flutter test
+
+      - name: Build Linux release
+        working-directory: FlutterUI
+        run: flutter build linux --release
+
+      - name: Commit resolver output
+        run: |
+          if git diff --quiet; then
+            echo 'No dependency changes produced by resolver.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add FlutterUI/pubspec.yaml FlutterUI/pubspec.lock
+          git commit -m 'chore(deps): refresh stable Flutter dependencies'
+          git push origin HEAD:automation/deps-2026-09-14
