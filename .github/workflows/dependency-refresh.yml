@@ -1,0 +1,100 @@
+name: Dependency refresh resolver
+
+on:
+  push:
+    branches:
+      - automation/deps-file-picker-13
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: ${{ !contains(github.event.head_commit.message, '[skip resolver]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: FlutterUI
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          ref: automation/deps-file-picker-13
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            clang \
+            cmake \
+            libayatana-appindicator3-dev \
+            libgtk-3-dev \
+            liblzma-dev \
+            libsecret-1-dev \
+            ninja-build \
+            pkg-config
+
+      - name: Update file_picker constraint
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('pubspec.yaml')
+          text = p.read_text()
+          old = '  file_picker: ^12.3.0\n'
+          new = '  file_picker: ^13.0.0\n'
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected exactly one {old.strip()!r} entry')
+          p.write_text(text.replace(old, new))
+          PY
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Verify resolver scope and protected transitive versions
+        shell: bash
+        run: |
+          changed="$(git -C .. diff --name-only | sort)"
+          expected=$'FlutterUI/pubspec.lock\nFlutterUI/pubspec.yaml'
+          if [[ "$changed" != "$expected" ]]; then
+            echo "Unexpected resolver changes:"
+            printf '%s\n' "$changed"
+            exit 1
+          fi
+          extract_version() {
+            awk -v p="$1" '$1 == p ":" {found=1; next} found && $1 == "version:" {gsub(/"/, "", $2); print $2; exit}' pubspec.lock
+          }
+          [[ "$(extract_version matcher)" == "0.12.20" ]] || { echo "matcher changed unexpectedly"; exit 1; }
+          [[ "$(extract_version meta)" == "1.19.0" ]] || { echo "meta changed unexpectedly"; exit 1; }
+          [[ "$(extract_version test_api)" == "0.7.12" ]] || { echo "test_api changed unexpectedly"; exit 1; }
+          [[ "$(extract_version file_picker)" == "13.0.0" ]] || { echo "file_picker did not resolve to 13.0.0"; exit 1; }
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test --reporter expanded
+
+      - name: Build Linux release
+        run: flutter build linux --release
+
+      - name: Commit resolved dependency update
+        shell: bash
+        working-directory: .
+        run: |
+          rm .github/workflows/dependency-refresh.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add FlutterUI/pubspec.yaml FlutterUI/pubspec.lock .github/workflows/dependency-refresh.yml
+          git commit -m 'chore(deps): update file_picker to 13.0.0 [skip resolver]'
+          git push origin HEAD:automation/deps-file-picker-13
