@@ -6,6 +6,12 @@ MeoArch integration support. It manages software-source discovery and package
 operations; a source toggle or manifest is not proof that every runtime action
 is supported.
 
+## License
+
+OmniStore is licensed under the GNU General Public License v3.0 only
+(`GPL-3.0-only`). See [LICENSE](LICENSE). Bundled dependencies and assets retain
+their own upstream licenses.
+
 ## What is in this repository
 
 | Path | Purpose |

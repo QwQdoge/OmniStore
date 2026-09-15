@@ -69,5 +69,6 @@ The full-upgrade rule follows the
 [Arch Linux system maintenance guidance](https://wiki.archlinux.org/title/System_maintenance).
 
 No CachyOS/Arch-Update source code is copied into OmniStore. The Meo
-implementation is independently written under this repository's MIT license;
+implementation is independently written under this repository's
+GPL-3.0-only license;
 the links and behavioral influence are recorded here for provenance.

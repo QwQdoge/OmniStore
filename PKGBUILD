@@ -1,11 +1,11 @@
 pkgname=omnistore-bin
 pkgver=0.1.2
-pkgrel=3
+pkgrel=4
 pkgdesc="OmniStore unified software repository client with Flutter and Python backends"
 arch=('x86_64')
 options=('!strip' '!debug')
 url="https://github.com/QwQdoge/OmniStore"
-license=('MIT')
+license=('GPL-3.0-only')
 depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass'
          'pacman-contrib' 'python' 'pyalpm')
 optdepends=('meo-release: shared MeoArch application catalog and channel integration'
@@ -148,6 +148,8 @@ EOF
     "${pkgdir}/usr/lib/systemd/user/omnistore-update.timer"
   install -Dm644 "$_src_dir/data/docs/UNIFIED_UPDATES.md" \
     "${pkgdir}/usr/share/doc/omnistore/UNIFIED_UPDATES.md"
+  install -Dm644 "$_src_dir/LICENSE" \
+    "${pkgdir}/usr/share/licenses/$pkgname/LICENSE"
 
   # 4. 安装图标到系统图标库，以便桌面环境自动识别
   install -Dm644 "$_src_dir/omnistore.svg" "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"

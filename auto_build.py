@@ -345,6 +345,12 @@ def assemble(platform, output_dir, build_dir):
         shutil.copy2(update_contract, update_docs_dir / update_contract.name)
         print("✅ copy unified update contract and attribution")
 
+    project_license = BASE_DIR / "LICENSE"
+    if not project_license.is_file():
+        raise RuntimeError(f"required project license is missing: {project_license}")
+    shutil.copy2(project_license, flutter_bundle_dir / "LICENSE")
+    print("✅ copy GPL-3.0-only license")
+
     copy_builtin_source_manifests(flutter_bundle_dir)
 
     icon_src = BASE_DIR / "omnistore.svg"
