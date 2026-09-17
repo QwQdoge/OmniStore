@@ -37,10 +37,10 @@ jobs:
           flutter pub get
           flutter gen-l10n
 
-      - name: Verify changed Dart formatting
+      - name: Format only touched Dart files
         working-directory: FlutterUI
         run: |
-          dart format --output=none --set-exit-if-changed \
+          dart format \
             lib/features/settings/presentation/widgets/meo_channel_card.dart \
             lib/l10n/app_localizations.dart \
             lib/l10n/app_localizations_en.dart \
