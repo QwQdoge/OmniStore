@@ -1,7 +1,9 @@
 name: Temporary installed-state probe repair
 
 on:
-  pull_request:
+  push:
+    branches:
+      - automation/repair-installed-state-probe
     paths:
       - '.github/workflows/automation-repair-installed-probe.yml'
 
@@ -10,14 +12,13 @@ permissions:
 
 jobs:
   repair-and-commit:
-    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Check out PR branch
+      - name: Check out repair branch
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: automation/repair-installed-state-probe
           fetch-depth: 0
 
       - name: Apply minimal repair
@@ -186,4 +187,4 @@ async def test_expected_search_subprocess_error_is_logged_and_safe(caplog):
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'perf: preserve installed state during lightweight package search'
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:automation/repair-installed-state-probe
