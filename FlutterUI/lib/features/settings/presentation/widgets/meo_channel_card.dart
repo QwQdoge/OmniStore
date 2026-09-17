@@ -80,7 +80,8 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
         () => _state = {
           ...?_state,
           'status': 'error',
-          'error': 'The Stable rollback preview is invalid. Refresh and review it again.',
+          'error':
+              'The Stable rollback preview is invalid. Refresh and review it again.',
         },
       );
       return;
