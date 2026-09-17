@@ -1374,5 +1374,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoChannelTitle": "Canal de actualización de Meo",
+  "meoChannelSubtitle": "Leído desde el orden de repositorios activo de pacman",
+  "meoChannelBetaNotice": "Beta recibe componentes de Meo más recientes antes que Stable. Los paquetes del sistema Arch permanecen en sus repositorios habituales.",
+  "meoChannelStableNotice": "Stable recibe trenes de publicación de MeoArch totalmente probados.",
+  "repoPriority": "Prioridad de repositorios: {repos}",
+  "betaWarningPanel": "Beta es opcional y no se recomienda para sistemas críticos. Stable sigue siendo el repositorio de respaldo.",
+  "downgradeReviewPending": "Stable está configurado, pero {count} degradación(es) de paquetes Meo aún requieren revisión.",
+  "reviewDowngrades": "Revisar degradaciones",
+  "switchToStable": "Cambiar a Stable",
+  "downgradeNotice": "Los siguientes paquetes oficiales de Meo necesitan una versión Stable. Los paquetes de Arch y de terceros no se degradarán.\n\n{packages}",
+  "channelStable": "Stable",
+  "channelBeta": "Beta"
 }
