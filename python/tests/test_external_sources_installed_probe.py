@@ -28,6 +28,20 @@ async def test_scoop_fast_probe_avoids_full_installed_scan():
 
 
 @pytest.mark.asyncio
+async def test_brew_fast_probe_avoids_full_installed_scan():
+    source = BrewSource()
+    source.enabled = True
+    search_proc = _process(b"wget\n")
+    source._get_installed_ids = AsyncMock(return_value={"wget"})
+    source.list_installed = AsyncMock(side_effect=AssertionError("slow installed scan must not run"))
+    with patch("core.sources.external.safe_subprocess") as safe:
+        safe.return_value.__aenter__.return_value = search_proc
+        results = await source.search("wget")
+    assert results[0]["installed"] is True
+    source.list_installed.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_scoop_probe_failure_falls_back_without_false_uninstalled_state():
     source = ScoopSource()
     source.enabled = True
