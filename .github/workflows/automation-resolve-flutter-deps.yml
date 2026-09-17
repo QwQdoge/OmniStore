@@ -1,0 +1,98 @@
+name: Temporary Flutter dependency resolver
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/automation-resolve-flutter-deps.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  resolve-and-commit:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Resolve latest stable targets
+        working-directory: FlutterUI
+        run: |
+          cp pubspec.lock /tmp/pubspec.before.lock
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('pubspec.yaml')
+          text = p.read_text()
+          replacements = {
+              '  file_picker: ^13.0.0': '  file_picker: ^13.1.0',
+              '  flutter_secure_storage: ^11.1.1': '  flutter_secure_storage: ^11.2.0',
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'Expected dependency line not found: {old!r}')
+              text = text.replace(old, new, 1)
+          p.write_text(text)
+          PY
+          flutter pub get
+
+      - name: Guard resolver output
+        working-directory: FlutterUI
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def locked(path, package):
+              text = Path(path).read_text()
+              marker = f'  {package}:\n'
+              if marker not in text:
+                  raise SystemExit(f'{package} missing from {path}')
+              block = text.split(marker, 1)[1].split('\n  ', 1)[0]
+              m = re.search(r'\n    version: "([^"]+)"', '\n' + block)
+              if not m:
+                  raise SystemExit(f'No locked version for {package} in {path}')
+              return m.group(1)
+
+          def numeric(v):
+              return tuple(int(x) for x in re.findall(r'\d+', v))
+
+          expected = {'file_picker': '13.1.0', 'flutter_secure_storage': '11.2.0'}
+          for package, version in expected.items():
+              got = locked('pubspec.lock', package)
+              if got != version:
+                  raise SystemExit(f'{package}: expected {version}, resolved {got}')
+
+          for package in ('matcher', 'meta', 'test_api'):
+              before = locked('/tmp/pubspec.before.lock', package)
+              after = locked('pubspec.lock', package)
+              if numeric(after) < numeric(before):
+                  raise SystemExit(f'Unexpected transitive downgrade: {package} {before} -> {after}')
+              print(f'{package}: {before} -> {after}')
+          PY
+
+      - name: Commit resolver output and remove temporary workflow
+        run: |
+          git rm .github/workflows/automation-resolve-flutter-deps.yml
+          git add FlutterUI/pubspec.yaml FlutterUI/pubspec.lock
+          unexpected="$(git diff --cached --name-only | grep -Ev '^(FlutterUI/pubspec\.yaml|FlutterUI/pubspec\.lock|\.github/workflows/automation-resolve-flutter-deps\.yml)$' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected staged files:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(deps): refresh stable Flutter dependencies'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
