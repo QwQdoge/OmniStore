@@ -43,7 +43,8 @@ jobs:
 
       - name: Commit repair and remove temporary automation files
         run: |
-          git rm .github/workflows/automation-repair-installed-probe.yml .github/automation/repair_installed_probe.py
+          git rm .github/workflows/automation-repair-installed-probe.yml
+          git rm -f .github/automation/repair_installed_probe.py
           git add python/core/sources/external.py python/tests/test_external_sources_installed_probe.py
           unexpected="$(git diff --cached --name-only | grep -Ev '^(python/core/sources/external\.py|python/tests/test_external_sources_installed_probe\.py|\.github/workflows/automation-repair-installed-probe\.yml|\.github/automation/repair_installed_probe\.py)$' || true)"
           if [ -n "$unexpected" ]; then
