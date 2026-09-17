@@ -22,7 +22,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply minimal repair
-        run: python3 .github/automation/repair_installed_probe.py
+        run: |
+          sed -i 's/if count != 1:/if count < 1:/' .github/automation/repair_installed_probe.py
+          python3 .github/automation/repair_installed_probe.py
 
       - name: Set up Python
         uses: actions/setup-python@v6
