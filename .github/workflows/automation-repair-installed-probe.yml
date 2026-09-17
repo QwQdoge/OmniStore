@@ -1,0 +1,189 @@
+name: Temporary installed-state probe repair
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/automation-repair-installed-probe.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-commit:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Apply minimal repair
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('python/core/sources/external.py')
+          text = path.read_text()
+
+          def replace_once(old: str, new: str) -> None:
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected exactly one match, found {count}: {old[:80]!r}')
+              text = text.replace(old, new, 1)
+
+          replace_once('import inspect\nimport json\nimport os\nimport re\nimport shutil\nimport sys\n',
+                       'import inspect\nimport json\nimport logging\nimport os\nimport re\nimport shutil\nimport subprocess\nimport sys\n')
+
+          scoop_anchor = '''        self.enabled = shutil.which("scoop") is not None\n\n    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:\n'''
+          scoop_helper = '''        self.enabled = shutil.which("scoop") is not None\n\n    async def _get_installed_ids(self) -> Optional[set[str]]:\n        if not self.enabled:\n            return set()\n        try:\n            async with safe_subprocess("scoop", "list", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:\n                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)\n                installed = set()\n                for line in _decode_output(stdout or b"").splitlines():\n                    parts = line.split()\n                    if not parts or parts[0].lower() in {"name", "---"} or set(parts[0]) <= {"-"}:\n                        continue\n                    installed.add(parts[0].lower())\n                return installed\n        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:\n            logging.getLogger(__name__).warning("Scoop installed-state probe failed; falling back to full installed lookup: %s", exc)\n            return None\n\n    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:\n'''
+          replace_once(scoop_anchor, scoop_helper)
+
+          replace_once('''                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)\n                installed = {item["id"].lower() for item in await self.list_installed()}\n                results = []\n''', '''                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)\n                installed = await self._get_installed_ids()\n                if installed is None:\n                    installed = {item["id"].lower() for item in await self.list_installed()}\n                results = []\n''')
+
+          replace_once('''                return results\n        except Exception:\n            return []\n\n    async def install(self, package: Dict[str, Any], callback=None) -> bool:\n        callback = self._async_callback(callback)\n        name = str(package.get("id") or package.get("name") or "").strip()\n        if not name:\n            if callback: await callback("[ERROR] Scoop package name missing.")\n''', '''                return results\n        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:\n            logging.getLogger(__name__).warning("Scoop search failed: %s", exc)\n            return []\n\n    async def install(self, package: Dict[str, Any], callback=None) -> bool:\n        callback = self._async_callback(callback)\n        name = str(package.get("id") or package.get("name") or "").strip()\n        if not name:\n            if callback: await callback("[ERROR] Scoop package name missing.")\n''')
+
+          replace_once('''                    if not parts or parts[0].lower() in {"name", "---"}:\n                        continue\n                    name = parts[0]\n''', '''                    if not parts or parts[0].lower() in {"name", "---"} or set(parts[0]) <= {"-"}:\n                        continue\n                    name = parts[0]\n''')
+
+          brew_anchor = '''        self.enabled = shutil.which("brew") is not None\n\n    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:\n'''
+          brew_helper = '''        self.enabled = shutil.which("brew") is not None\n\n    async def _get_installed_ids(self) -> Optional[set[str]]:\n        if not self.enabled:\n            return set()\n        try:\n            async with safe_subprocess("brew", "list", "--versions", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:\n                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)\n                installed = set()\n                for line in _decode_output(stdout or b"").splitlines():\n                    parts = line.split()\n                    if parts:\n                        installed.add(parts[0].lower())\n                return installed\n        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:\n            logging.getLogger(__name__).warning("Homebrew installed-state probe failed; falling back to full installed lookup: %s", exc)\n            return None\n\n    async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:\n'''
+          replace_once(brew_anchor, brew_helper)
+
+          replace_once('''                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=25)\n                installed = {item["id"].lower() for item in await self.list_installed()}\n                results = []\n''', '''                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)\n                installed = await self._get_installed_ids()\n                if installed is None:\n                    installed = {item["id"].lower() for item in await self.list_installed()}\n                results = []\n''')
+
+          replace_once('''                return results\n        except Exception:\n            return []\n\n    async def install(self, package: Dict[str, Any], callback=None) -> bool:\n        callback = self._async_callback(callback)\n        name = str(package.get("id") or package.get("name") or "").strip()\n        if not name:\n            if callback: await callback("[ERROR] Homebrew package name missing.")\n''', '''                return results\n        except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:\n            logging.getLogger(__name__).warning("Homebrew search failed: %s", exc)\n            return []\n\n    async def install(self, package: Dict[str, Any], callback=None) -> bool:\n        callback = self._async_callback(callback)\n        name = str(package.get("id") or package.get("name") or "").strip()\n        if not name:\n            if callback: await callback("[ERROR] Homebrew package name missing.")\n''')
+
+          path.write_text(text)
+
+          Path('python/tests/test_external_sources_installed_probe.py').write_text(r'''import asyncio
+import subprocess
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from core.sources.external import BrewSource, ScoopSource
+
+
+def _process(stdout=b""):
+    proc = AsyncMock()
+    proc.communicate.return_value = (stdout, b"")
+    return proc
+
+
+@pytest.mark.asyncio
+async def test_scoop_fast_probe_avoids_full_installed_scan():
+    source = ScoopSource()
+    source.enabled = True
+    search_proc = _process(b"git 2.50.0 [main]\n")
+    source._get_installed_ids = AsyncMock(return_value={"git"})
+    source.list_installed = AsyncMock(side_effect=AssertionError("slow installed scan must not run"))
+    with patch("core.sources.external.safe_subprocess") as safe:
+        safe.return_value.__aenter__.return_value = search_proc
+        results = await source.search("git")
+    assert results[0]["installed"] is True
+    source.list_installed.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_scoop_probe_failure_falls_back_without_false_uninstalled_state():
+    source = ScoopSource()
+    source.enabled = True
+    search_proc = _process(b"git 2.50.0 [main]\n")
+    source._get_installed_ids = AsyncMock(return_value=None)
+    source.list_installed = AsyncMock(return_value=[{"id": "git"}])
+    with patch("core.sources.external.safe_subprocess") as safe:
+        safe.return_value.__aenter__.return_value = search_proc
+        results = await source.search("git")
+    assert results[0]["installed"] is True
+    source.list_installed.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_brew_probe_failure_falls_back_without_false_uninstalled_state():
+    source = BrewSource()
+    source.enabled = True
+    search_proc = _process(b"wget\n")
+    source._get_installed_ids = AsyncMock(return_value=None)
+    source.list_installed = AsyncMock(return_value=[{"id": "wget"}])
+    with patch("core.sources.external.safe_subprocess") as safe:
+        safe.return_value.__aenter__.return_value = search_proc
+        results = await source.search("wget")
+    assert results[0]["installed"] is True
+    source.list_installed.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_expected_probe_failure_returns_unknown_signal_and_logs(caplog):
+    source = ScoopSource()
+    source.enabled = True
+    proc = AsyncMock()
+    proc.communicate.side_effect = asyncio.TimeoutError()
+    with patch("core.sources.external.safe_subprocess") as safe:
+        safe.return_value.__aenter__.return_value = proc
+        with caplog.at_level("WARNING"):
+            installed = await source._get_installed_ids()
+    assert installed is None
+    assert "falling back" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_unexpected_probe_and_search_errors_propagate():
+    source = ScoopSource()
+    source.enabled = True
+    proc = AsyncMock()
+    proc.communicate.side_effect = TypeError("programming error")
+    with patch("core.sources.external.safe_subprocess") as safe:
+        safe.return_value.__aenter__.return_value = proc
+        with pytest.raises(TypeError, match="programming error"):
+            await source._get_installed_ids()
+        with pytest.raises(TypeError, match="programming error"):
+            await source.search("git")
+
+
+@pytest.mark.asyncio
+async def test_expected_search_subprocess_error_is_logged_and_safe(caplog):
+    source = BrewSource()
+    source.enabled = True
+    proc = AsyncMock()
+    proc.communicate.side_effect = subprocess.SubprocessError("brew failed")
+    with patch("core.sources.external.safe_subprocess") as safe:
+        safe.return_value.__aenter__.return_value = proc
+        with caplog.at_level("WARNING"):
+            results = await source.search("wget")
+    assert results == []
+    assert "Homebrew search failed" in caplog.text
+''')
+          PY
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: python/requirements.txt
+
+      - name: Verify focused regression tests
+        working-directory: python
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip check
+          python -m pytest -q tests/test_external_sources_installed_probe.py
+
+      - name: Commit repair and remove temporary workflow
+        run: |
+          git rm .github/workflows/automation-repair-installed-probe.yml
+          git add python/core/sources/external.py python/tests/test_external_sources_installed_probe.py
+          unexpected="$(git diff --cached --name-only | grep -Ev '^(python/core/sources/external\.py|python/tests/test_external_sources_installed_probe\.py|\.github/workflows/automation-repair-installed-probe\.yml)$' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected staged files:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'perf: preserve installed state during lightweight package search'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
