@@ -78,3 +78,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'i18n: localize Meo update channel controls'
           git push origin HEAD:automation/l10n-meo-channel-clean
+
+# One-shot maintenance workflow; it deletes itself after generating the clean replay.
