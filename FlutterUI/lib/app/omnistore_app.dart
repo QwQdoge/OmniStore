@@ -12,11 +12,17 @@ import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/skeleton.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/core/app_navigator.dart';
+import 'package:frontend/app/external_install_request.dart';
 
 class OmnistoreApp extends StatefulWidget {
-  const OmnistoreApp({super.key, required this.initialConfig});
+  const OmnistoreApp({
+    super.key,
+    required this.initialConfig,
+    this.initialInstallRequest,
+  });
 
   final Map<String, dynamic> initialConfig;
+  final ExternalInstallRequest? initialInstallRequest;
 
   @override
   State<OmnistoreApp> createState() => _OmnistoreAppState();
@@ -82,12 +88,16 @@ class _OmnistoreAppState extends State<OmnistoreApp> {
               child: child!,
             );
           },
-          initialRoute: _isFirstRun ? '/welcome' : '/home',
+          initialRoute: _isFirstRun && widget.initialInstallRequest == null
+              ? '/welcome'
+              : '/home',
           routes: {
             '/welcome': (context) => WelcomePage(
               onFinish: () => Navigator.pushReplacementNamed(context, '/home'),
             ),
-            '/home': (context) => const MainNavigationEntry(),
+            '/home': (context) => MainNavigationEntry(
+              initialInstallRequest: widget.initialInstallRequest,
+            ),
           },
           onGenerateRoute: (routeSettings) {
             if (routeSettings.name != null &&

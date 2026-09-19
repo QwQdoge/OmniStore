@@ -1,0 +1,34 @@
+{
+  "schema": "org.meo.omnistore.installed-usage",
+  "version": 1,
+  "status": "success",
+  "generatedAt": "2026-09-17T12:00:00Z",
+  "applicationCount": 2,
+  "knownSizeBytes": 6815744,
+  "unknownSizeCount": 1,
+  "sources": [
+    {
+      "id": "pacman",
+      "name": "Pacman",
+      "applicationCount": 2,
+      "knownSizeBytes": 6815744,
+      "unknownSizeCount": 1
+    }
+  ],
+  "applications": [
+    {
+      "name": "Meo Settings",
+      "sourceId": "pacman",
+      "sourceName": "Pacman",
+      "sizeKind": "exact",
+      "sizeBytes": 2621440
+    },
+    {
+      "name": "OmniStore",
+      "sourceId": "pacman",
+      "sourceName": "Pacman",
+      "sizeKind": "exact",
+      "sizeBytes": 4194304
+    }
+  ]
+}

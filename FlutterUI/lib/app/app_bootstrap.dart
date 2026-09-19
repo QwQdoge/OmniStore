@@ -15,12 +15,22 @@ import 'package:frontend/services/l10n_service.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/app/external_install_request.dart';
 
 /// Wires global providers and launches [OmnistoreApp].
 Future<void> bootstrapOmniStore({
   List<String> initialArguments = const [],
 }) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  ExternalInstallRequest? externalInstallRequest;
+  try {
+    externalInstallRequest = ExternalInstallRequest.fromArguments(
+      initialArguments,
+    );
+  } on FormatException catch (error) {
+    debugPrint('Rejected external install request: ${error.message}');
+  }
 
   final configRepo = ConfigRepository.instance;
   final packageRepo = PackageRepository();
@@ -86,7 +96,10 @@ Future<void> bootstrapOmniStore({
         ),
         ChangeNotifierProvider(create: (_) => TaskController(taskRepo)),
       ],
-      child: OmnistoreApp(initialConfig: config),
+      child: OmnistoreApp(
+        initialConfig: config,
+        initialInstallRequest: externalInstallRequest,
+      ),
     ),
   );
 }

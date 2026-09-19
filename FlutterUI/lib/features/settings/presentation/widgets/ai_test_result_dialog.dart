@@ -67,20 +67,20 @@ class AITestResultDialog extends StatelessWidget {
                       value: '${diagnostics['model'] ?? '-'}',
                     ),
                     _DiagnosticRow(
-                      label: 'Service',
+                      label: l10n.aiTestService,
                       value: diagnostics['service_reachable'] == true
-                          ? 'Connected'
-                          : 'Unavailable',
+                          ? l10n.aiTestConnected
+                          : l10n.aiTestUnavailable,
                     ),
                     _DiagnosticRow(
-                      label: 'Model',
+                      label: l10n.aiModel,
                       value: diagnostics['model_ready'] == true
-                          ? 'Ready'
-                          : 'Not ready',
+                          ? l10n.aiTestReady
+                          : l10n.aiTestNotReady,
                     ),
                     if (diagnostics['latency_ms'] != null)
                       _DiagnosticRow(
-                        label: 'Latency',
+                        label: l10n.aiTestLatency,
                         value: '${diagnostics['latency_ms']} ms',
                       ),
                     if ('${diagnostics['suggestion'] ?? ''}'.isNotEmpty) ...[

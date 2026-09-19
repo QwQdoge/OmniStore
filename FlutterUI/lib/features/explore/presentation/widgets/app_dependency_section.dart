@@ -57,8 +57,8 @@ class AppDependencySection extends StatelessWidget {
           AppDetailsInfoRow(
             icon: Icons.folder_copy_rounded,
             label: confidence == null
-                ? 'Disk size'
-                : 'Disk size (${confidence.toString()})',
+                ? l10n.diskSize
+                : l10n.diskSizeWithConfidence(confidence.toString()),
             value: _formatBytes(diskSize),
           ),
         if (deps != null && deps.isNotEmpty) ...[

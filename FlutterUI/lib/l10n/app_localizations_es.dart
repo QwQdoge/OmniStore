@@ -46,6 +46,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get install => 'Instalar';
 
   @override
+  String get download => 'Descargar';
+
+  @override
   String get open => 'Abrir';
 
   @override
@@ -1473,7 +1476,615 @@ class AppLocalizationsEs extends AppLocalizations {
       'Deslice hacia abajo para actualizar o pruebe otra categoría.';
 
   @override
+  String get systemAiProviderLabel =>
+      'System AI connection (KWallet / Recommended)';
+
+  @override
+  String get systemAiSharedConnectionLabel => 'System shared connection';
+
+  @override
+  String get systemAiConnectionHelper =>
+      'Meo Account reads the key from KWallet; OmniStore cannot read the plaintext.';
+
+  @override
+  String get systemAiLoadingTitle => 'Reading system AI connections';
+
+  @override
+  String get systemAiMetadataOnly =>
+      'Only names, endpoints, and default models are read; keys are never read.';
+
+  @override
+  String get systemAiLoadErrorTitle => 'Unable to read system AI connections';
+
+  @override
+  String get systemAiSelectLabel => 'AI connection on this device';
+
+  @override
+  String get meoSettingsOpenFailed => 'Unable to open Meo Settings.';
+
+  @override
+  String get manageInMeoSettings => 'Manage in Meo Settings';
+
+  @override
+  String get systemAiNoConnections =>
+      'No system AI connection is configured. Add one in Meo Settings first.';
+
+  @override
+  String get systemAiLoadFailed =>
+      'Unable to read system AI connections. Check Accounts & Security in Meo Settings.';
+
+  @override
+  String get systemAiInvalidCatalog =>
+      'The system AI service returned an invalid model catalog.';
+
+  @override
+  String get systemAiInvalidConsent =>
+      'The system AI service did not return a valid consent summary.';
+
+  @override
+  String get systemAiConsentExpired =>
+      'The system AI consent summary is invalid or expired.';
+
+  @override
+  String get systemAiInvalidResponse =>
+      'The system AI service did not return valid text.';
+
+  @override
+  String get systemAiUnsupported =>
+      'System AI is not supported on this platform.';
+
+  @override
+  String get systemAiOperationFailed => 'The system AI operation failed.';
+
+  @override
+  String get systemAiTimeout => 'The system AI operation timed out.';
+
+  @override
+  String get systemAiUnavailable =>
+      'Unable to connect to the Meo Account system AI service.';
+
+  @override
+  String get systemAiTestPurpose => 'Test the OmniStore system AI connection';
+
+  @override
+  String get aiConsentCancelled => 'You cancelled this AI request.';
+
+  @override
+  String get chooseSystemAiConnection =>
+      'Select a system AI connection in OmniStore Settings first.';
+
+  @override
+  String get chooseAccountAiConnection =>
+      'Select an account AI connection in OmniStore Settings first.';
+
+  @override
+  String get aiConfigUnavailable => 'AI configuration is unavailable.';
+
+  @override
+  String get aiNotEnabled => 'AI assistance is not enabled.';
+
+  @override
+  String get aiAccountProviderHint =>
+      'Meo Account invokes your saved connection; the API key is never sent to OmniStore.';
+
+  @override
+  String get aiSystemProviderHint =>
+      'Meo Account invokes the connection from KWallet; OmniStore sees only metadata and the final result.';
+
+  @override
+  String get aiOllamaProviderHint =>
+      'Ollama connects only to the local service and does not require an API key.';
+
+  @override
+  String get aiCompatibleProviderHint =>
+      'Use only a trusted HTTPS-compatible endpoint; the key remains in the local secure store.';
+
+  @override
+  String get aiLocalKeyProviderHint =>
+      'This provider has a separate key in Secret Service/KWallet that cannot be read back.';
+
+  @override
+  String get meoAccountOpenFailed => 'Unable to open Meo Account.';
+
+  @override
+  String get secureCredentialWriteFailed =>
+      'Unable to write to the system credential store.';
+
+  @override
+  String get modelsNoneFound =>
+      'The service is running, but no installed or available models were reported.';
+
+  @override
+  String get modelsAutofilled =>
+      'A discovered model was filled in automatically.';
+
+  @override
+  String get modelsFoundChoose =>
+      'Models were found. Choose one before testing; OmniStore does not infer capabilities from names.';
+
+  @override
+  String get apiKeyRequired => 'Enter a new API key first.';
+
+  @override
+  String get secureCredentialSaved =>
+      'The API key was saved to the system credential store.';
+
+  @override
+  String get localApiKeyDeleted => 'The local API key was deleted.';
+
+  @override
+  String get secureCredentialUnavailable =>
+      'Unable to access the system credential store.';
+
+  @override
+  String get signInMeoAccount => 'Sign in to Meo Account';
+
+  @override
+  String get signInMeoAccountDetail =>
+      'After signing in, choose an encrypted account AI connection. Its API key is never sent to OmniStore.';
+
+  @override
+  String get accountAiLoading => 'Reading account AI connections';
+
+  @override
+  String get accountAiMetadataOnly =>
+      'Only names, providers, and masked key status are read.';
+
+  @override
+  String get accountAiLoadError => 'Unable to read account AI connections';
+
+  @override
+  String get accountAiNone => 'No AI connection is saved in this account';
+
+  @override
+  String get accountAiNoneDetail =>
+      'Add your API key securely in Account, then return here and refresh.';
+
+  @override
+  String get connect => 'Connect';
+
+  @override
+  String get accountAiSelectLabel => 'Account AI connection';
+
+  @override
+  String get accountAiConnectionHelper =>
+      'The key is decrypted only inside the Account Edge broker; OmniStore cannot read it.';
+
+  @override
+  String get manageAiConnections => 'Manage AI connections';
+
+  @override
+  String get aiPerRequestConsentDetail =>
+      'Before every request, OmniStore shows the provider, model, purpose, data categories, full content, and request fingerprint, then asks for one-time consent.';
+
+  @override
+  String get aiEnabledConsentDesc =>
+      'Off by default; every request still requires separate confirmation after it is enabled.';
+
+  @override
+  String providerLocalSecureKey(String provider) {
+    return '$provider (local secure key)';
+  }
+
+  @override
+  String get providerCompatibleHttps => 'OpenAI Compatible (custom HTTPS)';
+
+  @override
+  String get providerMeoAccount => 'Meo Account';
+
+  @override
+  String get ollamaEndpointSafety =>
+      'Defaults to local Ollama. Keep a loopback address to avoid contacting a LAN service accidentally.';
+
+  @override
+  String get compatibleEndpointSafety =>
+      'Enter only a trusted HTTPS-compatible endpoint without a key or query parameters.';
+
+  @override
+  String get accountModelOverride => 'Account model';
+
+  @override
+  String get accountModelDefaultHelper =>
+      'Leave empty to use the selected Account connection\'s default model.';
+
+  @override
+  String get modelReviewHelper =>
+      'The actual model is shown again for confirmation before every request.';
+
+  @override
+  String get detectLocalModels => 'Detect local models and fill one in';
+
+  @override
+  String get readModelCatalog => 'Read model catalog';
+
+  @override
+  String get installOllamaWithOmniStore => 'Install Ollama with OmniStore';
+
+  @override
+  String get chooseDiscoveredModel => 'Choose a discovered model';
+
+  @override
+  String get localKeyStored =>
+      'A separate secure key is saved for this provider';
+
+  @override
+  String get localKeyNotStored => 'No API key is saved for this provider';
+
+  @override
+  String get localKeysHelper =>
+      'Each provider is stored separately in Secret Service/KWallet; keys can be replaced or deleted but never read back.';
+
+  @override
+  String get newApiKeyLabel => 'New API key (cleared after saving)';
+
+  @override
+  String get newApiKeyHelper =>
+      'Enter only a replacement key. Existing keys cannot be read or copied.';
+
+  @override
+  String get hideInput => 'Hide input';
+
+  @override
+  String get showInput => 'Show input';
+
+  @override
+  String get saveOrReplace => 'Save securely / Replace';
+
+  @override
+  String get deleteLocalKey => 'Delete local key';
+
+  @override
+  String get temperatureHelper =>
+      '0–2; lower values are usually more stable, and out-of-range values are not saved.';
+
+  @override
+  String get aiTestScopeHelper =>
+      'Testing checks only the current connection and does not change the AI enable switch; real requests still require one-time consent.';
+
+  @override
+  String get meoUpdateChannel => 'Meo update channel';
+
+  @override
+  String get meoUpdateChannelSubtitle =>
+      'Read from your active Pacman repositories';
+
+  @override
+  String get meoChannelChecking => 'Checking update channel…';
+
+  @override
+  String get meoChannelStable => 'Stable';
+
+  @override
+  String get meoChannelBeta => 'Beta';
+
+  @override
+  String get meoChannelBetaSummary =>
+      'Get newer Meo components before Stable. Arch system packages keep their normal repositories.';
+
+  @override
+  String get meoChannelStableSummary =>
+      'Get fully tested MeoArch release trains.';
+
+  @override
+  String meoChannelRepositoryPriority(String repositories) {
+    return 'Repository priority: $repositories';
+  }
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Choose Beta only when you want newer components before Stable. It is not recommended for critical systems; Stable remains available as the fallback.';
+
+  @override
+  String meoChannelDowngradePending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Stable is selected, but $count Meo package downgrades still need your review.',
+      one: 'Stable is selected, but 1 Meo package downgrade still needs your review.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get meoChannelReviewDowngrades => 'Review downgrades';
+
+  @override
+  String get meoChannelSwitchToStable => 'Switch to Stable';
+
+  @override
+  String get meoChannelRollbackPreviewInvalid =>
+      'This Stable rollback preview is no longer valid. Refresh it and review it again.';
+
+  @override
+  String meoChannelDowngradeDialog(String packages) {
+    return 'These official Meo packages will move to their Stable versions. Arch and third-party packages won\'t be downgraded.\\n\\n$packages';
+  }
+
+  @override
   String sourceFilterSemantics(String name) {
     return 'Filtrar por origen: $name';
+  }
+
+  @override
+  String get aiConsentTitle => 'Review this AI request';
+
+  @override
+  String get aiConsentIntro =>
+      'Review the exact request before sending it. Your confirmation applies only to this request and its fingerprint.';
+
+  @override
+  String get aiConsentProvider => 'Provider';
+
+  @override
+  String get aiConsentDestination => 'Destination';
+
+  @override
+  String get aiConsentModel => 'Model';
+
+  @override
+  String get aiConsentPurpose => 'Purpose';
+
+  @override
+  String get aiConsentDataCategories => 'Data included';
+
+  @override
+  String get aiConsentCharacters => 'Characters';
+
+  @override
+  String get aiConsentFingerprint => 'Fingerprint';
+
+  @override
+  String get aiConsentReviewContent => 'Review content to be sent';
+
+  @override
+  String get aiConsentSystemInstruction => 'System instruction';
+
+  @override
+  String get aiConsentUserContent => 'Your content';
+
+  @override
+  String aiConsentConfirmWithProvider(String provider) {
+    return 'I understand this content will be sent to $provider.';
+  }
+
+  @override
+  String get aiConsentKeyNotExposed =>
+      'Your API key is not part of this prompt and is not shown here.';
+
+  @override
+  String get aiConsentDeny => 'Don\'t send';
+
+  @override
+  String get aiConsentAllowOnce => 'Confirm and send once';
+
+  @override
+  String get aiConsentCategoryAppName => 'App name';
+
+  @override
+  String get aiConsentCategoryAppDescription => 'App description';
+
+  @override
+  String get aiConsentCategoryVersionMetadata => 'Version information';
+
+  @override
+  String get aiConsentCategoryPackageSource => 'Package source';
+
+  @override
+  String get aiConsentCategoryPackageVariants => 'Installation options';
+
+  @override
+  String get aiConsentCategoryPreferenceRequest => 'Preference request';
+
+  @override
+  String get aiConsentCategorySearchQuery => 'Search query';
+
+  @override
+  String get aiConsentCategorySystemEnvironment => 'System environment summary';
+
+  @override
+  String get aiConsentCategoryErrorLog => 'Error log';
+
+  @override
+  String get aiConsentCategoryRecommendationRequest => 'Recommendation request';
+
+  @override
+  String get aiConsentCategoryConnectionTest => 'Connection test data';
+
+  @override
+  String get githubLoadErrorDetail =>
+      'Could not load GitHub repositories. Check your network and try again.';
+
+  @override
+  String get githubSearchErrorDetail =>
+      'Could not search GitHub repositories. Check your network and try again.';
+
+  @override
+  String get flatpakLoadErrorDetail =>
+      'Could not load Flatpak apps. Check Flathub and your network connection, then try again.';
+
+  @override
+  String appCardSemantics(String name) {
+    return 'App: $name';
+  }
+
+  @override
+  String get diskSize => 'Disk size';
+
+  @override
+  String diskSizeWithConfidence(String confidence) {
+    return 'Disk size ($confidence)';
+  }
+
+  @override
+  String get accountAiSignInRequired =>
+      'Sign in to Meo Account before using Account AI.';
+
+  @override
+  String get accountAiNoDefaultModel =>
+      'This AI connection has no default model. Choose a model in Settings first.';
+
+  @override
+  String get accountAiInvalidConsent =>
+      'The account AI service did not return a valid consent summary.';
+
+  @override
+  String get accountAiConsentExpired =>
+      'The AI consent summary is invalid or expired.';
+
+  @override
+  String get accountAiInvalidResponse =>
+      'The AI service did not return valid content.';
+
+  @override
+  String get accountAiTestPurpose => 'Test the OmniStore account AI connection';
+
+  @override
+  String get accountAiInvalidDestination =>
+      'The account AI connection has an invalid destination.';
+
+  @override
+  String get accountAiConnectionNotFound =>
+      'The selected AI connection is unavailable. Choose it again in Settings.';
+
+  @override
+  String get accountAiInvalidData =>
+      'The account AI service returned invalid data.';
+
+  @override
+  String get accountAiUnavailable =>
+      'The account AI service is temporarily unavailable.';
+
+  @override
+  String get accountAiRequestDenied =>
+      'The account AI request was denied. Sign in again and try once more.';
+
+  @override
+  String get accountAiConnectionFailed =>
+      'Unable to connect to the account AI service.';
+
+  @override
+  String get localAiUnsupportedModelDiscovery =>
+      'This connection does not support local model discovery.';
+
+  @override
+  String get localAiCredentialStoreUnavailable =>
+      'Unable to open the secure credential store. Unlock KWallet and try again.';
+
+  @override
+  String get localAiApiKeyRequired =>
+      'Securely save an API key for this provider first.';
+
+  @override
+  String get localAiCatalogTooLarge =>
+      'The model catalog response is too large.';
+
+  @override
+  String get localAiInvalidCatalog =>
+      'The model catalog returned invalid data.';
+
+  @override
+  String get localAiCatalogUnavailable =>
+      'Unable to read the model catalog. Check that the service is running.';
+
+  @override
+  String get localAiUnsupportedConnection =>
+      'This local AI connection type is not supported.';
+
+  @override
+  String get localAiInvalidModel => 'Enter a valid model name.';
+
+  @override
+  String get localAiInvalidPurpose => 'The AI request purpose is invalid.';
+
+  @override
+  String get localAiInvalidInput => 'The AI input is empty or too large.';
+
+  @override
+  String get localAiInvalidDataCategories =>
+      'The AI data categories are invalid.';
+
+  @override
+  String get localAiApiKeyInvalid =>
+      'The secure credential store has no valid API key for this provider.';
+
+  @override
+  String get localAiDestinationChanged =>
+      'The AI destination changed after consent, so the request was blocked.';
+
+  @override
+  String get localAiResponseTooLarge => 'The AI service response is too large.';
+
+  @override
+  String get localAiInvalidResponse => 'The AI service returned invalid data.';
+
+  @override
+  String get localAiNoResponseText => 'The AI service did not return text.';
+
+  @override
+  String get localAiConnectionFailed =>
+      'Unable to connect to the AI service, or the request timed out.';
+
+  @override
+  String get localAiTestPurpose =>
+      'Test the OmniStore local secure AI connection';
+
+  @override
+  String get localAiInvalidEndpoint => 'The AI service address is invalid.';
+
+  @override
+  String get localAiOllamaLoopbackRequired =>
+      'The Ollama address must use local HTTP(S) loopback.';
+
+  @override
+  String get localAiHttpsRequired => 'Cloud AI services must use HTTPS.';
+
+  @override
+  String get localAiPrivateEndpointBlocked =>
+      'A compatible API cannot point to a local or private network. Use Ollama for local models.';
+
+  @override
+  String get localAiOllama => 'Ollama (on this device)';
+
+  @override
+  String get localAiApiKeyRejected => 'The AI service rejected the API key.';
+
+  @override
+  String get localAiModelOrEndpointNotFound =>
+      'The requested AI model or service address was not found.';
+
+  @override
+  String get localAiRateLimited =>
+      'The AI service is out of quota or receiving requests too quickly.';
+
+  @override
+  String get localAiUnavailable => 'The AI service is temporarily unavailable.';
+
+  @override
+  String localAiRequestRejected(int status) {
+    return 'The AI service rejected the request (HTTP $status).';
+  }
+
+  @override
+  String get aiTestService => 'Service';
+
+  @override
+  String get aiTestConnected => 'Connected';
+
+  @override
+  String get aiTestUnavailable => 'Unavailable';
+
+  @override
+  String get aiTestReady => 'Ready';
+
+  @override
+  String get aiTestNotReady => 'Not ready';
+
+  @override
+  String get aiTestLatency => 'Latency';
+
+  @override
+  String featuredAppSemantics(String name) {
+    return 'Featured app: $name';
   }
 }

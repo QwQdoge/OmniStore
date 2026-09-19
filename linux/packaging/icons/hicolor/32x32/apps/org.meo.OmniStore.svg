@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="OmniStore 32 pixel optical master">
+  <rect x="2" y="10" width="28" height="20" rx="5" fill="#FFB957"/>
+  <path d="M8 11C8 3 24 3 24 11" fill="none" stroke="#8B4C00" stroke-linecap="round" stroke-width="4"/>
+  <path fill="#FFF1C7" d="M7 15H13V20H7Z"/>
+  <path fill="#7560C8" d="M19 15H25V20H19Z"/>
+  <path fill="#8BE0CF" d="M7 23H13V26H7Z"/>
+  <path fill="#FFB4AB" d="M19 23H25V26H19Z"/>
+</svg>

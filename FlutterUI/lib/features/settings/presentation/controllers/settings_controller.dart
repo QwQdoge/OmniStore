@@ -11,6 +11,10 @@ typedef DaemonEnvironmentUpdater =
 typedef UpdateConfigRefresher = Future<void> Function();
 
 class SettingsController with ChangeNotifier {
+  /// Persisted language value that leaves [MaterialApp.locale] unset so Flutter
+  /// follows the desktop locale (including future locale changes on restart).
+  static const String systemLanguage = 'system';
+
   static const Set<String> _localCredentialProviders = {
     'openai',
     'gemini',
@@ -136,7 +140,8 @@ class SettingsController with ChangeNotifier {
   }
 
   String get language {
-    final lang = _config['ui']?['language'] ?? 'zh-CN';
+    final lang = _config['ui']?['language'] ?? systemLanguage;
+    if (lang == systemLanguage) return systemLanguage;
     if (lang == 'zh') return 'zh-CN';
     if (lang == 'zh_Hant') return 'zh-TW';
     if (lang == 'en') return 'en-US';

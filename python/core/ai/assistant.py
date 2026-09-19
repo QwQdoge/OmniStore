@@ -103,6 +103,8 @@ class AIAssistant:
 
     def _get_language(self) -> str:
         lang = str(self.cm.get("ui.language", "zh-CN"))
+        if lang.strip().lower() == "system":
+            lang = os.environ.get("LC_MESSAGES") or os.environ.get("LANG") or "en_US"
         if "zh" in lang:
             return "繁体中文" if ("TW" in lang or "Hant" in lang) else "简体中文"
         if "ja" in lang: return "日本語"

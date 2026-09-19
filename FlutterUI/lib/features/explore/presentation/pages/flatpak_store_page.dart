@@ -52,8 +52,7 @@ class _FlatpakStorePageState extends State<FlatpakStorePage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _loadError =
-            "Could not load Flatpak apps. Check Flathub/network access and try again.";
+        _loadError = AppLocalizations.of(context)!.flatpakLoadErrorDetail;
         _isLoading = false;
       });
     }

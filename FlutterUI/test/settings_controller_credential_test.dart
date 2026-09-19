@@ -138,4 +138,26 @@ void main() {
     expect(await PythonBridge.getApiKey(provider: 'openai'), 'openai-secret');
     expect(await PythonBridge.getApiKey(provider: 'deepseek'), isNull);
   });
+
+  test(
+    'system language leaves MaterialApp locale under desktop control',
+    () async {
+      final config = _initialConfig();
+      (config['ui'] as Map<String, dynamic>)['language'] =
+          SettingsController.systemLanguage;
+      (config['ai'] as Map<String, dynamic>)['provider'] = 'ollama';
+      final repository = _MemoryConfigRepository(initialConfig: config);
+      final controller = SettingsController(
+        repository,
+        updateDaemonEnvironment: (_) async => true,
+        refreshUpdateService: () async {},
+      );
+      addTearDown(controller.dispose);
+
+      await controller.loadConfig();
+
+      expect(controller.language, SettingsController.systemLanguage);
+      expect(controller.locale, isNull);
+    },
+  );
 }

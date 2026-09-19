@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:frontend/data/python_bridge.dart';
 import 'package:frontend/features/ai/ai_consent_dialog.dart';
 import 'package:frontend/core/app_navigator.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
 typedef LocalAiConsentPresenter =
@@ -20,7 +22,9 @@ class LocalAiException implements Exception {
 }
 
 class LocalAiConsentDenied extends LocalAiException {
-  const LocalAiConsentDenied() : super('用户拒绝了本次 AI 调用。');
+  const LocalAiConsentDenied([
+    super.message = 'You cancelled this AI request.',
+  ]);
 }
 
 /// Direct, consent-gated AI calls for users who do not sign in to Meo Account.
@@ -44,6 +48,145 @@ class LocalAiService {
   final LocalAiKeyReader _keyReader;
   final LocalAiConsentPresenter _consentPresenter;
 
+  String _localized(
+    String Function(AppLocalizations value) message,
+    String fallback,
+  ) {
+    try {
+      final context = omnistoreNavigatorKey.currentContext;
+      if (context == null) return fallback;
+      final value = AppLocalizations.of(context);
+      return value == null ? fallback : message(value);
+    } on FlutterError {
+      return fallback;
+    }
+  }
+
+  /// Reads provider metadata only. No prompt or user data is sent.
+  ///
+  /// Ollama discovery is restricted to the same loopback policy as inference.
+  /// Cloud discovery reads the provider key lazily from the platform credential
+  /// store and never returns it to the caller.
+  Future<List<String>> discoverModels({
+    required String provider,
+    required String endpoint,
+  }) async {
+    final normalizedProvider = provider == 'custom'
+        ? 'openai_compatible'
+        : provider.trim().toLowerCase();
+    if (!_providerNames.containsKey(normalizedProvider) ||
+        normalizedProvider == 'account') {
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiUnsupportedModelDiscovery,
+          'This connection does not support local model discovery.',
+        ),
+      );
+    }
+    final selectedEndpoint = _endpointFor(normalizedProvider, endpoint);
+    final isOllama = normalizedProvider == 'ollama';
+    final url = _appendPath(
+      selectedEndpoint,
+      isOllama ? '/api/tags' : '/models',
+    );
+    final headers = <String, String>{'Accept': 'application/json'};
+    String apiKey = '';
+    if (!isOllama) {
+      try {
+        apiKey = (await _keyReader(normalizedProvider))?.trim() ?? '';
+      } catch (_) {
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiCredentialStoreUnavailable,
+            'Unable to open the secure credential store. Unlock KWallet and try again.',
+          ),
+        );
+      }
+      if (apiKey.length < 8 || apiKey.contains(RegExp(r'[\r\n\x00]'))) {
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiApiKeyRequired,
+            'Securely save an API key for this provider first.',
+          ),
+        );
+      }
+      headers['Authorization'] = 'Bearer $apiKey';
+    }
+
+    final ownClient = _client == null;
+    final client = _client ?? http.Client();
+    try {
+      final response = await client
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 15));
+      if (response.bodyBytes.length > 2 * 1024 * 1024) {
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiCatalogTooLarge,
+            'The model catalog response is too large.',
+          ),
+        );
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw LocalAiException(_providerError(response.statusCode));
+      }
+      final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      if (decoded is! Map) {
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiInvalidCatalog,
+            'The model catalog returned invalid data.',
+          ),
+        );
+      }
+      final raw = isOllama ? decoded['models'] : decoded['data'];
+      if (raw is! List) {
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiInvalidCatalog,
+            'The model catalog returned invalid data.',
+          ),
+        );
+      }
+      final models =
+          raw
+              .whereType<Map>()
+              .map(
+                (item) =>
+                    (item[isOllama ? 'name' : 'id'] as String? ?? '').trim(),
+              )
+              .where(
+                (id) =>
+                    id.isNotEmpty &&
+                    id.length <= 160 &&
+                    !id.contains(RegExp(r'[\r\n\x00]')),
+              )
+              .toSet()
+              .toList(growable: false)
+            ..sort();
+      return models;
+    } on LocalAiException {
+      rethrow;
+    } on FormatException {
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiInvalidCatalog,
+          'The model catalog returned invalid data.',
+        ),
+      );
+    } catch (_) {
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiCatalogUnavailable,
+          'Unable to read the model catalog. Check that the service is running.',
+        ),
+      );
+    } finally {
+      if (ownClient) client.close();
+      apiKey = '';
+    }
+  }
+
   static const Map<String, String> _fixedEndpoints = {
     'openai': 'https://api.openai.com/v1',
     'gemini': 'https://generativelanguage.googleapis.com/v1beta',
@@ -52,7 +195,7 @@ class LocalAiService {
   };
 
   static const Map<String, String> _providerNames = {
-    'ollama': 'Ollama（本机）',
+    'ollama': 'Ollama',
     'openai': 'OpenAI',
     'gemini': 'Google Gemini',
     'deepseek': 'DeepSeek',
@@ -75,21 +218,41 @@ class LocalAiService {
         ? 'openai_compatible'
         : provider.trim().toLowerCase();
     if (!_providerNames.containsKey(normalizedProvider)) {
-      throw const LocalAiException('不支持这个本地 AI 连接类型。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiUnsupportedConnection,
+          'This local AI connection type is not supported.',
+        ),
+      );
     }
     final selectedModel = model.trim();
     if (selectedModel.isEmpty || selectedModel.length > 160) {
-      throw const LocalAiException('请填写有效的模型名称。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiInvalidModel,
+          'Enter a valid model name.',
+        ),
+      );
     }
     final normalizedPurpose = purpose.trim();
     if (normalizedPurpose.isEmpty || normalizedPurpose.length > 240) {
-      throw const LocalAiException('AI 调用用途无效。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiInvalidPurpose,
+          'The AI request purpose is invalid.',
+        ),
+      );
     }
     if (systemPrompt.length > 12000 ||
         userPrompt.trim().isEmpty ||
         userPrompt.length > 40000 ||
         systemPrompt.length + userPrompt.length > 48000) {
-      throw const LocalAiException('AI 输入内容过大或为空。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiInvalidInput,
+          'The AI input is empty or too large.',
+        ),
+      );
     }
     final categories = dataCategories.toSet().toList()..sort();
     if (categories.isEmpty ||
@@ -97,7 +260,12 @@ class LocalAiService {
         categories.any(
           (item) => !RegExp(r'^[a-z0-9][a-z0-9_.-]{0,63}$').hasMatch(item),
         )) {
-      throw const LocalAiException('AI 数据类别无效。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiInvalidDataCategories,
+          'The AI data categories are invalid.',
+        ),
+      );
     }
     final selectedEndpoint = _endpointFor(normalizedProvider, endpoint);
     final selectedTemperature = temperature.clamp(0, 2).toDouble();
@@ -126,7 +294,7 @@ class LocalAiService {
       'maxOutputTokens': selectedMaxTokens,
     });
     final payloadSha256 = sha256.convert(utf8.encode(canonical)).toString();
-    final providerName = _providerNames[normalizedProvider]!;
+    final providerName = _providerDisplayName(normalizedProvider);
     final approved = await _consentPresenter(
       AiConsentSummary(
         providerName: providerName,
@@ -140,17 +308,34 @@ class LocalAiService {
         userPrompt: userPrompt,
       ),
     );
-    if (!approved) throw const LocalAiConsentDenied();
+    if (!approved) {
+      throw LocalAiConsentDenied(
+        _localized(
+          (value) => value.aiConsentCancelled,
+          'You cancelled this AI request.',
+        ),
+      );
+    }
 
     String apiKey = '';
     if (normalizedProvider != 'ollama') {
       try {
         apiKey = (await _keyReader(normalizedProvider))?.trim() ?? '';
       } catch (_) {
-        throw const LocalAiException('无法打开系统安全凭据库，请解锁 KWallet 后重试。');
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiCredentialStoreUnavailable,
+            'Unable to open the secure credential store. Unlock KWallet and try again.',
+          ),
+        );
       }
       if (apiKey.length < 8 || apiKey.contains(RegExp(r'[\r\n\x00]'))) {
-        throw const LocalAiException('本地安全凭据库中没有有效的 API 密钥。');
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiApiKeyInvalid,
+            'The secure credential store has no valid API key for this provider.',
+          ),
+        );
       }
     }
 
@@ -166,7 +351,12 @@ class LocalAiService {
     );
     if (request.url != approvedDestination) {
       apiKey = '';
-      throw const LocalAiException('AI 目标地址在授权后发生变化；请求已阻止。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiDestinationChanged,
+          'The AI destination changed after consent, so the request was blocked.',
+        ),
+      );
     }
     final ownClient = _client == null;
     final client = _client ?? http.Client();
@@ -179,7 +369,12 @@ class LocalAiService {
           )
           .timeout(const Duration(seconds: 45));
       if (response.bodyBytes.length > 2 * 1024 * 1024) {
-        throw const LocalAiException('AI 服务返回内容过大。');
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiResponseTooLarge,
+            'The AI service response is too large.',
+          ),
+        );
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw LocalAiException(_providerError(response.statusCode));
@@ -188,21 +383,41 @@ class LocalAiService {
       try {
         decoded = jsonDecode(utf8.decode(response.bodyBytes));
       } catch (_) {
-        throw const LocalAiException('AI 服务返回了无效数据。');
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiInvalidResponse,
+            'The AI service returned invalid data.',
+          ),
+        );
       }
       if (decoded is! Map) {
-        throw const LocalAiException('AI 服务返回了无效数据。');
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiInvalidResponse,
+            'The AI service returned invalid data.',
+          ),
+        );
       }
       final data = Map<String, dynamic>.from(decoded);
       final text = _responseText(normalizedProvider, data).trim();
       if (text.isEmpty) {
-        throw const LocalAiException('AI 服务没有返回文本内容。');
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiNoResponseText,
+            'The AI service did not return text.',
+          ),
+        );
       }
       return text;
     } on LocalAiException {
       rethrow;
     } catch (_) {
-      throw const LocalAiException('无法连接 AI 服务或请求已超时。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiConnectionFailed,
+          'Unable to connect to the AI service, or the request timed out.',
+        ),
+      );
     } finally {
       if (ownClient) client.close();
       apiKey = '';
@@ -220,7 +435,10 @@ class LocalAiService {
         provider: provider,
         endpoint: endpoint,
         model: model,
-        purpose: '测试 OmniStore 的本地安全 AI 连接',
+        purpose: _localized(
+          (value) => value.localAiTestPurpose,
+          'Test the OmniStore local secure AI connection',
+        ),
         dataCategories: const ['synthetic_test'],
         systemPrompt: 'This is a connection test. Reply with a short OK.',
         userPrompt: 'OmniStore connection test.',
@@ -261,20 +479,40 @@ class LocalAiService {
         uri.userInfo.isNotEmpty ||
         uri.query.isNotEmpty ||
         uri.fragment.isNotEmpty) {
-      throw const LocalAiException('AI 服务地址无效。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiInvalidEndpoint,
+          'The AI service address is invalid.',
+        ),
+      );
     }
     final host = uri.host.toLowerCase();
     if (provider == 'ollama') {
       final loopback =
           host == 'localhost' || host == '127.0.0.1' || host == '::1';
       if (!loopback || (uri.scheme != 'http' && uri.scheme != 'https')) {
-        throw const LocalAiException('Ollama 地址必须是本机 HTTP(S) 回环地址。');
+        throw LocalAiException(
+          _localized(
+            (value) => value.localAiOllamaLoopbackRequired,
+            'The Ollama address must use local HTTP(S) loopback.',
+          ),
+        );
       }
     } else if (uri.scheme != 'https') {
-      throw const LocalAiException('云端 AI 服务必须使用 HTTPS。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiHttpsRequired,
+          'Cloud AI services must use HTTPS.',
+        ),
+      );
     }
     if (provider == 'openai_compatible' && _isPrivateOrLocalHost(host)) {
-      throw const LocalAiException('兼容 API 不允许指向本机或私有网络；本机模型请使用 Ollama。');
+      throw LocalAiException(
+        _localized(
+          (value) => value.localAiPrivateEndpointBlocked,
+          'A compatible API cannot point to a local or private network. Use Ollama for local models.',
+        ),
+      );
     }
     return uri.replace(path: uri.path.replaceFirst(RegExp(r'/$'), ''));
   }
@@ -444,12 +682,45 @@ class LocalAiService {
         : '';
   }
 
+  String _providerDisplayName(String provider) {
+    if (provider == 'ollama') {
+      return _localized(
+        (value) => value.localAiOllama,
+        'Ollama (on this device)',
+      );
+    }
+    return _providerNames[provider] ?? 'AI';
+  }
+
   String _providerError(int status) {
-    if (status == 401 || status == 403) return 'AI 服务拒绝了 API 密钥。';
-    if (status == 404) return '找不到指定的 AI 模型或服务地址。';
-    if (status == 429) return 'AI 服务额度不足或请求过于频繁。';
-    if (status >= 500) return 'AI 服务暂时不可用。';
-    return 'AI 服务拒绝了请求（HTTP $status）。';
+    if (status == 401 || status == 403) {
+      return _localized(
+        (value) => value.localAiApiKeyRejected,
+        'The AI service rejected the API key.',
+      );
+    }
+    if (status == 404) {
+      return _localized(
+        (value) => value.localAiModelOrEndpointNotFound,
+        'The requested AI model or service address was not found.',
+      );
+    }
+    if (status == 429) {
+      return _localized(
+        (value) => value.localAiRateLimited,
+        'The AI service is out of quota or receiving requests too quickly.',
+      );
+    }
+    if (status >= 500) {
+      return _localized(
+        (value) => value.localAiUnavailable,
+        'The AI service is temporarily unavailable.',
+      );
+    }
+    return _localized(
+      (value) => value.localAiRequestRejected(status),
+      'The AI service rejected the request (HTTP $status).',
+    );
   }
 
   static Future<String?> _readApiKey(String provider) =>

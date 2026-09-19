@@ -80,8 +80,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
         () => _state = {
           ...?_state,
           'status': 'error',
-          'error':
-              'The Stable rollback preview is invalid. Refresh and review it again.',
+          'error': l10n.meoChannelRollbackPreviewInvalid,
         },
       );
       return;
@@ -102,15 +101,13 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
           size: 32,
         ),
         title: Text(
-          'Switch to Stable',
+          l10n.meoChannelSwitchToStable,
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w800,
           ),
           textAlign: TextAlign.center,
         ),
-        content: Text(
-          'The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n$packages',
-        ),
+        content: Text(l10n.meoChannelDowngradeDialog(packages)),
         actions: [
           FilledButton.tonal(
             onPressed: () => Navigator.pop(context, false),
@@ -118,7 +115,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Switch to Stable'),
+            child: Text(l10n.meoChannelSwitchToStable),
           ),
         ],
       ),
@@ -133,7 +130,12 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final state = _state;
-    final channel = state?['channel']?.toString() ?? 'Checking…';
+    final channel = state?['channel']?.toString() ?? '';
+    final channelLabel = switch (channel) {
+      'stable' => l10n.meoChannelStable,
+      'beta' => l10n.meoChannelBeta,
+      _ => l10n.meoChannelChecking,
+    };
     final error = state != null && state['status'] == 'error'
         ? state['error']?.toString()
         : null;
@@ -162,12 +164,12 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Meo update channel',
+                        l10n.meoUpdateChannel,
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Read from the active pacman repository order',
+                        l10n.meoUpdateChannelSubtitle,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -175,20 +177,20 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                     ],
                   ),
                 ),
-                Chip(label: Text(channel)),
+                Chip(label: Text(channelLabel)),
               ],
             ),
             const SizedBox(height: 16),
             Text(
               channel == 'beta'
-                  ? 'Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.'
-                  : 'Stable receives fully tested MeoArch release trains.',
+                  ? l10n.meoChannelBetaSummary
+                  : l10n.meoChannelStableSummary,
               style: theme.textTheme.bodyMedium,
             ),
             if (repositories.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
-                'Repository priority: $repositories',
+                l10n.meoChannelRepositoryPriority(repositories),
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -197,8 +199,7 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
               _StatusPanel(
                 icon: Icons.science_outlined,
                 color: theme.colorScheme.tertiary,
-                text:
-                    'Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.',
+                text: l10n.meoChannelBetaNotice,
               ),
             ],
             if (downgradePending) ...[
@@ -206,14 +207,15 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
               _StatusPanel(
                 icon: Icons.pending_actions_rounded,
                 color: theme.colorScheme.primary,
-                text:
-                    'Stable is configured, but ${(state['downgrades'] as List).length} Meo package downgrade(s) still require review.',
+                text: l10n.meoChannelDowngradePending(
+                  (state['downgrades'] as List).length,
+                ),
                 action: FilledButton.tonalIcon(
                   onPressed: _busy
                       ? null
                       : () => _confirmStableDowngrades(state),
                   icon: const Icon(Icons.fact_check_outlined),
-                  label: const Text('Review downgrades'),
+                  label: Text(l10n.meoChannelReviewDowngrades),
                 ),
               ),
             ],
@@ -233,13 +235,13 @@ class _MeoChannelCardState extends State<MeoChannelCard> {
                     segments: [
                       ButtonSegment(
                         value: 'stable',
-                        label: const Text('Stable'),
+                        label: Text(l10n.meoChannelStable),
                         icon: const Icon(Icons.verified_outlined),
                         enabled: !_busy && channel != 'stable',
                       ),
                       ButtonSegment(
                         value: 'beta',
-                        label: const Text('Beta'),
+                        label: Text(l10n.meoChannelBeta),
                         icon: const Icon(Icons.science_outlined),
                         enabled: !_busy && channel != 'beta',
                       ),

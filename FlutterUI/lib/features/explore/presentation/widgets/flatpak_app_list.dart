@@ -30,6 +30,7 @@ class FlatpakAppList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Widget content;
 
     if (apps.isEmpty && !isLoading) {
@@ -48,14 +49,14 @@ class FlatpakAppList extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              AppLocalizations.of(context)!.noResults,
+              l10n.noResults,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              loadError ?? AppLocalizations.of(context)!.checkNetwork,
+              loadError ?? l10n.checkNetwork,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -64,7 +65,7 @@ class FlatpakAppList extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
-              label: Text(AppLocalizations.of(context)!.retry),
+              label: Text(l10n.retry),
             ),
           ],
         ),
@@ -88,7 +89,7 @@ class FlatpakAppList extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Semantics(
-                label: 'App: ${app.name}',
+                label: l10n.appCardSemantics(app.name),
                 button: true,
                 child: AppCard(
                   color: isSelected && isDesktop

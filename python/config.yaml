@@ -61,7 +61,7 @@ sources:
 ui:
   appearance: "system" # Theme mode: "system", "dark", or "light"
   color_seed: "#0B57D0" # Primary color seed hex (classic MD3 blue)
-  language: "zh-CN"    # UI language: "zh-CN", "zh-TW", "en-US", or "ja-JP"
+  language: "zh-CN"    # UI language: "system", "zh-CN", "zh-TW", "en-US", or "ja-JP"
   close_to_tray: true  # Hide to tray when closing window
   use_system_title_bar: false # Disable custom header in favor of standard window buttons
 

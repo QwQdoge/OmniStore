@@ -7,7 +7,7 @@ project(runner LANGUAGES CXX)
 set(BINARY_NAME "frontend")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-set(APPLICATION_ID "com.example.frontend")
+set(APPLICATION_ID "org.meo.OmniStore")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -73,6 +73,16 @@ set_target_properties(${BINARY_NAME}
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)
+
+# jni 1.0.3 passes the typed JNIEnv pointer to the C JNI API's void** output
+# parameter. Clang 21 diagnoses that upstream C compatibility issue as an error
+# even though the ABI is the one required by JNI. Keep the suppression scoped
+# to the generated jni target so OmniStore and every other plugin retain their
+# normal warning policy.
+if(TARGET jni)
+  target_compile_options(jni PRIVATE
+    "$<$<COMPILE_LANGUAGE:C>:-Wno-incompatible-pointer-types>")
+endif()
 
 
 # === Installation ===

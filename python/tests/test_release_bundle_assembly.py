@@ -10,6 +10,21 @@ auto_build = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(auto_build)
 
 
+def _write_linux_package_identity_assets(source_root):
+    package_root = source_root / "linux" / "packaging"
+    icon_name = "org.meo.OmniStore.svg"
+    desktop = package_root / "omnistore.desktop"
+    desktop.parent.mkdir(parents=True, exist_ok=True)
+    desktop.write_text(
+        "[Desktop Entry]\nType=Application\nIcon=org.meo.OmniStore\n",
+        encoding="utf-8",
+    )
+    for size in ("scalable", "16x16", "22x22", "32x32"):
+        icon = package_root / "icons" / "hicolor" / size / "apps" / icon_name
+        icon.parent.mkdir(parents=True, exist_ok=True)
+        icon.write_text(f"<svg aria-label='{size}'/>\n", encoding="utf-8")
+
+
 def test_assembly_copies_builtin_source_manifests_without_python_cache(tmp_path, monkeypatch):
     source_root = tmp_path / "source"
     manifest = source_root / "plugins" / "sources" / "pacman" / "plugin.json"
@@ -38,6 +53,7 @@ def test_release_bundle_carries_project_license(tmp_path, monkeypatch):
     bundle.mkdir(parents=True)
     (bundle / "frontend").write_text("fixture", encoding="utf-8")
     (source_root / "LICENSE").write_text("GNU GENERAL PUBLIC LICENSE\n", encoding="utf-8")
+    _write_linux_package_identity_assets(source_root)
     monkeypatch.setattr(auto_build, "BASE_DIR", source_root)
     monkeypatch.setattr(auto_build, "FLUTTER_PROJECT_DIR", flutter_root)
 
@@ -45,6 +61,35 @@ def test_release_bundle_carries_project_license(tmp_path, monkeypatch):
     auto_build.assemble("linux", output, tmp_path / "build")
 
     assert (output / "LICENSE").read_text(encoding="utf-8") == "GNU GENERAL PUBLIC LICENSE\n"
+
+
+def test_bundle_carries_package_owned_hicolor_identity_assets(tmp_path, monkeypatch):
+    source_root = tmp_path / "source"
+    icon_name = "org.meo.OmniStore.svg"
+    _write_linux_package_identity_assets(source_root)
+    monkeypatch.setattr(auto_build, "BASE_DIR", source_root)
+
+    bundle = tmp_path / "bundle"
+    auto_build.copy_linux_package_identity_assets(bundle)
+
+    assert (bundle / "data" / "omnistore.desktop").is_file()
+    for size in ("scalable", "16x16", "22x22", "32x32"):
+        assert (bundle / "data" / "icons" / "hicolor" / size / "apps" / icon_name).is_file()
+
+
+def test_repository_hicolor_identity_matches_the_launcher(tmp_path):
+    icon_name = "org.meo.OmniStore.svg"
+    source_root = _REPOSITORY_ROOT / "linux" / "packaging"
+    bundle = tmp_path / "bundle"
+
+    auto_build.copy_linux_package_identity_assets(bundle)
+
+    desktop = bundle / "data" / "omnistore.desktop"
+    assert "Icon=org.meo.OmniStore\n" in desktop.read_text(encoding="utf-8")
+    for size in ("scalable", "16x16", "22x22", "32x32"):
+        source = source_root / "icons" / "hicolor" / size / "apps" / icon_name
+        copied = bundle / "data" / "icons" / "hicolor" / size / "apps" / icon_name
+        assert copied.read_bytes() == source.read_bytes()
 
 
 def test_frozen_backend_collects_manifest_loaded_source_modules(tmp_path, monkeypatch):

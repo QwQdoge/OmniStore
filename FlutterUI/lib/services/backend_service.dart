@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:collection/collection.dart';
 
@@ -17,6 +18,9 @@ import 'backend/process_execution_service.dart';
 import '../features/ai/account_ai_prompts.dart';
 import '../features/ai/account_ai_service.dart';
 import '../features/ai/local_ai_service.dart';
+import '../features/ai/system_ai_service.dart';
+import '../core/app_navigator.dart';
+import '../l10n/app_localizations.dart';
 
 export 'backend/daemon_client.dart' show DaemonResult;
 
@@ -40,6 +44,20 @@ class BackendService {
 
   // ignore: unused_field
   final Completer<void> _initCompleter = Completer<void>();
+
+  String _localizedAi(
+    String Function(AppLocalizations value) message,
+    String fallback,
+  ) {
+    try {
+      final context = omnistoreNavigatorKey.currentContext;
+      if (context == null) return fallback;
+      final value = AppLocalizations.of(context);
+      return value == null ? fallback : message(value);
+    } on FlutterError {
+      return fallback;
+    }
+  }
 
   // Registry for tracking active subprocesses (migrated to _processRegistry)
   // Murphy-proof: Global lock for local IO operations
@@ -866,10 +884,11 @@ class BackendService {
     final rawAi = config['ai'];
     if (rawAi is! Map) return null;
     final ai = Map<String, dynamic>.from(rawAi);
-    final language = OmniStoreAiPrompts.language(
+    final language = OmniStoreAiPrompts.languageForPreference(
       config['ui'] is Map
-          ? '${(config['ui'] as Map)['language'] ?? 'zh-CN'}'
-          : 'zh-CN',
+          ? '${(config['ui'] as Map)['language'] ?? 'system'}'
+          : 'system',
+      PlatformDispatcher.instance.locale.toLanguageTag(),
     );
     return (ai: ai, language: language);
   }
@@ -879,10 +898,20 @@ class BackendService {
   ) async {
     final context = await _configuredAiContext();
     if (context == null) {
-      throw const LocalAiException('AI 配置不可用。');
+      throw LocalAiException(
+        _localizedAi(
+          (value) => value.aiConfigUnavailable,
+          'AI configuration is unavailable.',
+        ),
+      );
     }
     if (context.ai['enabled'] != true) {
-      throw const LocalAiException('AI 功能尚未启用。');
+      throw LocalAiException(
+        _localizedAi(
+          (value) => value.aiNotEnabled,
+          'AI assistance is not enabled.',
+        ),
+      );
     }
     final prompt = await buildPrompt(context.language);
     final temperature = context.ai['temperature'] is num
@@ -896,10 +925,36 @@ class BackendService {
       final credentialId = '${context.ai['account_credential_id'] ?? ''}'
           .trim();
       if (credentialId.isEmpty) {
-        throw const AccountAiException('请先在 OmniStore 设置中选择账号 AI 连接。');
+        throw AccountAiException(
+          _localizedAi(
+            (value) => value.chooseAccountAiConnection,
+            'Select an account AI connection in OmniStore Settings first.',
+          ),
+        );
       }
       return AccountAiService.instance.invokeWithConsent(
         credentialId: credentialId,
+        purpose: prompt.purpose,
+        dataCategories: prompt.dataCategories,
+        systemPrompt: prompt.systemPrompt,
+        userPrompt: prompt.userPrompt,
+        model: '${context.ai['model'] ?? ''}',
+        temperature: temperature,
+        maxOutputTokens: configuredMaxTokens.clamp(1, prompt.maxOutputTokens),
+      );
+    }
+    if (provider == 'system') {
+      final connectionId = '${context.ai['system_connection_id'] ?? ''}'.trim();
+      if (connectionId.isEmpty) {
+        throw SystemAiException(
+          _localizedAi(
+            (value) => value.chooseSystemAiConnection,
+            'Select a system AI connection in OmniStore Settings first.',
+          ),
+        );
+      }
+      return SystemAiService.instance.invokeWithConsent(
+        connectionId: connectionId,
         purpose: prompt.purpose,
         dataCategories: prompt.dataCategories,
         systemPrompt: prompt.systemPrompt,
@@ -1632,16 +1687,44 @@ class BackendService {
     final aiContext = aiOverride == null ? await _configuredAiContext() : null;
     final ai = aiOverride ?? aiContext?.ai;
     if (ai == null || ai['enabled'] != true) {
-      return {"status": "error", "response": "AI 功能尚未启用。"};
+      return {
+        "status": "error",
+        "response": _localizedAi(
+          (value) => value.aiNotEnabled,
+          'AI assistance is not enabled.',
+        ),
+      };
     }
     final provider = '${ai['provider'] ?? 'ollama'}'.trim();
     if (provider == 'account') {
       final credentialId = '${ai['account_credential_id'] ?? ''}'.trim();
       if (credentialId.isEmpty) {
-        return {"status": "error", "response": "请先选择账号 AI 连接。"};
+        return {
+          "status": "error",
+          "response": _localizedAi(
+            (value) => value.chooseAccountAiConnection,
+            'Select an account AI connection in OmniStore Settings first.',
+          ),
+        };
       }
       return AccountAiService.instance.testConnection(
         credentialId: credentialId,
+        model: '${ai['model'] ?? ''}',
+      );
+    }
+    if (provider == 'system') {
+      final connectionId = '${ai['system_connection_id'] ?? ''}'.trim();
+      if (connectionId.isEmpty) {
+        return {
+          "status": "error",
+          "response": _localizedAi(
+            (value) => value.chooseSystemAiConnection,
+            'Select a system AI connection in OmniStore Settings first.',
+          ),
+        };
+      }
+      return SystemAiService.instance.testConnection(
+        connectionId: connectionId,
         model: '${ai['model'] ?? ''}',
       );
     }

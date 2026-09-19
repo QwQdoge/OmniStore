@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class BannerCard extends StatelessWidget {
   final AppPackage app;
@@ -18,7 +19,7 @@ class BannerCard extends StatelessWidget {
     final heroTag = 'hero-banner-${app.name}-${app.primarySource}';
 
     return Semantics(
-      label: 'Featured app: ${app.name}',
+      label: AppLocalizations.of(context)!.featuredAppSemantics(app.name),
       button: true,
       child: AppCard(
         borderRadius: 28,

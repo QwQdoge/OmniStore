@@ -46,6 +46,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get install => '安装';
 
   @override
+  String get download => '下载';
+
+  @override
   String get open => '打开';
 
   @override
@@ -450,7 +453,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiApiKey => 'API 密钥';
 
   @override
-  String get aiProxy => '网络代理（可选）';
+  String get aiProxy => '网络代理';
 
   @override
   String get aiTemperature => '温度（创意度）';
@@ -1281,7 +1284,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hidePassword => '隐藏密码';
 
   @override
-  String get signIn => '登录';
+  String get signIn => '登录账号';
 
   @override
   String get createAccount => '创建 MeoArch 账户';
@@ -1312,10 +1315,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get githubIntegration => 'GitHub 集成';
 
   @override
-  String get configurePat => 'GitHub 访问令牌（可选）';
+  String get configurePat => 'GitHub 访问令牌';
 
   @override
-  String get patHelperText => '请提供 GitHub Classic PAT 或 Fine-grained 令牌。';
+  String get patHelperText =>
+      '如需使用需登录的 GitHub 功能，请添加 GitHub Classic PAT 或细粒度令牌。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 维护，离线时也始终可见';
@@ -1360,8 +1364,550 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pullToRefreshCategory => '下拉刷新或尝试其他分类。';
 
   @override
+  String get systemAiProviderLabel => '系统 AI 连接（KWallet / 推荐）';
+
+  @override
+  String get systemAiSharedConnectionLabel => '系统共享连接';
+
+  @override
+  String get systemAiConnectionHelper =>
+      '密钥由 Meo Account 从 KWallet 读取，OmniStore 无法读取明文。';
+
+  @override
+  String get systemAiLoadingTitle => '正在读取系统 AI 连接';
+
+  @override
+  String get systemAiMetadataOnly => '只读取名称、端点和默认模型，不读取密钥。';
+
+  @override
+  String get systemAiLoadErrorTitle => '无法读取系统 AI 连接';
+
+  @override
+  String get systemAiSelectLabel => '此设备的 AI 连接';
+
+  @override
+  String get meoSettingsOpenFailed => '无法打开 Meo Settings。';
+
+  @override
+  String get manageInMeoSettings => '在 Meo Settings 中管理';
+
+  @override
+  String get systemAiNoConnections => '还没有系统 AI 连接；请先在 Meo Settings 中添加。';
+
+  @override
+  String get systemAiLoadFailed =>
+      '无法读取系统 AI 连接；请在 Meo Settings 的“账号与安全”中检查配置。';
+
+  @override
+  String get systemAiInvalidCatalog => '系统 AI 服务返回了无效的模型目录。';
+
+  @override
+  String get systemAiInvalidConsent => '系统 AI 服务没有返回有效的授权摘要。';
+
+  @override
+  String get systemAiConsentExpired => '系统 AI 授权摘要无效或已经过期。';
+
+  @override
+  String get systemAiInvalidResponse => '系统 AI 服务没有返回有效文本。';
+
+  @override
+  String get systemAiUnsupported => '当前平台不支持系统 AI 服务。';
+
+  @override
+  String get systemAiOperationFailed => '系统 AI 操作失败。';
+
+  @override
+  String get systemAiTimeout => '系统 AI 操作超时。';
+
+  @override
+  String get systemAiUnavailable => '无法连接 Meo Account 系统 AI 服务。';
+
+  @override
+  String get systemAiTestPurpose => '测试 OmniStore 的系统 AI 连接';
+
+  @override
+  String get aiConsentCancelled => '你取消了这次 AI 请求。';
+
+  @override
+  String get chooseSystemAiConnection => '请先在 OmniStore 设置中选择系统 AI 连接。';
+
+  @override
+  String get chooseAccountAiConnection => '请先在 OmniStore 设置中选择账号 AI 连接。';
+
+  @override
+  String get aiConfigUnavailable => 'AI 配置不可用。';
+
+  @override
+  String get aiNotEnabled => 'AI 功能尚未启用。';
+
+  @override
+  String get aiAccountProviderHint =>
+      'Account 只代为调用你已保存的连接；API 密钥不会下发到 OmniStore。';
+
+  @override
+  String get aiSystemProviderHint =>
+      '由 Meo Account 从 KWallet 调用；OmniStore 只看到连接信息和最终结果。';
+
+  @override
+  String get aiOllamaProviderHint => 'Ollama 仅连接本机服务；不需要 API 密钥。';
+
+  @override
+  String get aiCompatibleProviderHint => '仅使用你信任的 HTTPS 兼容端点；密钥仍保存在本机安全凭据库。';
+
+  @override
+  String get aiLocalKeyProviderHint =>
+      '此服务商的密钥单独保存在 Secret Service/KWallet，无法读回明文。';
+
+  @override
+  String get meoAccountOpenFailed => '无法打开 Meo Account。';
+
+  @override
+  String get secureCredentialWriteFailed => '无法写入系统安全凭据库。';
+
+  @override
+  String get modelsNoneFound => '服务正在运行，但没有发现已安装或可用的模型。';
+
+  @override
+  String get modelsAutofilled => '已发现并自动填入模型。';
+
+  @override
+  String get modelsFoundChoose => '已发现模型；请选择后再测试，OmniStore 不会根据名称猜测能力。';
+
+  @override
+  String get apiKeyRequired => '请先填写新的 API 密钥。';
+
+  @override
+  String get secureCredentialSaved => 'API 密钥已写入系统安全凭据库。';
+
+  @override
+  String get localApiKeyDeleted => '本地 API 密钥已删除。';
+
+  @override
+  String get secureCredentialUnavailable => '无法访问系统安全凭据库。';
+
+  @override
+  String get signInMeoAccount => '登录 Meo Account';
+
+  @override
+  String get signInMeoAccountDetail =>
+      '登录后即可选择账号中加密保存的 AI 连接；API 密钥不会下发到 OmniStore。';
+
+  @override
+  String get accountAiLoading => '正在读取账号 AI 连接';
+
+  @override
+  String get accountAiMetadataOnly => '只读取名称、服务商和密钥掩码。';
+
+  @override
+  String get accountAiLoadError => '无法读取账号 AI 连接';
+
+  @override
+  String get accountAiNone => '账号中还没有 AI 连接';
+
+  @override
+  String get accountAiNoneDetail => '前往 Account 填写你自己的 API 密钥并安全保存，然后回到这里刷新。';
+
+  @override
+  String get connect => '去连接';
+
+  @override
+  String get accountAiSelectLabel => '账号 AI 连接';
+
+  @override
+  String get accountAiConnectionHelper =>
+      '密钥只在 Account Edge broker 内解密，OmniStore 不可读取。';
+
+  @override
+  String get manageAiConnections => '管理 AI 连接';
+
+  @override
+  String get aiPerRequestConsentDetail =>
+      '每次发送前，OmniStore 都会显示服务商、模型、用途、数据类别、完整内容和请求指纹，并要求仅同意这一次。';
+
+  @override
+  String get aiEnabledConsentDesc => '默认关闭；开启后每次发送仍需单独确认。';
+
+  @override
+  String providerLocalSecureKey(String provider) {
+    return '$provider（本地安全密钥）';
+  }
+
+  @override
+  String get providerCompatibleHttps => 'OpenAI Compatible（自定义 HTTPS）';
+
+  @override
+  String get providerMeoAccount => 'Meo Account';
+
+  @override
+  String get ollamaEndpointSafety => '默认连接本机 Ollama；请保留回环地址以避免意外访问局域网服务。';
+
+  @override
+  String get compatibleEndpointSafety => '仅填写你信任的 HTTPS 兼容端点，不包含密钥或查询参数。';
+
+  @override
+  String get accountModelOverride => '账号模型';
+
+  @override
+  String get accountModelDefaultHelper => '留空会使用所选 Account AI 连接的默认模型。';
+
+  @override
+  String get modelReviewHelper => '实际模型会在每次发送前再次展示，供你确认。';
+
+  @override
+  String get detectLocalModels => '检测本机模型并自动填入';
+
+  @override
+  String get readModelCatalog => '读取模型目录';
+
+  @override
+  String get installOllamaWithOmniStore => '通过 OmniStore 安装 Ollama';
+
+  @override
+  String get chooseDiscoveredModel => '选择已发现的模型';
+
+  @override
+  String get localKeyStored => '当前服务商已有独立安全密钥';
+
+  @override
+  String get localKeyNotStored => '当前服务商尚未保存 API 密钥';
+
+  @override
+  String get localKeysHelper =>
+      '每个服务商分别保存在 Secret Service/KWallet；只能替换或删除，不能读回明文。';
+
+  @override
+  String get newApiKeyLabel => '新的 API 密钥（写入后清空）';
+
+  @override
+  String get newApiKeyHelper => '仅填写要替换的新密钥；保存后不能读取或复制旧密钥。';
+
+  @override
+  String get hideInput => '隐藏输入';
+
+  @override
+  String get showInput => '显示输入';
+
+  @override
+  String get saveOrReplace => '安全保存 / 替换';
+
+  @override
+  String get deleteLocalKey => '删除本地密钥';
+
+  @override
+  String get temperatureHelper => '0–2；较低数值通常更稳定，范围外不会保存。';
+
+  @override
+  String get aiTestScopeHelper => '测试只验证当前连接，不会改变“启用 AI 辅助”开关；实际发送仍需单次确认。';
+
+  @override
+  String get meoUpdateChannel => 'Meo 更新通道';
+
+  @override
+  String get meoUpdateChannelSubtitle => '按当前生效的 Pacman 软件源读取';
+
+  @override
+  String get meoChannelChecking => '正在检查更新通道…';
+
+  @override
+  String get meoChannelStable => '稳定版';
+
+  @override
+  String get meoChannelBeta => '测试版';
+
+  @override
+  String get meoChannelBetaSummary => '抢先使用较新的 Meo 组件；Arch 系统软件包仍使用其正常软件源。';
+
+  @override
+  String get meoChannelStableSummary => '使用经过完整测试的 MeoArch 发布列车。';
+
+  @override
+  String meoChannelRepositoryPriority(String repositories) {
+    return '软件源优先级：$repositories';
+  }
+
+  @override
+  String get meoChannelBetaNotice =>
+      '只有希望比稳定版更早获得新组件时才选择测试版。关键系统不建议使用；稳定版始终可作为回退来源。';
+
+  @override
+  String meoChannelDowngradePending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已选择稳定版，但仍有 $count 个 Meo 软件包降级需要你确认。',
+      one: '已选择稳定版，但仍有 1 个 Meo 软件包降级需要你确认。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get meoChannelReviewDowngrades => '查看降级项目';
+
+  @override
+  String get meoChannelSwitchToStable => '切换到稳定版';
+
+  @override
+  String get meoChannelRollbackPreviewInvalid => '这份稳定版回退预览已失效。请刷新后重新查看。';
+
+  @override
+  String meoChannelDowngradeDialog(String packages) {
+    return '以下官方 Meo 软件包将切换到稳定版。不会降级 Arch 或第三方软件包。\\n\\n$packages';
+  }
+
+  @override
   String sourceFilterSemantics(String name) {
     return '按软件源筛选：$name';
+  }
+
+  @override
+  String get aiConsentTitle => '确认这一次 AI 请求';
+
+  @override
+  String get aiConsentIntro => '请先查看以下内容。你的确认只适用于这一次请求及其指纹。';
+
+  @override
+  String get aiConsentProvider => '服务商';
+
+  @override
+  String get aiConsentDestination => '发送到';
+
+  @override
+  String get aiConsentModel => '模型';
+
+  @override
+  String get aiConsentPurpose => '用途';
+
+  @override
+  String get aiConsentDataCategories => '将发送的数据';
+
+  @override
+  String get aiConsentCharacters => '字符数';
+
+  @override
+  String get aiConsentFingerprint => '请求指纹';
+
+  @override
+  String get aiConsentReviewContent => '查看将发送的内容';
+
+  @override
+  String get aiConsentSystemInstruction => '系统指令';
+
+  @override
+  String get aiConsentUserContent => '你的内容';
+
+  @override
+  String aiConsentConfirmWithProvider(String provider) {
+    return '我确认以上内容将发送给 $provider。';
+  }
+
+  @override
+  String get aiConsentKeyNotExposed => 'API 密钥不属于这段提示内容，也不会在这里显示。';
+
+  @override
+  String get aiConsentDeny => '暂不发送';
+
+  @override
+  String get aiConsentAllowOnce => '确认并发送一次';
+
+  @override
+  String get aiConsentCategoryAppName => '应用名称';
+
+  @override
+  String get aiConsentCategoryAppDescription => '应用描述';
+
+  @override
+  String get aiConsentCategoryVersionMetadata => '版本信息';
+
+  @override
+  String get aiConsentCategoryPackageSource => '软件源';
+
+  @override
+  String get aiConsentCategoryPackageVariants => '可选安装版本';
+
+  @override
+  String get aiConsentCategoryPreferenceRequest => '偏好请求';
+
+  @override
+  String get aiConsentCategorySearchQuery => '搜索关键词';
+
+  @override
+  String get aiConsentCategorySystemEnvironment => '系统环境摘要';
+
+  @override
+  String get aiConsentCategoryErrorLog => '错误日志';
+
+  @override
+  String get aiConsentCategoryRecommendationRequest => '推荐需求';
+
+  @override
+  String get aiConsentCategoryConnectionTest => '连接测试数据';
+
+  @override
+  String get githubLoadErrorDetail => '无法加载 GitHub 仓库。请检查网络后重试。';
+
+  @override
+  String get githubSearchErrorDetail => '无法搜索 GitHub 仓库。请检查网络后重试。';
+
+  @override
+  String get flatpakLoadErrorDetail => '无法加载 Flatpak 应用。请检查 Flathub 和网络连接后重试。';
+
+  @override
+  String appCardSemantics(String name) {
+    return '应用：$name';
+  }
+
+  @override
+  String get diskSize => '磁盘占用';
+
+  @override
+  String diskSizeWithConfidence(String confidence) {
+    return '磁盘占用（$confidence）';
+  }
+
+  @override
+  String get accountAiSignInRequired => '请先登录 Meo Account，再使用账号 AI。';
+
+  @override
+  String get accountAiNoDefaultModel => '此 AI 连接没有默认模型。请先在设置中选择模型。';
+
+  @override
+  String get accountAiInvalidConsent => '账号 AI 服务没有返回有效的授权摘要。';
+
+  @override
+  String get accountAiConsentExpired => 'AI 授权摘要无效或已过期。';
+
+  @override
+  String get accountAiInvalidResponse => 'AI 服务没有返回有效内容。';
+
+  @override
+  String get accountAiTestPurpose => '测试 OmniStore 的账号 AI 连接';
+
+  @override
+  String get accountAiInvalidDestination => '账号 AI 连接的目标地址无效。';
+
+  @override
+  String get accountAiConnectionNotFound => '所选 AI 连接不可用。请在设置中重新选择。';
+
+  @override
+  String get accountAiInvalidData => '账号 AI 服务返回了无效数据。';
+
+  @override
+  String get accountAiUnavailable => '账号 AI 服务暂时不可用。';
+
+  @override
+  String get accountAiRequestDenied => '账号 AI 请求被拒绝。请重新登录后再试。';
+
+  @override
+  String get accountAiConnectionFailed => '无法连接账号 AI 服务。';
+
+  @override
+  String get localAiUnsupportedModelDiscovery => '此连接不支持本机模型发现。';
+
+  @override
+  String get localAiCredentialStoreUnavailable => '无法打开安全凭据库。请解锁 KWallet 后重试。';
+
+  @override
+  String get localAiApiKeyRequired => '请先为当前服务商安全保存 API 密钥。';
+
+  @override
+  String get localAiCatalogTooLarge => '模型目录响应过大。';
+
+  @override
+  String get localAiInvalidCatalog => '模型目录返回了无效数据。';
+
+  @override
+  String get localAiCatalogUnavailable => '无法读取模型目录。请确认服务正在运行。';
+
+  @override
+  String get localAiUnsupportedConnection => '不支持这种本地 AI 连接类型。';
+
+  @override
+  String get localAiInvalidModel => '请输入有效的模型名称。';
+
+  @override
+  String get localAiInvalidPurpose => 'AI 请求用途无效。';
+
+  @override
+  String get localAiInvalidInput => 'AI 输入为空或过大。';
+
+  @override
+  String get localAiInvalidDataCategories => 'AI 数据类别无效。';
+
+  @override
+  String get localAiApiKeyInvalid => '安全凭据库中没有此服务商的有效 API 密钥。';
+
+  @override
+  String get localAiDestinationChanged => 'AI 目标地址在确认后发生变化，请求已被拦截。';
+
+  @override
+  String get localAiResponseTooLarge => 'AI 服务响应过大。';
+
+  @override
+  String get localAiInvalidResponse => 'AI 服务返回了无效数据。';
+
+  @override
+  String get localAiNoResponseText => 'AI 服务没有返回文本。';
+
+  @override
+  String get localAiConnectionFailed => '无法连接 AI 服务，或请求已超时。';
+
+  @override
+  String get localAiTestPurpose => '测试 OmniStore 的本地安全 AI 连接';
+
+  @override
+  String get localAiInvalidEndpoint => 'AI 服务地址无效。';
+
+  @override
+  String get localAiOllamaLoopbackRequired => 'Ollama 地址必须使用本机 HTTP(S) 回环地址。';
+
+  @override
+  String get localAiHttpsRequired => '云端 AI 服务必须使用 HTTPS。';
+
+  @override
+  String get localAiPrivateEndpointBlocked =>
+      '兼容 API 不能指向本机或私有网络。请使用 Ollama 运行本机模型。';
+
+  @override
+  String get localAiOllama => 'Ollama（本机）';
+
+  @override
+  String get localAiApiKeyRejected => 'AI 服务拒绝了 API 密钥。';
+
+  @override
+  String get localAiModelOrEndpointNotFound => '找不到请求的 AI 模型或服务地址。';
+
+  @override
+  String get localAiRateLimited => 'AI 服务额度不足或请求过于频繁。';
+
+  @override
+  String get localAiUnavailable => 'AI 服务暂时不可用。';
+
+  @override
+  String localAiRequestRejected(int status) {
+    return 'AI 服务拒绝了请求（HTTP $status）。';
+  }
+
+  @override
+  String get aiTestService => '服务';
+
+  @override
+  String get aiTestConnected => '已连接';
+
+  @override
+  String get aiTestUnavailable => '不可用';
+
+  @override
+  String get aiTestReady => '已就绪';
+
+  @override
+  String get aiTestNotReady => '未就绪';
+
+  @override
+  String get aiTestLatency => '延迟';
+
+  @override
+  String featuredAppSemantics(String name) {
+    return '精选应用：$name';
   }
 }
 
@@ -1404,6 +1950,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get install => '安裝';
+
+  @override
+  String get download => '下載';
 
   @override
   String get open => '開啟';
@@ -1810,7 +2359,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiApiKey => 'API 金鑰';
 
   @override
-  String get aiProxy => '網路代理（可選）';
+  String get aiProxy => '網路代理';
 
   @override
   String get aiTemperature => '溫度（創意度）';
@@ -2641,7 +3190,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hidePassword => '隱藏密碼';
 
   @override
-  String get signIn => '登入';
+  String get signIn => '登入帳號';
 
   @override
   String get createAccount => '建立 MeoArch 帳戶';
@@ -2672,10 +3221,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubIntegration => 'GitHub 整合';
 
   @override
-  String get configurePat => 'GitHub 存取權杖（選用）';
+  String get configurePat => 'GitHub 存取權杖';
 
   @override
-  String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權杖。';
+  String get patHelperText =>
+      '如需使用需要登入的 GitHub 功能，請加入 GitHub Classic PAT 或細粒度權杖。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 維護，離線時也始終可見';
@@ -2720,7 +3270,550 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get pullToRefreshCategory => '下拉重新整理或嘗試其他分類。';
 
   @override
+  String get systemAiProviderLabel => '系統 AI 連線（KWallet / 建議）';
+
+  @override
+  String get systemAiSharedConnectionLabel => '系統共用連線';
+
+  @override
+  String get systemAiConnectionHelper =>
+      '金鑰由 Meo Account 從 KWallet 讀取，OmniStore 無法讀取明文。';
+
+  @override
+  String get systemAiLoadingTitle => '正在讀取系統 AI 連線';
+
+  @override
+  String get systemAiMetadataOnly => '只讀取名稱、端點與預設模型，不讀取金鑰。';
+
+  @override
+  String get systemAiLoadErrorTitle => '無法讀取系統 AI 連線';
+
+  @override
+  String get systemAiSelectLabel => '此裝置的 AI 連線';
+
+  @override
+  String get meoSettingsOpenFailed => '無法開啟 Meo Settings。';
+
+  @override
+  String get manageInMeoSettings => '在 Meo Settings 中管理';
+
+  @override
+  String get systemAiNoConnections => '尚未設定系統 AI 連線；請先在 Meo Settings 中新增。';
+
+  @override
+  String get systemAiLoadFailed =>
+      '無法讀取系統 AI 連線；請在 Meo Settings 的「帳號與安全性」中檢查設定。';
+
+  @override
+  String get systemAiInvalidCatalog => '系統 AI 服務傳回無效的模型目錄。';
+
+  @override
+  String get systemAiInvalidConsent => '系統 AI 服務未傳回有效的授權摘要。';
+
+  @override
+  String get systemAiConsentExpired => '系統 AI 授權摘要無效或已過期。';
+
+  @override
+  String get systemAiInvalidResponse => '系統 AI 服務未傳回有效文字。';
+
+  @override
+  String get systemAiUnsupported => '目前平台不支援系統 AI 服務。';
+
+  @override
+  String get systemAiOperationFailed => '系統 AI 操作失敗。';
+
+  @override
+  String get systemAiTimeout => '系統 AI 操作逾時。';
+
+  @override
+  String get systemAiUnavailable => '無法連線到 Meo Account 系統 AI 服務。';
+
+  @override
+  String get systemAiTestPurpose => '測試 OmniStore 的系統 AI 連線';
+
+  @override
+  String get aiConsentCancelled => '你已取消這次 AI 請求。';
+
+  @override
+  String get chooseSystemAiConnection => '請先在 OmniStore 設定中選擇系統 AI 連線。';
+
+  @override
+  String get chooseAccountAiConnection => '請先在 OmniStore 設定中選擇帳號 AI 連線。';
+
+  @override
+  String get aiConfigUnavailable => 'AI 設定無法使用。';
+
+  @override
+  String get aiNotEnabled => 'AI 輔助尚未啟用。';
+
+  @override
+  String get aiAccountProviderHint =>
+      'Account 只代為呼叫你已儲存的連線；API 金鑰不會傳給 OmniStore。';
+
+  @override
+  String get aiSystemProviderHint =>
+      '由 Meo Account 從 KWallet 呼叫；OmniStore 只會看到連線資訊與最終結果。';
+
+  @override
+  String get aiOllamaProviderHint => 'Ollama 僅連線本機服務；不需要 API 金鑰。';
+
+  @override
+  String get aiCompatibleProviderHint => '僅使用你信任的 HTTPS 相容端點；金鑰仍保存在本機安全憑證庫。';
+
+  @override
+  String get aiLocalKeyProviderHint =>
+      '此服務商的金鑰獨立保存在 Secret Service/KWallet，無法讀回明文。';
+
+  @override
+  String get meoAccountOpenFailed => '無法開啟 Meo Account。';
+
+  @override
+  String get secureCredentialWriteFailed => '無法寫入系統安全憑證庫。';
+
+  @override
+  String get modelsNoneFound => '服務正在執行，但沒有發現已安裝或可用的模型。';
+
+  @override
+  String get modelsAutofilled => '已發現並自動填入模型。';
+
+  @override
+  String get modelsFoundChoose => '已發現模型；請選擇後再測試，OmniStore 不會依名稱猜測能力。';
+
+  @override
+  String get apiKeyRequired => '請先填寫新的 API 金鑰。';
+
+  @override
+  String get secureCredentialSaved => 'API 金鑰已寫入系統安全憑證庫。';
+
+  @override
+  String get localApiKeyDeleted => '本機 API 金鑰已刪除。';
+
+  @override
+  String get secureCredentialUnavailable => '無法存取系統安全憑證庫。';
+
+  @override
+  String get signInMeoAccount => '登入 Meo Account';
+
+  @override
+  String get signInMeoAccountDetail =>
+      '登入後即可選擇帳號中加密儲存的 AI 連線；API 金鑰不會傳給 OmniStore。';
+
+  @override
+  String get accountAiLoading => '正在讀取帳號 AI 連線';
+
+  @override
+  String get accountAiMetadataOnly => '只讀取名稱、服務商與金鑰遮罩。';
+
+  @override
+  String get accountAiLoadError => '無法讀取帳號 AI 連線';
+
+  @override
+  String get accountAiNone => '帳號中尚無 AI 連線';
+
+  @override
+  String get accountAiNoneDetail => '前往 Account 安全儲存你的 API 金鑰，然後回到這裡重新整理。';
+
+  @override
+  String get connect => '前往連線';
+
+  @override
+  String get accountAiSelectLabel => '帳號 AI 連線';
+
+  @override
+  String get accountAiConnectionHelper =>
+      '金鑰只在 Account Edge broker 中解密，OmniStore 無法讀取。';
+
+  @override
+  String get manageAiConnections => '管理 AI 連線';
+
+  @override
+  String get aiPerRequestConsentDetail =>
+      '每次傳送前，OmniStore 都會顯示服務商、模型、用途、資料類別、完整內容與請求指紋，並要求僅同意這一次。';
+
+  @override
+  String get aiEnabledConsentDesc => '預設關閉；啟用後每次傳送仍需個別確認。';
+
+  @override
+  String providerLocalSecureKey(String provider) {
+    return '$provider（本機安全金鑰）';
+  }
+
+  @override
+  String get providerCompatibleHttps => 'OpenAI Compatible（自訂 HTTPS）';
+
+  @override
+  String get providerMeoAccount => 'Meo Account';
+
+  @override
+  String get ollamaEndpointSafety => '預設連線本機 Ollama；請保留回環位址以避免意外存取區域網路服務。';
+
+  @override
+  String get compatibleEndpointSafety => '僅填寫你信任的 HTTPS 相容端點，不包含金鑰或查詢參數。';
+
+  @override
+  String get accountModelOverride => '帳號模型';
+
+  @override
+  String get accountModelDefaultHelper => '留空會使用所選 Account AI 連線的預設模型。';
+
+  @override
+  String get modelReviewHelper => '實際模型會在每次傳送前再次顯示供你確認。';
+
+  @override
+  String get detectLocalModels => '偵測本機模型並自動填入';
+
+  @override
+  String get readModelCatalog => '讀取模型目錄';
+
+  @override
+  String get installOllamaWithOmniStore => '透過 OmniStore 安裝 Ollama';
+
+  @override
+  String get chooseDiscoveredModel => '選擇已發現的模型';
+
+  @override
+  String get localKeyStored => '目前服務商已有獨立安全金鑰';
+
+  @override
+  String get localKeyNotStored => '目前服務商尚未儲存 API 金鑰';
+
+  @override
+  String get localKeysHelper =>
+      '每個服務商分別保存在 Secret Service/KWallet；只能取代或刪除，不能讀回明文。';
+
+  @override
+  String get newApiKeyLabel => '新的 API 金鑰（寫入後清空）';
+
+  @override
+  String get newApiKeyHelper => '僅填寫要取代的新金鑰；儲存後不能讀取或複製舊金鑰。';
+
+  @override
+  String get hideInput => '隱藏輸入';
+
+  @override
+  String get showInput => '顯示輸入';
+
+  @override
+  String get saveOrReplace => '安全儲存 / 取代';
+
+  @override
+  String get deleteLocalKey => '刪除本機金鑰';
+
+  @override
+  String get temperatureHelper => '0–2；較低數值通常更穩定，範圍外不會儲存。';
+
+  @override
+  String get aiTestScopeHelper => '測試只驗證目前連線，不會變更「啟用 AI 輔助」開關；實際傳送仍需單次確認。';
+
+  @override
+  String get meoUpdateChannel => 'Meo 更新通道';
+
+  @override
+  String get meoUpdateChannelSubtitle => '依目前生效的 Pacman 軟體來源讀取';
+
+  @override
+  String get meoChannelChecking => '正在檢查更新通道…';
+
+  @override
+  String get meoChannelStable => '穩定版';
+
+  @override
+  String get meoChannelBeta => '測試版';
+
+  @override
+  String get meoChannelBetaSummary => '搶先使用較新的 Meo 元件；Arch 系統套件仍使用其正常軟體來源。';
+
+  @override
+  String get meoChannelStableSummary => '使用經過完整測試的 MeoArch 發行列車。';
+
+  @override
+  String meoChannelRepositoryPriority(String repositories) {
+    return '軟體來源優先順序：$repositories';
+  }
+
+  @override
+  String get meoChannelBetaNotice =>
+      '只有希望比穩定版更早取得新元件時才選擇測試版。關鍵系統不建議使用；穩定版始終可作為回退軟體來源。';
+
+  @override
+  String meoChannelDowngradePending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已選擇穩定版，但仍有 $count 個 Meo 套件降級需要你確認。',
+      one: '已選擇穩定版，但仍有 1 個 Meo 套件降級需要你確認。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get meoChannelReviewDowngrades => '查看降級項目';
+
+  @override
+  String get meoChannelSwitchToStable => '切換至穩定版';
+
+  @override
+  String get meoChannelRollbackPreviewInvalid => '這份穩定版回退預覽已失效。請重新整理後再次查看。';
+
+  @override
+  String meoChannelDowngradeDialog(String packages) {
+    return '以下官方 Meo 套件將切換至穩定版。Arch 或第三方套件不會降級。\\n\\n$packages';
+  }
+
+  @override
   String sourceFilterSemantics(String name) {
     return '按軟體源篩選：$name';
+  }
+
+  @override
+  String get aiConsentTitle => '確認這次 AI 請求';
+
+  @override
+  String get aiConsentIntro => '請先查看以下內容。你的確認只適用於這次請求及其指紋。';
+
+  @override
+  String get aiConsentProvider => '服務商';
+
+  @override
+  String get aiConsentDestination => '傳送至';
+
+  @override
+  String get aiConsentModel => '模型';
+
+  @override
+  String get aiConsentPurpose => '用途';
+
+  @override
+  String get aiConsentDataCategories => '將傳送的資料';
+
+  @override
+  String get aiConsentCharacters => '字元數';
+
+  @override
+  String get aiConsentFingerprint => '請求指紋';
+
+  @override
+  String get aiConsentReviewContent => '查看將傳送的內容';
+
+  @override
+  String get aiConsentSystemInstruction => '系統指令';
+
+  @override
+  String get aiConsentUserContent => '你的內容';
+
+  @override
+  String aiConsentConfirmWithProvider(String provider) {
+    return '我確認以上內容將傳送給 $provider。';
+  }
+
+  @override
+  String get aiConsentKeyNotExposed => 'API 金鑰不屬於這段提示內容，也不會在這裡顯示。';
+
+  @override
+  String get aiConsentDeny => '暫不傳送';
+
+  @override
+  String get aiConsentAllowOnce => '確認並傳送一次';
+
+  @override
+  String get aiConsentCategoryAppName => '應用程式名稱';
+
+  @override
+  String get aiConsentCategoryAppDescription => '應用程式說明';
+
+  @override
+  String get aiConsentCategoryVersionMetadata => '版本資訊';
+
+  @override
+  String get aiConsentCategoryPackageSource => '軟體來源';
+
+  @override
+  String get aiConsentCategoryPackageVariants => '可選安裝版本';
+
+  @override
+  String get aiConsentCategoryPreferenceRequest => '偏好請求';
+
+  @override
+  String get aiConsentCategorySearchQuery => '搜尋關鍵字';
+
+  @override
+  String get aiConsentCategorySystemEnvironment => '系統環境摘要';
+
+  @override
+  String get aiConsentCategoryErrorLog => '錯誤日誌';
+
+  @override
+  String get aiConsentCategoryRecommendationRequest => '推薦需求';
+
+  @override
+  String get aiConsentCategoryConnectionTest => '連線測試資料';
+
+  @override
+  String get githubLoadErrorDetail => '無法載入 GitHub 儲存庫。請檢查網路後再試一次。';
+
+  @override
+  String get githubSearchErrorDetail => '無法搜尋 GitHub 儲存庫。請檢查網路後再試一次。';
+
+  @override
+  String get flatpakLoadErrorDetail =>
+      '無法載入 Flatpak 應用程式。請檢查 Flathub 與網路連線後再試一次。';
+
+  @override
+  String appCardSemantics(String name) {
+    return '應用程式：$name';
+  }
+
+  @override
+  String get diskSize => '磁碟空間占用';
+
+  @override
+  String diskSizeWithConfidence(String confidence) {
+    return '磁碟空間占用（$confidence）';
+  }
+
+  @override
+  String get accountAiSignInRequired => '請先登入 Meo Account，再使用帳號 AI。';
+
+  @override
+  String get accountAiNoDefaultModel => '此 AI 連線沒有預設模型。請先在設定中選擇模型。';
+
+  @override
+  String get accountAiInvalidConsent => '帳號 AI 服務未傳回有效的授權摘要。';
+
+  @override
+  String get accountAiConsentExpired => 'AI 授權摘要無效或已過期。';
+
+  @override
+  String get accountAiInvalidResponse => 'AI 服務未傳回有效內容。';
+
+  @override
+  String get accountAiTestPurpose => '測試 OmniStore 的帳號 AI 連線';
+
+  @override
+  String get accountAiInvalidDestination => '帳號 AI 連線的目標位址無效。';
+
+  @override
+  String get accountAiConnectionNotFound => '所選 AI 連線無法使用。請在設定中重新選擇。';
+
+  @override
+  String get accountAiInvalidData => '帳號 AI 服務傳回無效資料。';
+
+  @override
+  String get accountAiUnavailable => '帳號 AI 服務暫時無法使用。';
+
+  @override
+  String get accountAiRequestDenied => '帳號 AI 請求遭到拒絕。請重新登入後再試。';
+
+  @override
+  String get accountAiConnectionFailed => '無法連線到帳號 AI 服務。';
+
+  @override
+  String get localAiUnsupportedModelDiscovery => '此連線不支援本機模型探索。';
+
+  @override
+  String get localAiCredentialStoreUnavailable => '無法開啟安全憑證庫。請解鎖 KWallet 後再試。';
+
+  @override
+  String get localAiApiKeyRequired => '請先為目前服務商安全儲存 API 金鑰。';
+
+  @override
+  String get localAiCatalogTooLarge => '模型目錄回應過大。';
+
+  @override
+  String get localAiInvalidCatalog => '模型目錄傳回無效資料。';
+
+  @override
+  String get localAiCatalogUnavailable => '無法讀取模型目錄。請確認服務正在執行。';
+
+  @override
+  String get localAiUnsupportedConnection => '不支援這種本機 AI 連線類型。';
+
+  @override
+  String get localAiInvalidModel => '請輸入有效的模型名稱。';
+
+  @override
+  String get localAiInvalidPurpose => 'AI 請求用途無效。';
+
+  @override
+  String get localAiInvalidInput => 'AI 輸入為空或過大。';
+
+  @override
+  String get localAiInvalidDataCategories => 'AI 資料類別無效。';
+
+  @override
+  String get localAiApiKeyInvalid => '安全憑證庫中沒有此服務商的有效 API 金鑰。';
+
+  @override
+  String get localAiDestinationChanged => 'AI 目的地在確認後發生變化，請求已遭攔截。';
+
+  @override
+  String get localAiResponseTooLarge => 'AI 服務回應過大。';
+
+  @override
+  String get localAiInvalidResponse => 'AI 服務傳回無效資料。';
+
+  @override
+  String get localAiNoResponseText => 'AI 服務未傳回文字。';
+
+  @override
+  String get localAiConnectionFailed => '無法連線到 AI 服務，或請求已逾時。';
+
+  @override
+  String get localAiTestPurpose => '測試 OmniStore 的本機安全 AI 連線';
+
+  @override
+  String get localAiInvalidEndpoint => 'AI 服務位址無效。';
+
+  @override
+  String get localAiOllamaLoopbackRequired => 'Ollama 位址必須使用本機 HTTP(S) 回送位址。';
+
+  @override
+  String get localAiHttpsRequired => '雲端 AI 服務必須使用 HTTPS。';
+
+  @override
+  String get localAiPrivateEndpointBlocked =>
+      '相容 API 不能指向本機或私有網路。請使用 Ollama 執行本機模型。';
+
+  @override
+  String get localAiOllama => 'Ollama（本機）';
+
+  @override
+  String get localAiApiKeyRejected => 'AI 服務拒絕了 API 金鑰。';
+
+  @override
+  String get localAiModelOrEndpointNotFound => '找不到請求的 AI 模型或服務位址。';
+
+  @override
+  String get localAiRateLimited => 'AI 服務額度不足或請求過於頻繁。';
+
+  @override
+  String get localAiUnavailable => 'AI 服務暫時無法使用。';
+
+  @override
+  String localAiRequestRejected(int status) {
+    return 'AI 服務拒絕了請求（HTTP $status）。';
+  }
+
+  @override
+  String get aiTestService => '服務';
+
+  @override
+  String get aiTestConnected => '已連線';
+
+  @override
+  String get aiTestUnavailable => '無法使用';
+
+  @override
+  String get aiTestReady => '已就緒';
+
+  @override
+  String get aiTestNotReady => '未就緒';
+
+  @override
+  String get aiTestLatency => '延遲';
+
+  @override
+  String featuredAppSemantics(String name) {
+    return '精選應用程式：$name';
   }
 }

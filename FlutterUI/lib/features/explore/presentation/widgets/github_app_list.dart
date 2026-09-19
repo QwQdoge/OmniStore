@@ -96,7 +96,7 @@ class GitHubAppList extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Semantics(
-              label: 'App: ${app.name}',
+              label: l10n.appCardSemantics(app.name),
               button: true,
               child: AppCard(
                 color: scheme.surfaceContainerLow,

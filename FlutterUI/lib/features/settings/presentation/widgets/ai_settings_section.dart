@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:provider/provider.dart';
@@ -6,16 +7,22 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/features/settings/presentation/widgets/ai_test_result_dialog.dart';
 import 'package:frontend/core/widgets/app_card.dart';
+
 import '../controllers/settings_controller.dart';
 import 'settings_section_header.dart';
 import 'ai_settings/ai_status_card.dart';
+
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 import 'package:frontend/core/utils/toast.dart';
 import 'package:frontend/features/ai/account_ai_service.dart';
+import 'package:frontend/features/ai/local_ai_service.dart';
+import 'package:frontend/features/ai/system_ai_service.dart';
 import 'package:frontend/features/ai/widgets/ai_mark.dart';
 import 'package:frontend/features/auth/auth_service.dart';
 import 'package:frontend/features/auth/presentation/pages/account_page.dart';
 import 'package:frontend/core/config/meoarch_environment.dart';
+import 'package:frontend/app/external_install_request.dart';
+import 'package:frontend/features/external_install/external_install_prompt.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AISettingsSection extends StatefulWidget {
@@ -29,11 +36,17 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   final Map<String, Timer?> _debounces = {};
   String? _tempError;
   bool _isTestingAI = false;
+  bool _isDiscoveringModels = false;
+  List<String> _discoveredModels = const [];
+  String? _modelDiscoveryMessage;
   bool _showApiKey = false;
   bool _isLoadingAccountCredentials = false;
   bool _accountCredentialsLoaded = false;
   String? _accountCredentialError;
   List<AccountAiCredential> _accountCredentials = const [];
+  bool _isLoadingSystemConnections = false;
+  String? _systemConnectionError;
+  List<SystemAiConnection> _systemConnections = const [];
   late final AuthService _authService;
 
   late TextEditingController _endpointController;
@@ -64,6 +77,10 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     if (settings.config['ai']?['provider'] == 'account') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _loadAccountCredentials();
+      });
+    } else if (settings.config['ai']?['provider'] == 'system') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadSystemConnections();
       });
     }
   }
@@ -114,15 +131,18 @@ class _AISettingsSectionState extends State<AISettingsSection> {
   }
 
   String _providerSetupHint(String provider) {
+    final l10n = AppLocalizations.of(context)!;
     switch (provider) {
       case 'account':
-        return 'Account 只代为调用你已保存的连接；API 密钥不会下发到 OmniStore。';
+        return l10n.aiAccountProviderHint;
+      case 'system':
+        return l10n.aiSystemProviderHint;
       case 'ollama':
-        return 'Ollama 仅连接本机服务；不需要 API 密钥。';
+        return l10n.aiOllamaProviderHint;
       case 'openai_compatible':
-        return '仅使用你信任的 HTTPS 兼容端点；密钥仍保存在本机安全凭据库。';
+        return l10n.aiCompatibleProviderHint;
       default:
-        return '此服务商的密钥单独保存在 Secret Service/KWallet，无法读回明文。';
+        return l10n.aiLocalKeyProviderHint;
     }
   }
 
@@ -213,6 +233,45 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     await settings.updateConfig(config);
   }
 
+  Future<void> _loadSystemConnections() async {
+    if (_isLoadingSystemConnections) return;
+    setState(() {
+      _isLoadingSystemConnections = true;
+      _systemConnectionError = null;
+    });
+    try {
+      final connections = await SystemAiService.instance.listConnections();
+      if (!mounted) return;
+      setState(() => _systemConnections = connections);
+      final settings = context.read<SettingsController>();
+      final selected =
+          '${settings.config['ai']?['system_connection_id'] ?? ''}';
+      if (selected.isEmpty && connections.length == 1) {
+        await _selectSystemConnection(connections.single.id);
+      }
+    } on SystemAiException catch (error) {
+      if (mounted) setState(() => _systemConnectionError = error.message);
+    } finally {
+      if (mounted) setState(() => _isLoadingSystemConnections = false);
+    }
+  }
+
+  Future<void> _selectSystemConnection(String connectionId) async {
+    final settings = context.read<SettingsController>();
+    final connection = _systemConnections
+        .where((item) => item.id == connectionId)
+        .firstOrNull;
+    if (connection == null) return;
+    final config = Map<String, dynamic>.from(settings.config);
+    config['ai'] = Map<String, dynamic>.from(config['ai'] ?? {});
+    config['ai']['system_connection_id'] = connection.id;
+    config['ai']['endpoint'] = '';
+    config['ai']['api_key'] = '';
+    config['ai']['model'] = connection.defaultModel;
+    _modelController.text = connection.defaultModel;
+    await settings.updateConfig(config);
+  }
+
   Future<void> _openAccountSignIn() async {
     await Navigator.of(
       context,
@@ -226,7 +285,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     final uri = Uri.parse('${MeoArchEnvironment.accountUrl}/settings/services');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
         mounted) {
-      Toast.show(context, '无法打开 Meo Account。');
+      Toast.show(context, AppLocalizations.of(context)!.meoAccountOpenFailed);
     }
   }
 
@@ -237,19 +296,26 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     final settings = context.read<SettingsController>();
     final config = Map<String, dynamic>.from(settings.config);
     config['ai'] = Map<String, dynamic>.from(config['ai'] ?? {});
-    final accountBacked = config['ai']['provider'] == 'account';
-    config['ai']['endpoint'] = accountBacked
+    final brokerBacked =
+        config['ai']['provider'] == 'account' ||
+        config['ai']['provider'] == 'system';
+    config['ai']['endpoint'] = brokerBacked
         ? ''
         : _endpointController.text.trim();
     config['ai']['model'] = _modelController.text.trim();
-    if (accountBacked) {
+    if (brokerBacked) {
       config['ai']['api_key'] = '******';
     } else if (_apiKeyController.text.trim().isNotEmpty) {
       final saved = await settings.saveLocalAiCredential(
         _apiKeyController.text.trim(),
       );
       if (!saved) {
-        if (mounted) Toast.show(context, '无法写入系统安全凭据库。');
+        if (mounted) {
+          Toast.show(
+            context,
+            AppLocalizations.of(context)!.secureCredentialWriteFailed,
+          );
+        }
         return false;
       }
       _apiKeyController.clear();
@@ -281,6 +347,10 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       ai['endpoint'] = '';
       ai['api_key'] = '';
       ai['model'] = '';
+    } else if (provider == 'system' && oldProvider != 'system') {
+      ai['endpoint'] = '';
+      ai['api_key'] = '';
+      ai['model'] = '';
     } else if (provider == 'openai' && oldProvider != 'openai') {
       ai['endpoint'] = 'https://api.openai.com/v1';
       ai['model'] = 'gpt-5';
@@ -302,31 +372,106 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     await settings.updateConfig(current);
     if (provider == 'account' && mounted) {
       await _loadAccountCredentials(forceRefresh: true);
+    } else if (provider == 'system' && mounted) {
+      await _loadSystemConnections();
+    } else if (provider == 'ollama' && mounted) {
+      await _discoverModels(autoSelect: true);
     }
+  }
+
+  Future<void> _discoverModels({bool autoSelect = false}) async {
+    if (_isDiscoveringModels) return;
+    final settings = context.read<SettingsController>();
+    final ai = Map<String, dynamic>.from(settings.config['ai'] ?? {});
+    final provider = '${ai['provider'] ?? 'ollama'}';
+    if (provider == 'account') return;
+    setState(() {
+      _isDiscoveringModels = true;
+      _modelDiscoveryMessage = null;
+    });
+    try {
+      final models = provider == 'system'
+          ? await SystemAiService.instance.discoverModels(
+              '${ai['system_connection_id'] ?? ''}',
+            )
+          : await LocalAiService.instance.discoverModels(
+              provider: provider,
+              endpoint: _endpointController.text.trim(),
+            );
+      if (!mounted) return;
+      var selected = _modelController.text.trim();
+      if (models.length == 1 ||
+          (autoSelect && provider == 'ollama' && models.isNotEmpty)) {
+        selected = models.first;
+        _modelController.text = selected;
+        _updateAIConfig('model', selected);
+      }
+      setState(() {
+        final l10n = AppLocalizations.of(context)!;
+        _discoveredModels = models;
+        _modelDiscoveryMessage = models.isEmpty
+            ? l10n.modelsNoneFound
+            : models.length == 1 || selected == models.first
+            ? l10n.modelsAutofilled
+            : l10n.modelsFoundChoose;
+      });
+    } on LocalAiException catch (error) {
+      if (mounted) {
+        setState(() {
+          _discoveredModels = const [];
+          _modelDiscoveryMessage = error.message;
+        });
+      }
+    } on SystemAiException catch (error) {
+      if (mounted) {
+        setState(() {
+          _discoveredModels = const [];
+          _modelDiscoveryMessage = error.message;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isDiscoveringModels = false);
+    }
+  }
+
+  Future<void> _installOllama() async {
+    await showExternalInstallPrompt(
+      context,
+      const ExternalInstallRequest(packageId: 'ollama', source: 'Native'),
+    );
+    if (mounted) await _discoverModels(autoSelect: true);
   }
 
   Future<void> _saveLocalCredential() async {
     final value = _apiKeyController.text.trim();
     if (value.isEmpty) {
-      Toast.show(context, '请先填写新的 API 密钥。');
+      Toast.show(context, AppLocalizations.of(context)!.apiKeyRequired);
       return;
     }
     final settings = context.read<SettingsController>();
     final saved = await settings.saveLocalAiCredential(value);
     if (!mounted) return;
     if (!saved) {
-      Toast.show(context, '无法写入系统安全凭据库；不会退回明文存储。');
+      Toast.show(
+        context,
+        AppLocalizations.of(context)!.secureCredentialWriteFailed,
+      );
       return;
     }
     _apiKeyController.clear();
-    Toast.show(context, 'API 密钥已写入系统安全凭据库。');
+    Toast.show(context, AppLocalizations.of(context)!.secureCredentialSaved);
+    await _discoverModels();
   }
 
   Future<void> _deleteLocalCredential() async {
     final settings = context.read<SettingsController>();
     final deleted = await settings.deleteLocalAiCredential();
     if (!mounted) return;
-    Toast.show(context, deleted ? '本地 API 密钥已删除。' : '无法访问系统安全凭据库。');
+    final l10n = AppLocalizations.of(context)!;
+    Toast.show(
+      context,
+      deleted ? l10n.localApiKeyDeleted : l10n.secureCredentialUnavailable,
+    );
   }
 
   Future<void> _testAIConnection() async {
@@ -475,38 +620,39 @@ class _AISettingsSectionState extends State<AISettingsSection> {
 
   Widget _buildAccountConnectionCard(Map<dynamic, dynamic> aiConfig) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     Widget content;
 
     if (!_authService.isAuthenticated) {
       content = _buildAccountCallout(
         key: const ValueKey('unauthenticated'),
         background: colors.secondaryContainer.withValues(alpha: 0.55),
-        title: '先登录 Meo Account',
-        detail: '登录后即可选择账号中加密保存的 AI 连接；API 密钥不会下发到 OmniStore。',
-        actionLabel: '登录账号',
+        title: l10n.signInMeoAccount,
+        detail: l10n.signInMeoAccountDetail,
+        actionLabel: l10n.signIn,
         actionIcon: Icons.login_rounded,
         onPressed: _openAccountSignIn,
       );
     } else if (_isLoadingAccountCredentials) {
-      content = const ListTile(
-        key: ValueKey('loading'),
+      content = ListTile(
+        key: const ValueKey('loading'),
         contentPadding: EdgeInsets.zero,
-        leading: SizedBox.square(
+        leading: const SizedBox.square(
           dimension: 24,
           child: CircularProgressIndicator(strokeWidth: 2.5),
         ),
-        title: Text('正在读取账号 AI 连接'),
-        subtitle: Text('只读取名称、服务商和密钥掩码。'),
+        title: Text(l10n.accountAiLoading),
+        subtitle: Text(l10n.accountAiMetadataOnly),
       );
     } else if (_accountCredentialError != null) {
       content = ListTile(
         key: const ValueKey('error'),
         contentPadding: EdgeInsets.zero,
         leading: Icon(Icons.cloud_off_rounded, color: colors.error),
-        title: const Text('无法读取账号 AI 连接'),
+        title: Text(l10n.accountAiLoadError),
         subtitle: Text(_accountCredentialError!),
         trailing: IconButton(
-          tooltip: '重试',
+          tooltip: l10n.retry,
           onPressed: () => _loadAccountCredentials(forceRefresh: true),
           icon: const Icon(Icons.refresh_rounded),
         ),
@@ -515,9 +661,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
       content = _buildAccountCallout(
         key: const ValueKey('empty'),
         background: colors.surfaceContainerHigh,
-        title: '账号中还没有 AI 连接',
-        detail: '前往 Account 填写你自己的 API 密钥并安全保存，然后回到这里刷新。',
-        actionLabel: '去连接',
+        title: l10n.accountAiNone,
+        detail: l10n.accountAiNoneDetail,
+        actionLabel: l10n.connect,
         actionIcon: Icons.open_in_new_rounded,
         onPressed: _openAccountAiSettings,
       );
@@ -534,10 +680,10 @@ class _AISettingsSectionState extends State<AISettingsSection> {
         children: [
           DropdownButtonFormField<String>(
             initialValue: selectedId,
-            decoration: const InputDecoration(
-              labelText: '账号 AI 连接',
-              helperText: '密钥只在 Account Edge broker 内解密，OmniStore 不可读取。',
-              prefixIcon: Icon(Icons.account_circle_outlined),
+            decoration: InputDecoration(
+              labelText: l10n.accountAiSelectLabel,
+              helperText: l10n.accountAiConnectionHelper,
+              prefixIcon: const Icon(Icons.account_circle_outlined),
             ),
             items: [
               for (final credential in _accountCredentials)
@@ -559,12 +705,12 @@ class _AISettingsSectionState extends State<AISettingsSection> {
               TextButton.icon(
                 onPressed: _openAccountAiSettings,
                 icon: const Icon(Icons.open_in_new_rounded),
-                label: const Text('管理 AI 连接'),
+                label: Text(l10n.manageAiConnections),
               ),
               TextButton.icon(
                 onPressed: () => _loadAccountCredentials(forceRefresh: true),
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text('刷新'),
+                label: Text(l10n.refresh),
               ),
             ],
           ),
@@ -580,7 +726,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '每次发送前，OmniStore 都会显示服务商、模型、用途、数据类别、完整内容和请求指纹，并要求“仅同意这一次”。',
+                  l10n.aiPerRequestConsentDetail,
                   style: TextStyle(color: colors.onSurfaceVariant),
                 ),
               ),
@@ -591,6 +737,85 @@ class _AISettingsSectionState extends State<AISettingsSection> {
     }
 
     return SmoothSizeSwitcher(alignment: Alignment.topCenter, child: content);
+  }
+
+  Widget _buildSystemConnectionCard(Map<dynamic, dynamic> aiConfig) {
+    final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    if (_isLoadingSystemConnections) {
+      return ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: const SizedBox.square(
+          dimension: 24,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+        title: Text(l10n.systemAiLoadingTitle),
+        subtitle: Text(l10n.systemAiMetadataOnly),
+      );
+    }
+    if (_systemConnectionError != null) {
+      return ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.lock_outline_rounded, color: colors.error),
+        title: Text(l10n.systemAiLoadErrorTitle),
+        subtitle: Text(_systemConnectionError!),
+        trailing: IconButton(
+          tooltip: l10n.retry,
+          onPressed: _loadSystemConnections,
+          icon: const Icon(Icons.refresh_rounded),
+        ),
+      );
+    }
+    final configuredId = '${aiConfig['system_connection_id'] ?? ''}';
+    final selectedId = _systemConnections.any((item) => item.id == configuredId)
+        ? configuredId
+        : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<String>(
+          initialValue: selectedId,
+          decoration: InputDecoration(
+            labelText: l10n.systemAiSelectLabel,
+            helperText: l10n.systemAiConnectionHelper,
+            prefixIcon: const Icon(Icons.admin_panel_settings_outlined),
+          ),
+          items: [
+            for (final connection in _systemConnections)
+              DropdownMenuItem(
+                value: connection.id,
+                child: Text(
+                  '${connection.displayName} · ${connection.defaultModel}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          onChanged: (value) {
+            if (value != null) _selectSystemConnection(value);
+          },
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [
+            TextButton.icon(
+              onPressed: () async {
+                if (!await SystemAiService.instance.openSettings() && mounted) {
+                  Toast.show(context, l10n.meoSettingsOpenFailed);
+                }
+              },
+              icon: const Icon(Icons.open_in_new_rounded),
+              label: Text(l10n.manageInMeoSettings),
+            ),
+            TextButton.icon(
+              onPressed: _loadSystemConnections,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text(l10n.refresh),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -605,7 +830,9 @@ class _AISettingsSectionState extends State<AISettingsSection> {
         _syncControllers(aiConfig);
         final provider = aiConfig['provider']?.toString() ?? 'ollama';
         final localCloudProvider =
-            provider != 'ollama' && provider != 'account';
+            provider != 'ollama' &&
+            provider != 'account' &&
+            provider != 'system';
         if (provider == 'account' &&
             _authService.isAuthenticated &&
             !_isLoadingAccountCredentials &&
@@ -631,8 +858,8 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('启用 AI 辅助'),
-                      subtitle: const Text('默认关闭；开启后每次发送仍需单独确认。'),
+                      title: Text(l10n.aiEnabled),
+                      subtitle: Text(l10n.aiEnabledConsentDesc),
                       value: aiConfig['enabled'] == true,
                       onChanged: (value) => _updateAIConfig('enabled', value),
                       secondary: const AiMark(size: 42),
@@ -657,29 +884,35 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                           value: 'ollama',
                           child: Text(l10n.ollamaLocal),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: 'openai',
-                          child: Text('OpenAI（本地安全密钥）'),
+                          child: Text(l10n.providerLocalSecureKey('OpenAI')),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: 'gemini',
-                          child: Text('Gemini（本地安全密钥）'),
+                          child: Text(l10n.providerLocalSecureKey('Gemini')),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: 'deepseek',
-                          child: Text('DeepSeek（本地安全密钥）'),
+                          child: Text(l10n.providerLocalSecureKey('DeepSeek')),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: 'openrouter',
-                          child: Text('OpenRouter（本地安全密钥）'),
+                          child: Text(
+                            l10n.providerLocalSecureKey('OpenRouter'),
+                          ),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: 'openai_compatible',
-                          child: Text('OpenAI Compatible（自定义 HTTPS）'),
+                          child: Text(l10n.providerCompatibleHttps),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: 'account',
-                          child: Text('Meo Account（可选同步 / 逐次授权）'),
+                          child: Text(l10n.providerMeoAccount),
+                        ),
+                        DropdownMenuItem(
+                          value: 'system',
+                          child: Text(l10n.systemAiProviderLabel),
                         ),
                       ],
                       onChanged: (value) {
@@ -690,6 +923,10 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                       const SizedBox(height: 12),
                       _buildAccountConnectionCard(aiConfig),
                     ],
+                    if (provider == 'system') ...[
+                      const SizedBox(height: 12),
+                      _buildSystemConnectionCard(aiConfig),
+                    ],
                     if (provider == 'ollama' || provider == 'openai_compatible')
                       _buildTextField(
                         l10n.aiEndpoint,
@@ -697,20 +934,99 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                         _endpointFocus,
                         (val) => _debounceUpdateAIConfig('endpoint', val),
                         helperText: provider == 'ollama'
-                            ? '默认连接本机 Ollama；请保留回环地址以避免意外访问局域网服务。'
-                            : '仅填写你信任的 HTTPS 兼容端点，不包含密钥或查询参数。',
+                            ? l10n.ollamaEndpointSafety
+                            : l10n.compatibleEndpointSafety,
                         keyboardType: TextInputType.url,
                         autofillHints: const [AutofillHints.url],
                       ),
                     _buildTextField(
-                      provider == 'account' ? '覆盖账号默认模型（可选）' : l10n.aiModel,
+                      provider == 'account'
+                          ? l10n.accountModelOverride
+                          : l10n.aiModel,
                       _modelController,
                       _modelFocus,
                       (val) => _debounceUpdateAIConfig('model', val),
                       helperText: provider == 'account'
-                          ? '留空会使用所选 Account AI 连接的默认模型。'
-                          : '实际模型会在每次发送前再次展示，供你确认。',
+                          ? l10n.accountModelDefaultHelper
+                          : l10n.modelReviewHelper,
                     ),
+                    if (provider != 'account') ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _isDiscoveringModels
+                                ? null
+                                : () => _discoverModels(autoSelect: true),
+                            icon: _isDiscoveringModels
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.manage_search_rounded),
+                            label: Text(
+                              provider == 'ollama'
+                                  ? l10n.detectLocalModels
+                                  : l10n.readModelCatalog,
+                            ),
+                          ),
+                          if (provider == 'ollama' &&
+                              _modelDiscoveryMessage != null &&
+                              _discoveredModels.isEmpty)
+                            FilledButton.tonalIcon(
+                              onPressed: _installOllama,
+                              icon: const Icon(Icons.download_rounded),
+                              label: Text(l10n.installOllamaWithOmniStore),
+                            ),
+                          if (_discoveredModels.isNotEmpty)
+                            DropdownButton<String>(
+                              hint: Text(l10n.chooseDiscoveredModel),
+                              value:
+                                  _discoveredModels.contains(
+                                    _modelController.text.trim(),
+                                  )
+                                  ? _modelController.text.trim()
+                                  : null,
+                              items: _discoveredModels
+                                  .map(
+                                    (model) => DropdownMenuItem<String>(
+                                      value: model,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                          maxWidth: 360,
+                                        ),
+                                        child: Text(
+                                          model,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(growable: false),
+                              onChanged: (model) {
+                                if (model == null) return;
+                                _modelController.text = model;
+                                _updateAIConfig('model', model);
+                                setState(() {});
+                              },
+                            ),
+                        ],
+                      ),
+                      if (_modelDiscoveryMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            _modelDiscoveryMessage!,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                    ],
                     if (localCloudProvider) ...[
                       const SizedBox(height: 8),
                       ListTile(
@@ -730,23 +1046,23 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                           context
                                   .read<SettingsController>()
                                   .hasLocalAiCredential
-                              ? '当前服务商已有独立安全密钥'
-                              : '当前服务商尚未保存 API 密钥',
+                              ? l10n.localKeyStored
+                              : l10n.localKeyNotStored,
                         ),
-                        subtitle: const Text(
-                          '每个服务商分别保存在 Secret Service/KWallet；只能替换或删除，不能读回明文。',
-                        ),
+                        subtitle: Text(l10n.localKeysHelper),
                       ),
                       _buildTextField(
-                        '新的 API 密钥（写入后清空）',
+                        l10n.newApiKeyLabel,
                         _apiKeyController,
                         _apiKeyFocus,
                         (_) {},
                         isPassword: true,
-                        helperText: '仅填写要替换的新密钥；保存后不能读取或复制旧密钥。',
+                        helperText: l10n.newApiKeyHelper,
                         autofillHints: const <String>[],
                         suffixIcon: IconButton(
-                          tooltip: _showApiKey ? '隐藏输入' : '显示输入',
+                          tooltip: _showApiKey
+                              ? l10n.hideInput
+                              : l10n.showInput,
                           onPressed: () =>
                               setState(() => _showApiKey = !_showApiKey),
                           icon: Icon(
@@ -763,7 +1079,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                           FilledButton.tonalIcon(
                             onPressed: _saveLocalCredential,
                             icon: const Icon(Icons.lock_rounded),
-                            label: const Text('安全保存 / 替换'),
+                            label: Text(l10n.saveOrReplace),
                           ),
                           if (context
                               .read<SettingsController>()
@@ -771,7 +1087,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                             TextButton.icon(
                               onPressed: _deleteLocalCredential,
                               icon: const Icon(Icons.delete_outline_rounded),
-                              label: const Text('删除本地密钥'),
+                              label: Text(l10n.deleteLocalKey),
                             ),
                         ],
                       ),
@@ -794,7 +1110,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                         }
                       },
                       errorText: _tempError,
-                      helperText: '0–2；较低数值通常更稳定，范围外不会保存。',
+                      helperText: l10n.temperatureHelper,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
@@ -827,7 +1143,7 @@ class _AISettingsSectionState extends State<AISettingsSection> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '测试只验证当前连接，不会改变“启用 AI 辅助”开关；实际发送仍需单次确认。',
+                      l10n.aiTestScopeHelper,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),

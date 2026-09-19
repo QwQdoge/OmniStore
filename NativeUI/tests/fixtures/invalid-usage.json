@@ -1,0 +1,11 @@
+{
+  "schema": "org.meo.omnistore.installed-usage",
+  "version": 2,
+  "status": "success",
+  "generatedAt": "2026-09-17T12:00:00Z",
+  "applicationCount": 0,
+  "knownSizeBytes": 0,
+  "unknownSizeCount": 0,
+  "sources": [],
+  "applications": []
+}

@@ -24,6 +24,44 @@ void main() {
     expect(credential.toString(), isNot(contains('must-not-be-consumed')));
   });
 
+  test('system language preference resolves before an AI request is built', () {
+    expect(
+      OmniStoreAiPrompts.languageForPreference('system', 'zh-Hant-TW'),
+      'Traditional Chinese',
+    );
+    expect(
+      OmniStoreAiPrompts.languageForPreference('system', 'ja-JP'),
+      'Japanese',
+    );
+    expect(
+      OmniStoreAiPrompts.languageForPreference('zh-CN', 'en-US'),
+      'Simplified Chinese',
+    );
+  });
+
+  test('consent purpose follows the configured AI response language', () {
+    expect(
+      OmniStoreAiPrompts.explain('App', 'Description', 'English').purpose,
+      "Explain an application's purpose and value",
+    );
+    expect(
+      OmniStoreAiPrompts.explain(
+        'App',
+        'Description',
+        'Simplified Chinese',
+      ).purpose,
+      '解释应用的用途与价值',
+    );
+    expect(
+      OmniStoreAiPrompts.explain('App', 'Description', 'Japanese').purpose,
+      'アプリの目的と価値を説明する',
+    );
+    expect(
+      OmniStoreAiPrompts.explain('App', 'Description', 'Spanish').purpose,
+      'Explicar el propósito y el valor de una aplicación',
+    );
+  });
+
   test('account consent is bound to credential, provider, and destination', () {
     final source = File(
       'lib/features/ai/account_ai_service.dart',

@@ -260,6 +260,43 @@ def copy_builtin_source_manifests(bundle_dir):
     return True
 
 
+def copy_linux_package_identity_assets(bundle_dir):
+    """Ship the reviewed, package-owned Original icon identity for Linux.
+
+    The application launcher uses ``org.meo.OmniStore`` rather than a generic
+    store icon.  Keep its hicolor master and small optical masters alongside
+    the release bundle, so a clean package build installs the same canonical
+    identity that Studio later overlays for Meo Color, Mono, or AI packs.
+    """
+    package_root = BASE_DIR / "linux" / "packaging"
+    desktop_source = package_root / "omnistore.desktop"
+    hicolor_source = package_root / "icons" / "hicolor"
+    icon_name = "org.meo.OmniStore.svg"
+    required = (
+        desktop_source,
+        hicolor_source / "scalable" / "apps" / icon_name,
+        hicolor_source / "16x16" / "apps" / icon_name,
+        hicolor_source / "22x22" / "apps" / icon_name,
+        hicolor_source / "32x32" / "apps" / icon_name,
+    )
+    missing = [str(path) for path in required if not path.is_file()]
+    if missing:
+        raise RuntimeError(
+            "required OmniStore package identity assets are missing: "
+            + ", ".join(missing)
+        )
+
+    data_dir = bundle_dir / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(desktop_source, data_dir / desktop_source.name)
+    shutil.copytree(
+        hicolor_source,
+        data_dir / "icons" / "hicolor",
+        dirs_exist_ok=True,
+    )
+    print("✅ copy package-owned OmniStore hicolor identity assets")
+
+
 def assemble(platform, output_dir, build_dir):
     print("\n📦 [assemble] assembling Flutter Bundle...")
 
@@ -352,13 +389,8 @@ def assemble(platform, output_dir, build_dir):
     print("✅ copy GPL-3.0-only license")
 
     copy_builtin_source_manifests(flutter_bundle_dir)
-
-    icon_src = BASE_DIR / "omnistore.svg"
-    if icon_src.exists():
-        shutil.copy2(icon_src, flutter_bundle_dir / "omnistore.svg")
-        print("✅ copy icon artifact: omnistore.svg")
-    else:
-        print(f"⚠️ can not find icon artifact: {icon_src}")
+    if platform == "linux":
+        copy_linux_package_identity_assets(flutter_bundle_dir)
 
     # 最后，将整个 flutter_bundle_dir 复制到 output_dir
     print(f"📦 Copying full bundle to {out_path} ...")

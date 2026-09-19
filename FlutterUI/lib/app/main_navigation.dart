@@ -19,10 +19,14 @@ import 'package:frontend/services/update_service.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart' as wm;
 import 'package:frontend/core/utils/toast.dart';
+import 'package:frontend/app/external_install_request.dart';
+import 'package:frontend/features/external_install/external_install_prompt.dart';
 
 /// Root shell after onboarding: adaptive nav + tray/window lifecycle.
 class MainNavigationEntry extends StatefulWidget {
-  const MainNavigationEntry({super.key});
+  const MainNavigationEntry({super.key, this.initialInstallRequest});
+
+  final ExternalInstallRequest? initialInstallRequest;
 
   @override
   State<MainNavigationEntry> createState() => _MainNavigationEntryState();
@@ -49,6 +53,10 @@ class _MainNavigationEntryState extends State<MainNavigationEntry>
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final request = widget.initialInstallRequest;
+      if (request != null && mounted) {
+        showExternalInstallPrompt(context, request);
+      }
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           _initUpdateService(AppLocalizations.of(context)!);

@@ -175,6 +175,12 @@ abstract class AppLocalizations {
   /// **'Install'**
   String get install;
 
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
   /// No description provided for @open.
   ///
   /// In en, this message translates to:
@@ -940,7 +946,7 @@ abstract class AppLocalizations {
   /// aiProxy
   ///
   /// In en, this message translates to:
-  /// **'Network Proxy (Optional)'**
+  /// **'Network proxy'**
   String get aiProxy;
 
   /// aiTemperature
@@ -2494,7 +2500,7 @@ abstract class AppLocalizations {
   /// Description for signIn
   ///
   /// In en, this message translates to:
-  /// **'Sign In'**
+  /// **'Sign in'**
   String get signIn;
 
   /// Description for createAccount
@@ -2548,13 +2554,13 @@ abstract class AppLocalizations {
   /// Description for configurePat
   ///
   /// In en, this message translates to:
-  /// **'GitHub access token (optional)'**
+  /// **'GitHub access token'**
   String get configurePat;
 
   /// Description for patHelperText
   ///
   /// In en, this message translates to:
-  /// **'Provide a GitHub Classic PAT or Fine-grained Token.'**
+  /// **'Add a GitHub Classic PAT or fine-grained token when you need authenticated GitHub access.'**
   String get patHelperText;
 
   /// Description for featuredSubtitle
@@ -2641,11 +2647,1025 @@ abstract class AppLocalizations {
   /// **'Pull to refresh or try another category.'**
   String get pullToRefreshCategory;
 
+  /// No description provided for @systemAiProviderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'System AI connection (KWallet / Recommended)'**
+  String get systemAiProviderLabel;
+
+  /// No description provided for @systemAiSharedConnectionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'System shared connection'**
+  String get systemAiSharedConnectionLabel;
+
+  /// No description provided for @systemAiConnectionHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Meo Account reads the key from KWallet; OmniStore cannot read the plaintext.'**
+  String get systemAiConnectionHelper;
+
+  /// No description provided for @systemAiLoadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading system AI connections'**
+  String get systemAiLoadingTitle;
+
+  /// No description provided for @systemAiMetadataOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only names, endpoints, and default models are read; keys are never read.'**
+  String get systemAiMetadataOnly;
+
+  /// No description provided for @systemAiLoadErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read system AI connections'**
+  String get systemAiLoadErrorTitle;
+
+  /// No description provided for @systemAiSelectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'AI connection on this device'**
+  String get systemAiSelectLabel;
+
+  /// No description provided for @meoSettingsOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open Meo Settings.'**
+  String get meoSettingsOpenFailed;
+
+  /// No description provided for @manageInMeoSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage in Meo Settings'**
+  String get manageInMeoSettings;
+
+  /// No description provided for @systemAiNoConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'No system AI connection is configured. Add one in Meo Settings first.'**
+  String get systemAiNoConnections;
+
+  /// No description provided for @systemAiLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read system AI connections. Check Accounts & Security in Meo Settings.'**
+  String get systemAiLoadFailed;
+
+  /// No description provided for @systemAiInvalidCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'The system AI service returned an invalid model catalog.'**
+  String get systemAiInvalidCatalog;
+
+  /// No description provided for @systemAiInvalidConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'The system AI service did not return a valid consent summary.'**
+  String get systemAiInvalidConsent;
+
+  /// No description provided for @systemAiConsentExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The system AI consent summary is invalid or expired.'**
+  String get systemAiConsentExpired;
+
+  /// No description provided for @systemAiInvalidResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'The system AI service did not return valid text.'**
+  String get systemAiInvalidResponse;
+
+  /// No description provided for @systemAiUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'System AI is not supported on this platform.'**
+  String get systemAiUnsupported;
+
+  /// No description provided for @systemAiOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The system AI operation failed.'**
+  String get systemAiOperationFailed;
+
+  /// No description provided for @systemAiTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The system AI operation timed out.'**
+  String get systemAiTimeout;
+
+  /// No description provided for @systemAiUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to connect to the Meo Account system AI service.'**
+  String get systemAiUnavailable;
+
+  /// No description provided for @systemAiTestPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Test the OmniStore system AI connection'**
+  String get systemAiTestPurpose;
+
+  /// No description provided for @aiConsentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'You cancelled this AI request.'**
+  String get aiConsentCancelled;
+
+  /// No description provided for @chooseSystemAiConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a system AI connection in OmniStore Settings first.'**
+  String get chooseSystemAiConnection;
+
+  /// No description provided for @chooseAccountAiConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an account AI connection in OmniStore Settings first.'**
+  String get chooseAccountAiConnection;
+
+  /// No description provided for @aiConfigUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'AI configuration is unavailable.'**
+  String get aiConfigUnavailable;
+
+  /// No description provided for @aiNotEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assistance is not enabled.'**
+  String get aiNotEnabled;
+
+  /// No description provided for @aiAccountProviderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Meo Account invokes your saved connection; the API key is never sent to OmniStore.'**
+  String get aiAccountProviderHint;
+
+  /// No description provided for @aiSystemProviderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Meo Account invokes the connection from KWallet; OmniStore sees only metadata and the final result.'**
+  String get aiSystemProviderHint;
+
+  /// No description provided for @aiOllamaProviderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ollama connects only to the local service and does not require an API key.'**
+  String get aiOllamaProviderHint;
+
+  /// No description provided for @aiCompatibleProviderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use only a trusted HTTPS-compatible endpoint; the key remains in the local secure store.'**
+  String get aiCompatibleProviderHint;
+
+  /// No description provided for @aiLocalKeyProviderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This provider has a separate key in Secret Service/KWallet that cannot be read back.'**
+  String get aiLocalKeyProviderHint;
+
+  /// No description provided for @meoAccountOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open Meo Account.'**
+  String get meoAccountOpenFailed;
+
+  /// No description provided for @secureCredentialWriteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to write to the system credential store.'**
+  String get secureCredentialWriteFailed;
+
+  /// No description provided for @modelsNoneFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The service is running, but no installed or available models were reported.'**
+  String get modelsNoneFound;
+
+  /// No description provided for @modelsAutofilled.
+  ///
+  /// In en, this message translates to:
+  /// **'A discovered model was filled in automatically.'**
+  String get modelsAutofilled;
+
+  /// No description provided for @modelsFoundChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Models were found. Choose one before testing; OmniStore does not infer capabilities from names.'**
+  String get modelsFoundChoose;
+
+  /// No description provided for @apiKeyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a new API key first.'**
+  String get apiKeyRequired;
+
+  /// No description provided for @secureCredentialSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'The API key was saved to the system credential store.'**
+  String get secureCredentialSaved;
+
+  /// No description provided for @localApiKeyDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'The local API key was deleted.'**
+  String get localApiKeyDeleted;
+
+  /// No description provided for @secureCredentialUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to access the system credential store.'**
+  String get secureCredentialUnavailable;
+
+  /// No description provided for @signInMeoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to Meo Account'**
+  String get signInMeoAccount;
+
+  /// No description provided for @signInMeoAccountDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'After signing in, choose an encrypted account AI connection. Its API key is never sent to OmniStore.'**
+  String get signInMeoAccountDetail;
+
+  /// No description provided for @accountAiLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading account AI connections'**
+  String get accountAiLoading;
+
+  /// No description provided for @accountAiMetadataOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only names, providers, and masked key status are read.'**
+  String get accountAiMetadataOnly;
+
+  /// No description provided for @accountAiLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read account AI connections'**
+  String get accountAiLoadError;
+
+  /// No description provided for @accountAiNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No AI connection is saved in this account'**
+  String get accountAiNone;
+
+  /// No description provided for @accountAiNoneDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your API key securely in Account, then return here and refresh.'**
+  String get accountAiNoneDetail;
+
+  /// No description provided for @connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// No description provided for @accountAiSelectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account AI connection'**
+  String get accountAiSelectLabel;
+
+  /// No description provided for @accountAiConnectionHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'The key is decrypted only inside the Account Edge broker; OmniStore cannot read it.'**
+  String get accountAiConnectionHelper;
+
+  /// No description provided for @manageAiConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage AI connections'**
+  String get manageAiConnections;
+
+  /// No description provided for @aiPerRequestConsentDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Before every request, OmniStore shows the provider, model, purpose, data categories, full content, and request fingerprint, then asks for one-time consent.'**
+  String get aiPerRequestConsentDetail;
+
+  /// No description provided for @aiEnabledConsentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Off by default; every request still requires separate confirmation after it is enabled.'**
+  String get aiEnabledConsentDesc;
+
+  /// No description provided for @providerLocalSecureKey.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} (local secure key)'**
+  String providerLocalSecureKey(String provider);
+
+  /// No description provided for @providerCompatibleHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI Compatible (custom HTTPS)'**
+  String get providerCompatibleHttps;
+
+  /// No description provided for @providerMeoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Meo Account'**
+  String get providerMeoAccount;
+
+  /// No description provided for @ollamaEndpointSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Defaults to local Ollama. Keep a loopback address to avoid contacting a LAN service accidentally.'**
+  String get ollamaEndpointSafety;
+
+  /// No description provided for @compatibleEndpointSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter only a trusted HTTPS-compatible endpoint without a key or query parameters.'**
+  String get compatibleEndpointSafety;
+
+  /// No description provided for @accountModelOverride.
+  ///
+  /// In en, this message translates to:
+  /// **'Account model'**
+  String get accountModelOverride;
+
+  /// No description provided for @accountModelDefaultHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to use the selected Account connection\'s default model.'**
+  String get accountModelDefaultHelper;
+
+  /// No description provided for @modelReviewHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'The actual model is shown again for confirmation before every request.'**
+  String get modelReviewHelper;
+
+  /// No description provided for @detectLocalModels.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect local models and fill one in'**
+  String get detectLocalModels;
+
+  /// No description provided for @readModelCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Read model catalog'**
+  String get readModelCatalog;
+
+  /// No description provided for @installOllamaWithOmniStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Ollama with OmniStore'**
+  String get installOllamaWithOmniStore;
+
+  /// No description provided for @chooseDiscoveredModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a discovered model'**
+  String get chooseDiscoveredModel;
+
+  /// No description provided for @localKeyStored.
+  ///
+  /// In en, this message translates to:
+  /// **'A separate secure key is saved for this provider'**
+  String get localKeyStored;
+
+  /// No description provided for @localKeyNotStored.
+  ///
+  /// In en, this message translates to:
+  /// **'No API key is saved for this provider'**
+  String get localKeyNotStored;
+
+  /// No description provided for @localKeysHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Each provider is stored separately in Secret Service/KWallet; keys can be replaced or deleted but never read back.'**
+  String get localKeysHelper;
+
+  /// No description provided for @newApiKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New API key (cleared after saving)'**
+  String get newApiKeyLabel;
+
+  /// No description provided for @newApiKeyHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter only a replacement key. Existing keys cannot be read or copied.'**
+  String get newApiKeyHelper;
+
+  /// No description provided for @hideInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide input'**
+  String get hideInput;
+
+  /// No description provided for @showInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Show input'**
+  String get showInput;
+
+  /// No description provided for @saveOrReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Save securely / Replace'**
+  String get saveOrReplace;
+
+  /// No description provided for @deleteLocalKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete local key'**
+  String get deleteLocalKey;
+
+  /// No description provided for @temperatureHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'0–2; lower values are usually more stable, and out-of-range values are not saved.'**
+  String get temperatureHelper;
+
+  /// No description provided for @aiTestScopeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing checks only the current connection and does not change the AI enable switch; real requests still require one-time consent.'**
+  String get aiTestScopeHelper;
+
+  /// No description provided for @meoUpdateChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meo update channel'**
+  String get meoUpdateChannel;
+
+  /// No description provided for @meoUpdateChannelSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read from your active Pacman repositories'**
+  String get meoUpdateChannelSubtitle;
+
+  /// No description provided for @meoChannelChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking update channel…'**
+  String get meoChannelChecking;
+
+  /// No description provided for @meoChannelStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get meoChannelStable;
+
+  /// No description provided for @meoChannelBeta.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta'**
+  String get meoChannelBeta;
+
+  /// No description provided for @meoChannelBetaSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Get newer Meo components before Stable. Arch system packages keep their normal repositories.'**
+  String get meoChannelBetaSummary;
+
+  /// No description provided for @meoChannelStableSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Get fully tested MeoArch release trains.'**
+  String get meoChannelStableSummary;
+
+  /// No description provided for @meoChannelRepositoryPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Repository priority: {repositories}'**
+  String meoChannelRepositoryPriority(String repositories);
+
+  /// No description provided for @meoChannelBetaNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Beta only when you want newer components before Stable. It is not recommended for critical systems; Stable remains available as the fallback.'**
+  String get meoChannelBetaNotice;
+
+  /// No description provided for @meoChannelDowngradePending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Stable is selected, but 1 Meo package downgrade still needs your review.} other{Stable is selected, but {count} Meo package downgrades still need your review.}}'**
+  String meoChannelDowngradePending(int count);
+
+  /// No description provided for @meoChannelReviewDowngrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Review downgrades'**
+  String get meoChannelReviewDowngrades;
+
+  /// No description provided for @meoChannelSwitchToStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Stable'**
+  String get meoChannelSwitchToStable;
+
+  /// No description provided for @meoChannelRollbackPreviewInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This Stable rollback preview is no longer valid. Refresh it and review it again.'**
+  String get meoChannelRollbackPreviewInvalid;
+
+  /// No description provided for @meoChannelDowngradeDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'These official Meo packages will move to their Stable versions. Arch and third-party packages won\'t be downgraded.\\n\\n{packages}'**
+  String meoChannelDowngradeDialog(String packages);
+
   /// No description provided for @sourceFilterSemantics.
   ///
   /// In en, this message translates to:
   /// **'Filter by source: {name}'**
   String sourceFilterSemantics(String name);
+
+  /// No description provided for @aiConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review this AI request'**
+  String get aiConsentTitle;
+
+  /// No description provided for @aiConsentIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the exact request before sending it. Your confirmation applies only to this request and its fingerprint.'**
+  String get aiConsentIntro;
+
+  /// No description provided for @aiConsentProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get aiConsentProvider;
+
+  /// No description provided for @aiConsentDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination'**
+  String get aiConsentDestination;
+
+  /// No description provided for @aiConsentModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get aiConsentModel;
+
+  /// No description provided for @aiConsentPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get aiConsentPurpose;
+
+  /// No description provided for @aiConsentDataCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Data included'**
+  String get aiConsentDataCategories;
+
+  /// No description provided for @aiConsentCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Characters'**
+  String get aiConsentCharacters;
+
+  /// No description provided for @aiConsentFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint'**
+  String get aiConsentFingerprint;
+
+  /// No description provided for @aiConsentReviewContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Review content to be sent'**
+  String get aiConsentReviewContent;
+
+  /// No description provided for @aiConsentSystemInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'System instruction'**
+  String get aiConsentSystemInstruction;
+
+  /// No description provided for @aiConsentUserContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your content'**
+  String get aiConsentUserContent;
+
+  /// No description provided for @aiConsentConfirmWithProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand this content will be sent to {provider}.'**
+  String aiConsentConfirmWithProvider(String provider);
+
+  /// No description provided for @aiConsentKeyNotExposed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your API key is not part of this prompt and is not shown here.'**
+  String get aiConsentKeyNotExposed;
+
+  /// No description provided for @aiConsentDeny.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t send'**
+  String get aiConsentDeny;
+
+  /// No description provided for @aiConsentAllowOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and send once'**
+  String get aiConsentAllowOnce;
+
+  /// No description provided for @aiConsentCategoryAppName.
+  ///
+  /// In en, this message translates to:
+  /// **'App name'**
+  String get aiConsentCategoryAppName;
+
+  /// No description provided for @aiConsentCategoryAppDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'App description'**
+  String get aiConsentCategoryAppDescription;
+
+  /// No description provided for @aiConsentCategoryVersionMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Version information'**
+  String get aiConsentCategoryVersionMetadata;
+
+  /// No description provided for @aiConsentCategoryPackageSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Package source'**
+  String get aiConsentCategoryPackageSource;
+
+  /// No description provided for @aiConsentCategoryPackageVariants.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation options'**
+  String get aiConsentCategoryPackageVariants;
+
+  /// No description provided for @aiConsentCategoryPreferenceRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Preference request'**
+  String get aiConsentCategoryPreferenceRequest;
+
+  /// No description provided for @aiConsentCategorySearchQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Search query'**
+  String get aiConsentCategorySearchQuery;
+
+  /// No description provided for @aiConsentCategorySystemEnvironment.
+  ///
+  /// In en, this message translates to:
+  /// **'System environment summary'**
+  String get aiConsentCategorySystemEnvironment;
+
+  /// No description provided for @aiConsentCategoryErrorLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Error log'**
+  String get aiConsentCategoryErrorLog;
+
+  /// No description provided for @aiConsentCategoryRecommendationRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation request'**
+  String get aiConsentCategoryRecommendationRequest;
+
+  /// No description provided for @aiConsentCategoryConnectionTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection test data'**
+  String get aiConsentCategoryConnectionTest;
+
+  /// No description provided for @githubLoadErrorDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load GitHub repositories. Check your network and try again.'**
+  String get githubLoadErrorDetail;
+
+  /// No description provided for @githubSearchErrorDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not search GitHub repositories. Check your network and try again.'**
+  String get githubSearchErrorDetail;
+
+  /// No description provided for @flatpakLoadErrorDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load Flatpak apps. Check Flathub and your network connection, then try again.'**
+  String get flatpakLoadErrorDetail;
+
+  /// No description provided for @appCardSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'App: {name}'**
+  String appCardSemantics(String name);
+
+  /// No description provided for @diskSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Disk size'**
+  String get diskSize;
+
+  /// No description provided for @diskSizeWithConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Disk size ({confidence})'**
+  String diskSizeWithConfidence(String confidence);
+
+  /// No description provided for @accountAiSignInRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to Meo Account before using Account AI.'**
+  String get accountAiSignInRequired;
+
+  /// No description provided for @accountAiNoDefaultModel.
+  ///
+  /// In en, this message translates to:
+  /// **'This AI connection has no default model. Choose a model in Settings first.'**
+  String get accountAiNoDefaultModel;
+
+  /// No description provided for @accountAiInvalidConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'The account AI service did not return a valid consent summary.'**
+  String get accountAiInvalidConsent;
+
+  /// No description provided for @accountAiConsentExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI consent summary is invalid or expired.'**
+  String get accountAiConsentExpired;
+
+  /// No description provided for @accountAiInvalidResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service did not return valid content.'**
+  String get accountAiInvalidResponse;
+
+  /// No description provided for @accountAiTestPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Test the OmniStore account AI connection'**
+  String get accountAiTestPurpose;
+
+  /// No description provided for @accountAiInvalidDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'The account AI connection has an invalid destination.'**
+  String get accountAiInvalidDestination;
+
+  /// No description provided for @accountAiConnectionNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected AI connection is unavailable. Choose it again in Settings.'**
+  String get accountAiConnectionNotFound;
+
+  /// No description provided for @accountAiInvalidData.
+  ///
+  /// In en, this message translates to:
+  /// **'The account AI service returned invalid data.'**
+  String get accountAiInvalidData;
+
+  /// No description provided for @accountAiUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The account AI service is temporarily unavailable.'**
+  String get accountAiUnavailable;
+
+  /// No description provided for @accountAiRequestDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'The account AI request was denied. Sign in again and try once more.'**
+  String get accountAiRequestDenied;
+
+  /// No description provided for @accountAiConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to connect to the account AI service.'**
+  String get accountAiConnectionFailed;
+
+  /// No description provided for @localAiUnsupportedModelDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'This connection does not support local model discovery.'**
+  String get localAiUnsupportedModelDiscovery;
+
+  /// No description provided for @localAiCredentialStoreUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open the secure credential store. Unlock KWallet and try again.'**
+  String get localAiCredentialStoreUnavailable;
+
+  /// No description provided for @localAiApiKeyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Securely save an API key for this provider first.'**
+  String get localAiApiKeyRequired;
+
+  /// No description provided for @localAiCatalogTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The model catalog response is too large.'**
+  String get localAiCatalogTooLarge;
+
+  /// No description provided for @localAiInvalidCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'The model catalog returned invalid data.'**
+  String get localAiInvalidCatalog;
+
+  /// No description provided for @localAiCatalogUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read the model catalog. Check that the service is running.'**
+  String get localAiCatalogUnavailable;
+
+  /// No description provided for @localAiUnsupportedConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'This local AI connection type is not supported.'**
+  String get localAiUnsupportedConnection;
+
+  /// No description provided for @localAiInvalidModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid model name.'**
+  String get localAiInvalidModel;
+
+  /// No description provided for @localAiInvalidPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI request purpose is invalid.'**
+  String get localAiInvalidPurpose;
+
+  /// No description provided for @localAiInvalidInput.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI input is empty or too large.'**
+  String get localAiInvalidInput;
+
+  /// No description provided for @localAiInvalidDataCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI data categories are invalid.'**
+  String get localAiInvalidDataCategories;
+
+  /// No description provided for @localAiApiKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The secure credential store has no valid API key for this provider.'**
+  String get localAiApiKeyInvalid;
+
+  /// No description provided for @localAiDestinationChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI destination changed after consent, so the request was blocked.'**
+  String get localAiDestinationChanged;
+
+  /// No description provided for @localAiResponseTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service response is too large.'**
+  String get localAiResponseTooLarge;
+
+  /// No description provided for @localAiInvalidResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service returned invalid data.'**
+  String get localAiInvalidResponse;
+
+  /// No description provided for @localAiNoResponseText.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service did not return text.'**
+  String get localAiNoResponseText;
+
+  /// No description provided for @localAiConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to connect to the AI service, or the request timed out.'**
+  String get localAiConnectionFailed;
+
+  /// No description provided for @localAiTestPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Test the OmniStore local secure AI connection'**
+  String get localAiTestPurpose;
+
+  /// No description provided for @localAiInvalidEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service address is invalid.'**
+  String get localAiInvalidEndpoint;
+
+  /// No description provided for @localAiOllamaLoopbackRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'The Ollama address must use local HTTP(S) loopback.'**
+  String get localAiOllamaLoopbackRequired;
+
+  /// No description provided for @localAiHttpsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud AI services must use HTTPS.'**
+  String get localAiHttpsRequired;
+
+  /// No description provided for @localAiPrivateEndpointBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'A compatible API cannot point to a local or private network. Use Ollama for local models.'**
+  String get localAiPrivateEndpointBlocked;
+
+  /// No description provided for @localAiOllama.
+  ///
+  /// In en, this message translates to:
+  /// **'Ollama (on this device)'**
+  String get localAiOllama;
+
+  /// No description provided for @localAiApiKeyRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service rejected the API key.'**
+  String get localAiApiKeyRejected;
+
+  /// No description provided for @localAiModelOrEndpointNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested AI model or service address was not found.'**
+  String get localAiModelOrEndpointNotFound;
+
+  /// No description provided for @localAiRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service is out of quota or receiving requests too quickly.'**
+  String get localAiRateLimited;
+
+  /// No description provided for @localAiUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service is temporarily unavailable.'**
+  String get localAiUnavailable;
+
+  /// No description provided for @localAiRequestRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service rejected the request (HTTP {status}).'**
+  String localAiRequestRejected(int status);
+
+  /// No description provided for @aiTestService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get aiTestService;
+
+  /// No description provided for @aiTestConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get aiTestConnected;
+
+  /// No description provided for @aiTestUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get aiTestUnavailable;
+
+  /// No description provided for @aiTestReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get aiTestReady;
+
+  /// No description provided for @aiTestNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Not ready'**
+  String get aiTestNotReady;
+
+  /// No description provided for @aiTestLatency.
+  ///
+  /// In en, this message translates to:
+  /// **'Latency'**
+  String get aiTestLatency;
+
+  /// No description provided for @featuredAppSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured app: {name}'**
+  String featuredAppSemantics(String name);
 }
 
 class _AppLocalizationsDelegate

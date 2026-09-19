@@ -98,6 +98,31 @@ service-role key, or user credential. The build deliberately stops if either
 value is missing. An offline developer build may opt out explicitly with
 `--allow-account-disabled`; it must not be presented as Account-capable.
 
+## Local AI boundary
+
+OmniStore supports a local-only Ollama connection and explicitly configured
+cloud providers. Ollama endpoints are restricted to HTTP(S) loopback addresses
+and never read an API key. Cloud keys are write-only through the platform
+credential store; the ordinary JSON configuration contains only a masked
+marker. Every prompt-bearing request still shows a payload-bound consent
+summary before the credential is read.
+
+The recommended Linux path is the per-user system AI connection store owned by
+Meo Account. Meo Settings writes Ollama or OpenAI-compatible connection
+metadata and write-only keys to KWallet. OmniStore receives only enabled
+metadata, a payload-bound consent summary, and the final response; all provider
+catalog and inference traffic is performed by the Account broker. The older
+OmniStore-local credential path remains available for standalone installations.
+
+The AI settings page can query Ollama's local `/api/tags` or a compatible
+provider's `/models` catalog. Catalog results are availability metadata, not a
+claim that a model supports chat, tools, images, or any other capability. A
+single discovered model is filled automatically; otherwise the user chooses
+from the returned IDs. The opt-in live checks are
+`FlutterUI/test/live_ollama_test.dart` and
+`FlutterUI/test/live_ai_provider_test.dart`; normal test runs skip networked or
+potentially paid calls unless their explicit environment gates are set.
+
 ## Safety and release boundary
 
 - Preserve existing source, plugin manifests, package sources, build/cache

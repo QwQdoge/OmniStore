@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 
 enum Language { zh, en, ja, es, zhHant }
@@ -9,6 +11,9 @@ class L10nService {
     final ui = config['ui'] ?? {};
     final langStr = ui['language'] as String?;
     switch (langStr) {
+      case 'system':
+        language.value = _platformLanguage();
+        break;
       case 'en':
       case 'en-US':
         language.value = Language.en;
@@ -32,6 +37,22 @@ class L10nService {
       default:
         language.value = Language.zh;
         break;
+    }
+  }
+
+  static Language _platformLanguage() {
+    switch (PlatformDispatcher.instance.locale.languageCode) {
+      case 'ja':
+        return Language.ja;
+      case 'es':
+        return Language.es;
+      case 'zh':
+        final locale = PlatformDispatcher.instance.locale;
+        return locale.scriptCode == 'Hant' || locale.countryCode == 'TW'
+            ? Language.zhHant
+            : Language.zh;
+      default:
+        return Language.en;
     }
   }
 

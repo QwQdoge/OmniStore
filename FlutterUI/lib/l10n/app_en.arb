@@ -12,6 +12,7 @@
   "help": "Help",
   "userAccount": "User Account",
   "install": "Install",
+  "download": "Download",
   "open": "Open",
   "uninstall": "Uninstall",
   "launch": "Launch",
@@ -333,7 +334,7 @@
   "@aiApiKey": {
     "description": "aiApiKey"
   },
-  "aiProxy": "Network Proxy (Optional)",
+  "aiProxy": "Network proxy",
   "@aiProxy": {
     "description": "aiProxy"
   },
@@ -1303,11 +1304,11 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "GitHub access token (optional)",
+  "configurePat": "GitHub access token",
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "Provide a GitHub Classic PAT or Fine-grained Token.",
+  "patHelperText": "Add a GitHub Classic PAT or fine-grained token when you need authenticated GitHub access.",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
@@ -1367,12 +1368,225 @@
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
   },
+  "systemAiProviderLabel": "System AI connection (KWallet / Recommended)",
+  "systemAiSharedConnectionLabel": "System shared connection",
+  "systemAiConnectionHelper": "Meo Account reads the key from KWallet; OmniStore cannot read the plaintext.",
+  "systemAiLoadingTitle": "Reading system AI connections",
+  "systemAiMetadataOnly": "Only names, endpoints, and default models are read; keys are never read.",
+  "systemAiLoadErrorTitle": "Unable to read system AI connections",
+  "systemAiSelectLabel": "AI connection on this device",
+  "meoSettingsOpenFailed": "Unable to open Meo Settings.",
+  "manageInMeoSettings": "Manage in Meo Settings",
+  "systemAiNoConnections": "No system AI connection is configured. Add one in Meo Settings first.",
+  "systemAiLoadFailed": "Unable to read system AI connections. Check Accounts & Security in Meo Settings.",
+  "systemAiInvalidCatalog": "The system AI service returned an invalid model catalog.",
+  "systemAiInvalidConsent": "The system AI service did not return a valid consent summary.",
+  "systemAiConsentExpired": "The system AI consent summary is invalid or expired.",
+  "systemAiInvalidResponse": "The system AI service did not return valid text.",
+  "systemAiUnsupported": "System AI is not supported on this platform.",
+  "systemAiOperationFailed": "The system AI operation failed.",
+  "systemAiTimeout": "The system AI operation timed out.",
+  "systemAiUnavailable": "Unable to connect to the Meo Account system AI service.",
+  "systemAiTestPurpose": "Test the OmniStore system AI connection",
+  "aiConsentCancelled": "You cancelled this AI request.",
+  "chooseSystemAiConnection": "Select a system AI connection in OmniStore Settings first.",
+  "chooseAccountAiConnection": "Select an account AI connection in OmniStore Settings first.",
+  "aiConfigUnavailable": "AI configuration is unavailable.",
+  "aiNotEnabled": "AI assistance is not enabled.",
+  "aiAccountProviderHint": "Meo Account invokes your saved connection; the API key is never sent to OmniStore.",
+  "aiSystemProviderHint": "Meo Account invokes the connection from KWallet; OmniStore sees only metadata and the final result.",
+  "aiOllamaProviderHint": "Ollama connects only to the local service and does not require an API key.",
+  "aiCompatibleProviderHint": "Use only a trusted HTTPS-compatible endpoint; the key remains in the local secure store.",
+  "aiLocalKeyProviderHint": "This provider has a separate key in Secret Service/KWallet that cannot be read back.",
+  "meoAccountOpenFailed": "Unable to open Meo Account.",
+  "secureCredentialWriteFailed": "Unable to write to the system credential store.",
+  "modelsNoneFound": "The service is running, but no installed or available models were reported.",
+  "modelsAutofilled": "A discovered model was filled in automatically.",
+  "modelsFoundChoose": "Models were found. Choose one before testing; OmniStore does not infer capabilities from names.",
+  "apiKeyRequired": "Enter a new API key first.",
+  "secureCredentialSaved": "The API key was saved to the system credential store.",
+  "localApiKeyDeleted": "The local API key was deleted.",
+  "secureCredentialUnavailable": "Unable to access the system credential store.",
+  "signInMeoAccount": "Sign in to Meo Account",
+  "signInMeoAccountDetail": "After signing in, choose an encrypted account AI connection. Its API key is never sent to OmniStore.",
+  "signIn": "Sign in",
+  "accountAiLoading": "Reading account AI connections",
+  "accountAiMetadataOnly": "Only names, providers, and masked key status are read.",
+  "accountAiLoadError": "Unable to read account AI connections",
+  "accountAiNone": "No AI connection is saved in this account",
+  "accountAiNoneDetail": "Add your API key securely in Account, then return here and refresh.",
+  "connect": "Connect",
+  "accountAiSelectLabel": "Account AI connection",
+  "accountAiConnectionHelper": "The key is decrypted only inside the Account Edge broker; OmniStore cannot read it.",
+  "manageAiConnections": "Manage AI connections",
+  "aiPerRequestConsentDetail": "Before every request, OmniStore shows the provider, model, purpose, data categories, full content, and request fingerprint, then asks for one-time consent.",
+  "aiEnabledConsentDesc": "Off by default; every request still requires separate confirmation after it is enabled.",
+  "providerLocalSecureKey": "{provider} (local secure key)",
+  "providerCompatibleHttps": "OpenAI Compatible (custom HTTPS)",
+  "providerMeoAccount": "Meo Account",
+  "ollamaEndpointSafety": "Defaults to local Ollama. Keep a loopback address to avoid contacting a LAN service accidentally.",
+  "compatibleEndpointSafety": "Enter only a trusted HTTPS-compatible endpoint without a key or query parameters.",
+  "accountModelOverride": "Account model",
+  "accountModelDefaultHelper": "Leave empty to use the selected Account connection's default model.",
+  "modelReviewHelper": "The actual model is shown again for confirmation before every request.",
+  "detectLocalModels": "Detect local models and fill one in",
+  "readModelCatalog": "Read model catalog",
+  "installOllamaWithOmniStore": "Install Ollama with OmniStore",
+  "chooseDiscoveredModel": "Choose a discovered model",
+  "localKeyStored": "A separate secure key is saved for this provider",
+  "localKeyNotStored": "No API key is saved for this provider",
+  "localKeysHelper": "Each provider is stored separately in Secret Service/KWallet; keys can be replaced or deleted but never read back.",
+  "newApiKeyLabel": "New API key (cleared after saving)",
+  "newApiKeyHelper": "Enter only a replacement key. Existing keys cannot be read or copied.",
+  "hideInput": "Hide input",
+  "showInput": "Show input",
+  "saveOrReplace": "Save securely / Replace",
+  "deleteLocalKey": "Delete local key",
+  "temperatureHelper": "0–2; lower values are usually more stable, and out-of-range values are not saved.",
+  "aiTestScopeHelper": "Testing checks only the current connection and does not change the AI enable switch; real requests still require one-time consent.",
+  "meoUpdateChannel": "Meo update channel",
+  "meoUpdateChannelSubtitle": "Read from your active Pacman repositories",
+  "meoChannelChecking": "Checking update channel…",
+  "meoChannelStable": "Stable",
+  "meoChannelBeta": "Beta",
+  "meoChannelBetaSummary": "Get newer Meo components before Stable. Arch system packages keep their normal repositories.",
+  "meoChannelStableSummary": "Get fully tested MeoArch release trains.",
+  "meoChannelRepositoryPriority": "Repository priority: {repositories}",
+  "@meoChannelRepositoryPriority": {
+    "placeholders": {
+      "repositories": {"type": "String"}
+    }
+  },
+  "meoChannelBetaNotice": "Choose Beta only when you want newer components before Stable. It is not recommended for critical systems; Stable remains available as the fallback.",
+  "meoChannelDowngradePending": "{count, plural, =1{Stable is selected, but 1 Meo package downgrade still needs your review.} other{Stable is selected, but {count} Meo package downgrades still need your review.}}",
+  "@meoChannelDowngradePending": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "meoChannelReviewDowngrades": "Review downgrades",
+  "meoChannelSwitchToStable": "Switch to Stable",
+  "meoChannelRollbackPreviewInvalid": "This Stable rollback preview is no longer valid. Refresh it and review it again.",
+  "meoChannelDowngradeDialog": "These official Meo packages will move to their Stable versions. Arch and third-party packages won't be downgraded.\\n\\n{packages}",
+  "@meoChannelDowngradeDialog": {
+    "placeholders": {
+      "packages": {"type": "String"}
+    }
+  },
   "sourceFilterSemantics": "Filter by source: {name}",
+  "@providerLocalSecureKey": {"placeholders": {"provider": {"type": "String"}}},
   "@sourceFilterSemantics": {
     "placeholders": {
       "name": {
         "type": "String"
       }
+    }
+  },
+  "aiConsentTitle": "Review this AI request",
+  "aiConsentIntro": "Review the exact request before sending it. Your confirmation applies only to this request and its fingerprint.",
+  "aiConsentProvider": "Provider",
+  "aiConsentDestination": "Destination",
+  "aiConsentModel": "Model",
+  "aiConsentPurpose": "Purpose",
+  "aiConsentDataCategories": "Data included",
+  "aiConsentCharacters": "Characters",
+  "aiConsentFingerprint": "Fingerprint",
+  "aiConsentReviewContent": "Review content to be sent",
+  "aiConsentSystemInstruction": "System instruction",
+  "aiConsentUserContent": "Your content",
+  "aiConsentConfirmWithProvider": "I understand this content will be sent to {provider}.",
+  "@aiConsentConfirmWithProvider": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConsentKeyNotExposed": "Your API key is not part of this prompt and is not shown here.",
+  "aiConsentDeny": "Don't send",
+  "aiConsentAllowOnce": "Confirm and send once",
+  "aiConsentCategoryAppName": "App name",
+  "aiConsentCategoryAppDescription": "App description",
+  "aiConsentCategoryVersionMetadata": "Version information",
+  "aiConsentCategoryPackageSource": "Package source",
+  "aiConsentCategoryPackageVariants": "Installation options",
+  "aiConsentCategoryPreferenceRequest": "Preference request",
+  "aiConsentCategorySearchQuery": "Search query",
+  "aiConsentCategorySystemEnvironment": "System environment summary",
+  "aiConsentCategoryErrorLog": "Error log",
+  "aiConsentCategoryRecommendationRequest": "Recommendation request",
+  "aiConsentCategoryConnectionTest": "Connection test data",
+  "githubLoadErrorDetail": "Could not load GitHub repositories. Check your network and try again.",
+  "githubSearchErrorDetail": "Could not search GitHub repositories. Check your network and try again.",
+  "flatpakLoadErrorDetail": "Could not load Flatpak apps. Check Flathub and your network connection, then try again.",
+  "appCardSemantics": "App: {name}",
+  "@appCardSemantics": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "diskSize": "Disk size",
+  "diskSizeWithConfidence": "Disk size ({confidence})",
+  "@diskSizeWithConfidence": {
+    "placeholders": {
+      "confidence": {"type": "String"}
+    }
+  },
+  "accountAiSignInRequired": "Sign in to Meo Account before using Account AI.",
+  "accountAiNoDefaultModel": "This AI connection has no default model. Choose a model in Settings first.",
+  "accountAiInvalidConsent": "The account AI service did not return a valid consent summary.",
+  "accountAiConsentExpired": "The AI consent summary is invalid or expired.",
+  "accountAiInvalidResponse": "The AI service did not return valid content.",
+  "accountAiTestPurpose": "Test the OmniStore account AI connection",
+  "accountAiInvalidDestination": "The account AI connection has an invalid destination.",
+  "accountAiConnectionNotFound": "The selected AI connection is unavailable. Choose it again in Settings.",
+  "accountAiInvalidData": "The account AI service returned invalid data.",
+  "accountAiUnavailable": "The account AI service is temporarily unavailable.",
+  "accountAiRequestDenied": "The account AI request was denied. Sign in again and try once more.",
+  "accountAiConnectionFailed": "Unable to connect to the account AI service.",
+  "localAiUnsupportedModelDiscovery": "This connection does not support local model discovery.",
+  "localAiCredentialStoreUnavailable": "Unable to open the secure credential store. Unlock KWallet and try again.",
+  "localAiApiKeyRequired": "Securely save an API key for this provider first.",
+  "localAiCatalogTooLarge": "The model catalog response is too large.",
+  "localAiInvalidCatalog": "The model catalog returned invalid data.",
+  "localAiCatalogUnavailable": "Unable to read the model catalog. Check that the service is running.",
+  "localAiUnsupportedConnection": "This local AI connection type is not supported.",
+  "localAiInvalidModel": "Enter a valid model name.",
+  "localAiInvalidPurpose": "The AI request purpose is invalid.",
+  "localAiInvalidInput": "The AI input is empty or too large.",
+  "localAiInvalidDataCategories": "The AI data categories are invalid.",
+  "localAiApiKeyInvalid": "The secure credential store has no valid API key for this provider.",
+  "localAiDestinationChanged": "The AI destination changed after consent, so the request was blocked.",
+  "localAiResponseTooLarge": "The AI service response is too large.",
+  "localAiInvalidResponse": "The AI service returned invalid data.",
+  "localAiNoResponseText": "The AI service did not return text.",
+  "localAiConnectionFailed": "Unable to connect to the AI service, or the request timed out.",
+  "localAiTestPurpose": "Test the OmniStore local secure AI connection",
+  "localAiInvalidEndpoint": "The AI service address is invalid.",
+  "localAiOllamaLoopbackRequired": "The Ollama address must use local HTTP(S) loopback.",
+  "localAiHttpsRequired": "Cloud AI services must use HTTPS.",
+  "localAiPrivateEndpointBlocked": "A compatible API cannot point to a local or private network. Use Ollama for local models.",
+  "localAiOllama": "Ollama (on this device)",
+  "localAiApiKeyRejected": "The AI service rejected the API key.",
+  "localAiModelOrEndpointNotFound": "The requested AI model or service address was not found.",
+  "localAiRateLimited": "The AI service is out of quota or receiving requests too quickly.",
+  "localAiUnavailable": "The AI service is temporarily unavailable.",
+  "localAiRequestRejected": "The AI service rejected the request (HTTP {status}).",
+  "@localAiRequestRejected": {
+    "placeholders": {
+      "status": {"type": "int"}
+    }
+  },
+  "aiTestService": "Service",
+  "aiTestConnected": "Connected",
+  "aiTestUnavailable": "Unavailable",
+  "aiTestReady": "Ready",
+  "aiTestNotReady": "Not ready",
+  "aiTestLatency": "Latency",
+  "featuredAppSemantics": "Featured app: {name}",
+  "@featuredAppSemantics": {
+    "placeholders": {
+      "name": {"type": "String"}
     }
   }
 }

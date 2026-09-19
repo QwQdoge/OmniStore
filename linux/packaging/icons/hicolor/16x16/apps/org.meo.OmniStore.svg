@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-label="OmniStore 16 pixel optical master">
+  <rect x="1" y="5" width="14" height="10" rx="3" fill="#FFB957"/>
+  <path d="M4 6C4 2 12 2 12 6" fill="none" stroke="#8B4C00" stroke-linecap="round" stroke-width="2"/>
+  <path fill="#7560C8" d="M4 9H7V12H4ZM10 9H13V12H10Z"/>
+</svg>

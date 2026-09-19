@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
@@ -10,6 +12,7 @@ import 'package:frontend/features/onboarding/widgets/api_key_instructions_dialog
 import 'package:frontend/features/onboarding/widgets/welcome_env_check_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_sources_page.dart';
 import 'package:frontend/features/onboarding/widgets/welcome_ai_page.dart';
+import 'package:frontend/features/ai/system_ai_service.dart';
 
 class WelcomePage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -28,7 +31,13 @@ class _WelcomePageState extends State<WelcomePage> {
 
   // AI assistant configuration
   bool _enableAI = false;
-  String _aiProvider = 'ollama';
+  String _aiProvider = !kIsWeb && defaultTargetPlatform == TargetPlatform.linux
+      ? 'system'
+      : 'ollama';
+  List<SystemAiConnection> _systemAiConnections = const [];
+  String? _systemAiConnectionId;
+  String? _systemAiConnectionError;
+  bool _loadingSystemAiConnections = false;
   final TextEditingController _aiEndpointController = TextEditingController(
     text: 'http://localhost:11434',
   );
@@ -83,6 +92,41 @@ class _WelcomePageState extends State<WelcomePage> {
         _aiTestResult = null;
       });
     }
+  }
+
+  Future<void> _loadSystemAiConnections() async {
+    if (_loadingSystemAiConnections) return;
+    setState(() {
+      _loadingSystemAiConnections = true;
+      _systemAiConnectionError = null;
+    });
+    try {
+      final connections = await SystemAiService.instance.listConnections();
+      if (!mounted) return;
+      setState(() {
+        _systemAiConnections = connections;
+        if (connections.isNotEmpty &&
+            !connections.any((item) => item.id == _systemAiConnectionId)) {
+          _systemAiConnectionId = connections.first.id;
+        }
+        if (connections.isEmpty) {
+          _systemAiConnectionError = AppLocalizations.of(
+            context,
+          )!.systemAiNoConnections;
+        }
+      });
+    } on SystemAiException catch (error) {
+      if (mounted) setState(() => _systemAiConnectionError = error.message);
+    } finally {
+      if (mounted) setState(() => _loadingSystemAiConnections = false);
+    }
+  }
+
+  SystemAiConnection? get _selectedSystemAiConnection {
+    for (final connection in _systemAiConnections) {
+      if (connection.id == _systemAiConnectionId) return connection;
+    }
+    return null;
   }
 
   Future<void> _checkEnvironment() async {
@@ -225,8 +269,11 @@ class _WelcomePageState extends State<WelcomePage> {
         aiOverride: {
           'enabled': true,
           'provider': _aiProvider,
+          'system_connection_id': _systemAiConnectionId ?? '',
           'endpoint': _aiEndpointController.text.trim(),
-          'model': _defaultModelForProvider(_aiProvider),
+          'model': _aiProvider == 'system'
+              ? _selectedSystemAiConnection?.defaultModel ?? ''
+              : _defaultModelForProvider(_aiProvider),
         },
         ephemeralApiKey: _aiApiKeyController.text.trim(),
       );
@@ -290,9 +337,18 @@ class _WelcomePageState extends State<WelcomePage> {
     config['ai'] = config['ai'] ?? {};
     config['ai']['enabled'] = _enableAI;
     config['ai']['provider'] = _aiProvider;
-    config['ai']['endpoint'] = _aiEndpointController.text.trim();
-    config['ai']['model'] = _defaultModelForProvider(_aiProvider);
-    config['ai']['api_key'] = _aiApiKeyController.text.trim();
+    config['ai']['system_connection_id'] = _aiProvider == 'system'
+        ? _systemAiConnectionId ?? ''
+        : '';
+    config['ai']['endpoint'] = _aiProvider == 'system'
+        ? ''
+        : _aiEndpointController.text.trim();
+    config['ai']['model'] = _aiProvider == 'system'
+        ? _selectedSystemAiConnection?.defaultModel ?? ''
+        : _defaultModelForProvider(_aiProvider);
+    config['ai']['api_key'] = _aiProvider == 'system'
+        ? ''
+        : _aiApiKeyController.text.trim();
 
     await settingsController.updateConfig(config);
     if (!mounted) return;
@@ -351,6 +407,9 @@ class _WelcomePageState extends State<WelcomePage> {
                         setState(() {
                           _enableAI = val;
                         });
+                        if (val && _aiProvider == 'system') {
+                          _loadSystemAiConnections();
+                        }
                       },
                       aiProvider: _aiProvider,
                       onAiProviderChanged: (val) {
@@ -360,12 +419,30 @@ class _WelcomePageState extends State<WelcomePage> {
                             if (val == 'ollama') {
                               _aiEndpointController.text =
                                   'http://localhost:11434';
-                            } else {
+                            } else if (val == 'openai') {
                               _aiEndpointController.text =
                                   'https://api.openai.com/v1';
+                            } else {
+                              _aiEndpointController.clear();
+                              _aiApiKeyController.clear();
                             }
                           });
+                          if (val == 'system') _loadSystemAiConnections();
                         }
+                      },
+                      systemConnections: _systemAiConnections,
+                      selectedSystemConnectionId: _systemAiConnectionId,
+                      systemConnectionError: _systemAiConnectionError,
+                      loadingSystemConnections: _loadingSystemAiConnections,
+                      onSystemConnectionChanged: (value) {
+                        setState(() {
+                          _systemAiConnectionId = value;
+                          _aiTestResult = null;
+                        });
+                      },
+                      onRefreshSystemConnections: _loadSystemAiConnections,
+                      onOpenSystemSettings: () async {
+                        await SystemAiService.instance.openSettings();
                       },
                       endpointController: _aiEndpointController,
                       apiKeyController: _aiApiKeyController,

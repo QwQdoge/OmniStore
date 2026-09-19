@@ -50,6 +50,22 @@ prepare() {
     return 1
   }
 
+  # Do not construct a mixed package from a newer launcher contract and an
+  # older release bundle.  The bundle itself must carry all Original masters
+  # that this package installs.
+  local _required_identity_asset
+  for _required_identity_asset in \
+    data/omnistore.desktop \
+    data/icons/hicolor/scalable/apps/org.meo.OmniStore.svg \
+    data/icons/hicolor/16x16/apps/org.meo.OmniStore.svg \
+    data/icons/hicolor/22x22/apps/org.meo.OmniStore.svg \
+    data/icons/hicolor/32x32/apps/org.meo.OmniStore.svg; do
+    if [[ ! -f "$_src_dir/$_required_identity_asset" ]]; then
+      error "Verified release bundle is missing required Original identity asset: $_required_identity_asset"
+      return 1
+    fi
+  done
+
   # Do not ship a command which a stale release backend cannot implement.
   # The verifier runs the bundled binary with an isolated XDG environment and
   # requires the exact schema consumed by Meo Settings.
@@ -151,19 +167,19 @@ EOF
   install -Dm644 "$_src_dir/LICENSE" \
     "${pkgdir}/usr/share/licenses/$pkgname/LICENSE"
 
-  # 4. 安装图标到系统图标库，以便桌面环境自动识别
-  install -Dm644 "$_src_dir/omnistore.svg" "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"
+  # 4. Install the package-owned Original identity.  These are application
+  # assets, not MeoSymbols system-semantic icons; Studio can overlay them
+  # later without making Original depend on another package.
+  install -Dm644 "$_src_dir/data/icons/hicolor/scalable/apps/org.meo.OmniStore.svg" \
+    "${pkgdir}/usr/share/icons/hicolor/scalable/apps/org.meo.OmniStore.svg"
+  install -Dm644 "$_src_dir/data/icons/hicolor/16x16/apps/org.meo.OmniStore.svg" \
+    "${pkgdir}/usr/share/icons/hicolor/16x16/apps/org.meo.OmniStore.svg"
+  install -Dm644 "$_src_dir/data/icons/hicolor/22x22/apps/org.meo.OmniStore.svg" \
+    "${pkgdir}/usr/share/icons/hicolor/22x22/apps/org.meo.OmniStore.svg"
+  install -Dm644 "$_src_dir/data/icons/hicolor/32x32/apps/org.meo.OmniStore.svg" \
+    "${pkgdir}/usr/share/icons/hicolor/32x32/apps/org.meo.OmniStore.svg"
 
-  # 5. 安装桌面文件
-  install -d "${pkgdir}/usr/share/applications"
-  cat > "${pkgdir}/usr/share/applications/omnistore.desktop" <<EOF
-[Desktop Entry]
-Name=OmniStore
-Comment=A unified software repository search and management tool
-Exec=/usr/bin/omnistore
-Icon=omnistore
-Terminal=false
-Type=Application
-Categories=Utility;
-EOF
+  # 5. Install the same desktop entry shipped in the verified release bundle.
+  install -Dm644 "$_src_dir/data/omnistore.desktop" \
+    "${pkgdir}/usr/share/applications/omnistore.desktop"
 }

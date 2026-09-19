@@ -4,6 +4,7 @@ import 'package:frontend/models/app_package.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/features/explore/presentation/pages/details_page.dart';
 import 'package:frontend/core/widgets/section_header.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class AppShelf extends StatelessWidget {
   final String title;
@@ -21,6 +22,7 @@ class AppShelf extends StatelessWidget {
   Widget build(BuildContext context) {
     if (apps.isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +53,7 @@ class AppShelf extends StatelessWidget {
                   child: SizedBox(
                     width: 130,
                     child: Semantics(
-                      label: 'App: ${app.name}',
+                      label: l10n.appCardSemantics(app.name),
                       button: true,
                       child: AppCard(
                         borderRadius: 16,

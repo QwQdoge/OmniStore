@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/ai/widgets/ai_mark.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 
 class AiConsentSummary {
   const AiConsentSummary({
@@ -53,7 +54,7 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
   Widget build(BuildContext context) {
     final summary = widget.summary;
     final colors = Theme.of(context).colorScheme;
-    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+    final l10n = AppLocalizations.of(context)!;
     final fingerprint = summary.payloadSha256.length >= 12
         ? summary.payloadSha256.substring(0, 12)
         : summary.payloadSha256;
@@ -62,10 +63,9 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
       clipBehavior: Clip.antiAlias,
       icon: const AiMark(size: 32),
       title: Text(
-        isChinese ? '允许这一次 AI 调用？' : 'Allow this AI request?',
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
+        l10n.aiConsentTitle,
+        style: Theme.of(context).textTheme.headlineSmall
+            ?.copyWith(fontWeight: FontWeight.w800),
         textAlign: TextAlign.center,
       ),
       content: ConstrainedBox(
@@ -76,38 +76,32 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isChinese
-                    ? 'OmniStore 只会发送下列请求。授权仅对本次摘要有效，不能记住或重放。'
-                    : 'OmniStore will send only the request below. Approval is bound to this one-time fingerprint and cannot be remembered or replayed.',
+                l10n.aiConsentIntro,
                 style: TextStyle(color: colors.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
               _ConsentRow(
-                label: isChinese ? '服务' : 'Provider',
+                label: l10n.aiConsentProvider,
                 value: summary.providerName,
               ),
               _ConsentRow(
-                label: isChinese ? '发送到' : 'Destination',
+                label: l10n.aiConsentDestination,
                 value: summary.destination,
               ),
+              _ConsentRow(label: l10n.aiConsentModel, value: summary.model),
+              _ConsentRow(label: l10n.aiConsentPurpose, value: summary.purpose),
               _ConsentRow(
-                label: isChinese ? '模型' : 'Model',
-                value: summary.model,
+                label: l10n.aiConsentDataCategories,
+                value: summary.dataCategories
+                    .map((category) => _displayDataCategory(l10n, category))
+                    .join(' · '),
               ),
               _ConsentRow(
-                label: isChinese ? '用途' : 'Purpose',
-                value: summary.purpose,
-              ),
-              _ConsentRow(
-                label: isChinese ? '数据类别' : 'Data categories',
-                value: summary.dataCategories.join(' · '),
-              ),
-              _ConsentRow(
-                label: isChinese ? '字符数' : 'Characters',
+                label: l10n.aiConsentCharacters,
                 value: '${summary.promptCharacters}',
               ),
               _ConsentRow(
-                label: isChinese ? '请求指纹' : 'Fingerprint',
+                label: l10n.aiConsentFingerprint,
                 value: fingerprint,
                 monospace: true,
               ),
@@ -115,15 +109,15 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 childrenPadding: const EdgeInsets.only(bottom: 8),
-                title: Text(isChinese ? '查看将发送的完整内容' : 'Review full content'),
+                title: Text(l10n.aiConsentReviewContent),
                 children: [
                   if (summary.systemPrompt.isNotEmpty)
                     _PromptPreview(
-                      label: isChinese ? '系统指令' : 'System instruction',
+                      label: l10n.aiConsentSystemInstruction,
                       value: summary.systemPrompt,
                     ),
                   _PromptPreview(
-                    label: isChinese ? '用户内容' : 'User content',
+                    label: l10n.aiConsentUserContent,
                     value: summary.userPrompt,
                   ),
                 ],
@@ -135,15 +129,9 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
                 onChanged: (value) =>
                     setState(() => _acknowledged = value == true),
                 title: Text(
-                  isChinese
-                      ? '我确认以上内容将发送给 ${summary.providerName}'
-                      : 'I confirm this content will be sent to ${summary.providerName}',
+                  l10n.aiConsentConfirmWithProvider(summary.providerName),
                 ),
-                subtitle: Text(
-                  isChinese
-                      ? 'API 密钥不会发送到 OmniStore，也不会显示在此处。'
-                      : 'The API key is never returned to OmniStore or shown here.',
-                ),
+                subtitle: Text(l10n.aiConsentKeyNotExposed),
               ),
             ],
           ),
@@ -152,15 +140,44 @@ class _AiConsentDialogState extends State<_AiConsentDialog> {
       actions: [
         FilledButton.tonal(
           onPressed: () => Navigator.pop(context, false),
-          child: Text(isChinese ? '拒绝' : 'Deny'),
+          child: Text(l10n.aiConsentDeny),
         ),
         FilledButton.icon(
           onPressed: _acknowledged ? () => Navigator.pop(context, true) : null,
           icon: const Icon(Icons.send_rounded),
-          label: Text(isChinese ? '仅同意这一次并发送' : 'Allow once and send'),
+          label: Text(l10n.aiConsentAllowOnce),
         ),
       ],
     );
+  }
+
+  String _displayDataCategory(AppLocalizations l10n, String category) {
+    switch (category) {
+      case 'app_name':
+        return l10n.aiConsentCategoryAppName;
+      case 'app_description':
+        return l10n.aiConsentCategoryAppDescription;
+      case 'version_metadata':
+        return l10n.aiConsentCategoryVersionMetadata;
+      case 'package_source':
+        return l10n.aiConsentCategoryPackageSource;
+      case 'package_variants':
+        return l10n.aiConsentCategoryPackageVariants;
+      case 'preference_request':
+        return l10n.aiConsentCategoryPreferenceRequest;
+      case 'search_query':
+        return l10n.aiConsentCategorySearchQuery;
+      case 'system_environment_summary':
+        return l10n.aiConsentCategorySystemEnvironment;
+      case 'error_log':
+        return l10n.aiConsentCategoryErrorLog;
+      case 'recommendation_request':
+        return l10n.aiConsentCategoryRecommendationRequest;
+      case 'synthetic_test':
+        return l10n.aiConsentCategoryConnectionTest;
+      default:
+        return category.replaceAll('_', ' ');
+    }
   }
 }
 

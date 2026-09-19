@@ -72,6 +72,10 @@ class GeneralSettingsCard extends StatelessWidget {
                       ),
                       items: [
                         DropdownMenuItem(
+                          value: SettingsController.systemLanguage,
+                          child: Text(l10n.systemDefault),
+                        ),
+                        DropdownMenuItem(
                           value: 'en-US',
                           child: Text(l10n.langEnglish),
                         ),

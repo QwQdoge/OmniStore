@@ -16,6 +16,13 @@ class DummyConfig:
         return default
 
 
+def test_system_language_uses_the_desktop_locale(monkeypatch):
+    monkeypatch.setenv("LANG", "zh_TW.UTF-8")
+    assistant = AIAssistant(DummyConfig({"ui": {"language": "system"}}))
+
+    assert assistant._get_language() == "繁体中文"
+
+
 @pytest.mark.asyncio
 async def test_openai_compatible_env_overrides(monkeypatch):
     seen = {}

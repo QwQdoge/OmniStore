@@ -111,9 +111,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        setError(
-          "Could not load GitHub repositories. Check your network and try again.",
-        );
+        setError(AppLocalizations.of(context)!.githubLoadErrorDetail);
         setLoading(false);
       });
     }
@@ -189,8 +187,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _searchError =
-            "Could not search GitHub repositories. Check your network and try again.";
+        _searchError = AppLocalizations.of(context)!.githubSearchErrorDetail;
         _isLoadingSearch = false;
       });
     }
@@ -228,8 +225,7 @@ class _GitHubStorePageState extends State<GitHubStorePage>
       } catch (e) {
         if (!mounted) return;
         setState(() {
-          _searchError =
-              "Could not search GitHub repositories. Check your network and try again.";
+          _searchError = AppLocalizations.of(context)!.githubSearchErrorDetail;
           _isLoadingSearch = false;
         });
       }

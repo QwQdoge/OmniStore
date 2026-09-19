@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+import 'package:frontend/features/ai/system_ai_service.dart';
+
 import 'welcome_config_card.dart';
 
 class WelcomeAiPage extends StatelessWidget {
@@ -15,6 +17,13 @@ class WelcomeAiPage extends StatelessWidget {
   final String? testResult;
   final bool testSuccess;
   final VoidCallback onShowApiKeyInstructions;
+  final List<SystemAiConnection> systemConnections;
+  final String? selectedSystemConnectionId;
+  final String? systemConnectionError;
+  final bool loadingSystemConnections;
+  final ValueChanged<String?> onSystemConnectionChanged;
+  final VoidCallback onRefreshSystemConnections;
+  final VoidCallback onOpenSystemSettings;
 
   const WelcomeAiPage({
     super.key,
@@ -29,6 +38,13 @@ class WelcomeAiPage extends StatelessWidget {
     this.testResult,
     required this.testSuccess,
     required this.onShowApiKeyInstructions,
+    required this.systemConnections,
+    required this.selectedSystemConnectionId,
+    required this.systemConnectionError,
+    required this.loadingSystemConnections,
+    required this.onSystemConnectionChanged,
+    required this.onRefreshSystemConnections,
+    required this.onOpenSystemSettings,
   });
 
   @override
@@ -90,6 +106,7 @@ class WelcomeAiPage extends StatelessWidget {
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
                                 initialValue: aiProvider,
+                                isExpanded: true,
                                 borderRadius: BorderRadius.circular(12),
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface,
@@ -105,7 +122,8 @@ class WelcomeAiPage extends StatelessWidget {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
-                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                      color: theme.colorScheme.outlineVariant
+                                          .withValues(alpha: 0.5),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -122,87 +140,156 @@ class WelcomeAiPage extends StatelessWidget {
                                 ),
                                 items: [
                                   DropdownMenuItem(
+                                    value: 'system',
+                                    child: Text(
+                                      l10n.systemAiProviderLabel,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  DropdownMenuItem(
                                     value: 'ollama',
-                                    child: Text(l10n.ollamaLocalOffline),
+                                    child: Text(
+                                      l10n.ollamaLocalOffline,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'openai',
-                                    child: Text(l10n.openaiCloud),
+                                    child: Text(
+                                      l10n.openaiCloud,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                                 onChanged: onAiProviderChanged,
                               ),
-                              const SizedBox(height: 16),
-                              TextField(
-                                controller: endpointController,
-                                decoration: InputDecoration(
-                                  labelText: 'Endpoint URL',
-                                  hintText: aiProvider == 'ollama'
-                                      ? l10n.aiEndpointHelper
-                                      : 'e.g. https://api.openai.com/v1',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                              if (aiProvider == 'system') ...[
+                                const SizedBox(height: 16),
+                                DropdownButtonFormField<String>(
+                                  initialValue:
+                                      systemConnections.any(
+                                        (item) =>
+                                            item.id ==
+                                            selectedSystemConnectionId,
+                                      )
+                                      ? selectedSystemConnectionId
+                                      : null,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        l10n.systemAiSharedConnectionLabel,
+                                    helperText:
+                                        systemConnectionError ??
+                                        l10n.systemAiConnectionHelper,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.colorScheme.primary,
-                                      width: 2,
+                                  items: [
+                                    for (final connection in systemConnections)
+                                      DropdownMenuItem(
+                                        value: connection.id,
+                                        child: Text(
+                                          '${connection.displayName} · ${connection.defaultModel}',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                  ],
+                                  onChanged: loadingSystemConnections
+                                      ? null
+                                      : onSystemConnectionChanged,
+                                ),
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 8,
+                                  children: [
+                                    TextButton.icon(
+                                      onPressed: loadingSystemConnections
+                                          ? null
+                                          : onRefreshSystemConnections,
+                                      icon: loadingSystemConnections
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : const Icon(Icons.refresh_rounded),
+                                      label: Text(l10n.refresh),
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: onOpenSystemSettings,
+                                      icon: const Icon(
+                                        Icons.open_in_new_rounded,
+                                      ),
+                                      label: Text(l10n.manageInMeoSettings),
+                                    ),
+                                  ],
+                                ),
+                              ] else ...[
+                                const SizedBox(height: 16),
+                                TextField(
+                                  controller: endpointController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Endpoint URL',
+                                    hintText: aiProvider == 'ollama'
+                                        ? l10n.aiEndpointHelper
+                                        : 'e.g. https://api.openai.com/v1',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextField(
-                                controller: apiKeyController,
-                                obscureText: true,
-                                decoration: InputDecoration(
-                                  labelText: 'API Key',
-                                  hintText: l10n.aiApiKeyHelper,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.colorScheme.primary,
-                                      width: 2,
+                                const SizedBox(height: 16),
+                                TextField(
+                                  controller: apiKeyController,
+                                  obscureText: true,
+                                  decoration: InputDecoration(
+                                    labelText: 'API Key',
+                                    hintText: l10n.aiApiKeyHelper,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                 ),
-                              ),
+                              ],
                               const SizedBox(height: 16),
                               Row(
                                 children: [
-                                  FilledButton.tonalIcon(
-                                    onPressed: onShowApiKeyInstructions,
-                                    icon: const Icon(Icons.help_outline_rounded, size: 18),
-                                    label: Text(l10n.howToGetApiKey),
-                                  ),
+                                  if (aiProvider != 'system')
+                                    FilledButton.tonalIcon(
+                                      onPressed: onShowApiKeyInstructions,
+                                      icon: const Icon(
+                                        Icons.help_outline_rounded,
+                                        size: 18,
+                                      ),
+                                      label: Text(l10n.howToGetApiKey),
+                                    ),
                                   const Spacer(),
                                   FilledButton.tonalIcon(
-                                    onPressed: isTestingAI ? null : onTestAI,
+                                    onPressed:
+                                        isTestingAI ||
+                                            (aiProvider == 'system' &&
+                                                selectedSystemConnectionId ==
+                                                    null)
+                                        ? null
+                                        : onTestAI,
                                     icon: SmoothSizeSwitcher(
                                       child: isTestingAI
                                           ? const SizedBox(
                                               key: ValueKey('testing'),
                                               width: 18,
                                               height: 18,
-                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
                                             )
-                                          : const Icon(Icons.network_ping_rounded, size: 18, key: ValueKey('idle')),
+                                          : const Icon(
+                                              Icons.network_ping_rounded,
+                                              size: 18,
+                                              key: ValueKey('idle'),
+                                            ),
                                     ),
                                     label: Text(l10n.testConnection),
                                   ),
@@ -211,16 +298,26 @@ class WelcomeAiPage extends StatelessWidget {
                               if (testResult != null) ...[
                                 const SizedBox(height: 12),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: testSuccess
-                                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                                        : theme.colorScheme.error.withValues(alpha: 0.1),
+                                        ? theme.colorScheme.primary.withValues(
+                                            alpha: 0.1,
+                                          )
+                                        : theme.colorScheme.error.withValues(
+                                            alpha: 0.1,
+                                          ),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: testSuccess
-                                          ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                                          : theme.colorScheme.error.withValues(alpha: 0.3),
+                                          ? theme.colorScheme.primary
+                                                .withValues(alpha: 0.3)
+                                          : theme.colorScheme.error.withValues(
+                                              alpha: 0.3,
+                                            ),
                                     ),
                                   ),
                                   child: Row(
@@ -267,7 +364,10 @@ class WelcomeAiPage extends StatelessWidget {
                             padding: const EdgeInsets.all(16.0),
                             child: Row(
                               children: [
-                                Icon(Icons.info_outline_rounded, color: theme.colorScheme.primary),
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  color: theme.colorScheme.primary,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(

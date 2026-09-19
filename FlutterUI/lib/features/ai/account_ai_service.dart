@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:frontend/core/app_navigator.dart';
 import 'package:frontend/features/ai/ai_consent_dialog.dart';
 import 'package:frontend/features/auth/auth_service.dart';
+import 'package:frontend/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AccountAiException implements Exception {
@@ -15,7 +17,9 @@ class AccountAiException implements Exception {
 }
 
 class AccountAiConsentDenied extends AccountAiException {
-  const AccountAiConsentDenied() : super('用户取消了这次 AI 调用。');
+  const AccountAiConsentDenied([
+    super.message = 'You cancelled this AI request.',
+  ]);
 }
 
 class AccountAiCredential {
@@ -70,6 +74,20 @@ class AccountAiService {
 
   bool get isSignedIn => _auth.isAuthenticated;
 
+  String _localized(
+    String Function(AppLocalizations value) message,
+    String fallback,
+  ) {
+    try {
+      final context = omnistoreNavigatorKey.currentContext;
+      if (context == null) return fallback;
+      final value = AppLocalizations.of(context);
+      return value == null ? fallback : message(value);
+    } on FlutterError {
+      return fallback;
+    }
+  }
+
   Future<List<AccountAiCredential>> listCredentials({
     bool forceRefresh = false,
   }) async {
@@ -78,7 +96,12 @@ class AccountAiService {
       _credentialCache = null;
       _credentialCacheTime = null;
       _credentialCacheUserId = null;
-      throw const AccountAiException('请先登录 Meo Account。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiSignInRequired,
+          'Sign in to Meo Account before using Account AI.',
+        ),
+      );
     }
     final cached = _credentialCache;
     final cachedAt = _credentialCacheTime;
@@ -120,7 +143,12 @@ class AccountAiService {
         ? model.trim()
         : credential.defaultModel.trim();
     if (selectedModel.isEmpty) {
-      throw const AccountAiException('这个 AI 连接没有默认模型，请先在设置中填写模型。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiNoDefaultModel,
+          'This AI connection has no default model. Choose a model in Settings first.',
+        ),
+      );
     }
     final expectedDestination = _providerDestination(credential, selectedModel);
 
@@ -138,7 +166,12 @@ class AccountAiService {
     final prepared = await _invoke({'action': 'prepare_inference', ...request});
     final rawConsent = prepared['consent'];
     if (rawConsent is! Map) {
-      throw const AccountAiException('账号服务没有返回有效的授权摘要。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiInvalidConsent,
+          'The account AI service did not return a valid consent summary.',
+        ),
+      );
     }
     final consent = Map<String, dynamic>.from(rawConsent);
     final requestId = consent['requestId'] as String? ?? '';
@@ -172,7 +205,12 @@ class AccountAiService {
         !consentCategories.containsAll(requestedCategories) ||
         consent['promptCharacters'] !=
             systemPrompt.length + userPrompt.length) {
-      throw const AccountAiException('AI 授权摘要无效或已经过期。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiConsentExpired,
+          'The AI consent summary is invalid or expired.',
+        ),
+      );
     }
 
     final approved = await _consentPresenter(
@@ -207,7 +245,12 @@ class AccountAiService {
       } catch (_) {
         // The user decision remains denial even if the metadata audit is down.
       }
-      throw const AccountAiConsentDenied();
+      throw AccountAiConsentDenied(
+        _localized(
+          (value) => value.aiConsentCancelled,
+          'You cancelled this AI request.',
+        ),
+      );
     }
 
     final result = await _invoke({
@@ -223,7 +266,12 @@ class AccountAiService {
     });
     final text = result['text'];
     if (text is! String || text.trim().isEmpty) {
-      throw const AccountAiException('AI 服务没有返回有效内容。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiInvalidResponse,
+          'The AI service did not return valid content.',
+        ),
+      );
     }
     return text.trim();
   }
@@ -236,7 +284,10 @@ class AccountAiService {
     try {
       final response = await invokeWithConsent(
         credentialId: credentialId,
-        purpose: '测试 OmniStore 的 AI 连接',
+        purpose: _localized(
+          (value) => value.accountAiTestPurpose,
+          'Test the OmniStore account AI connection',
+        ),
         dataCategories: const ['synthetic_test'],
         systemPrompt: 'This is a connection test. Reply with a short OK.',
         userPrompt: 'OmniStore connection test.',
@@ -278,7 +329,12 @@ class AccountAiService {
         endpoint.userInfo.isNotEmpty ||
         endpoint.query.isNotEmpty ||
         endpoint.fragment.isNotEmpty) {
-      throw const AccountAiException('账号 AI 连接的目标地址无效。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiInvalidDestination,
+          'The account AI connection has an invalid destination.',
+        ),
+      );
     }
     String suffix;
     if (credential.provider == 'openai') {
@@ -300,12 +356,22 @@ class AccountAiService {
     for (final credential in credentials) {
       if (credential.id == id) return credential;
     }
-    throw const AccountAiException('找不到所选 AI 连接，请在设置中重新选择。');
+    throw AccountAiException(
+      _localized(
+        (value) => value.accountAiConnectionNotFound,
+        'The selected AI connection is unavailable. Choose it again in Settings.',
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> _invoke(Map<String, dynamic> body) async {
     if (!_auth.isInitialized || !_auth.isAuthenticated) {
-      throw const AccountAiException('请先登录 Meo Account。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiSignInRequired,
+          'Sign in to Meo Account before using Account AI.',
+        ),
+      );
     }
     try {
       final response = await _auth.client.functions.invoke(
@@ -313,7 +379,12 @@ class AccountAiService {
         body: body,
       );
       if (response.data is! Map) {
-        throw const AccountAiException('账号 AI 服务返回了无效数据。');
+        throw AccountAiException(
+          _localized(
+            (value) => value.accountAiInvalidData,
+            'The account AI service returned invalid data.',
+          ),
+        );
       }
       final data = Map<String, dynamic>.from(response.data as Map);
       final error = data['error'];
@@ -325,10 +396,23 @@ class AccountAiService {
       rethrow;
     } on FunctionException catch (error) {
       throw AccountAiException(
-        error.status >= 500 ? '账号 AI 服务暂时不可用。' : '账号 AI 请求被拒绝，请重新登录后再试。',
+        error.status >= 500
+            ? _localized(
+                (value) => value.accountAiUnavailable,
+                'The account AI service is temporarily unavailable.',
+              )
+            : _localized(
+                (value) => value.accountAiRequestDenied,
+                'The account AI request was denied. Sign in again and try once more.',
+              ),
       );
     } catch (_) {
-      throw const AccountAiException('无法连接账号 AI 服务。');
+      throw AccountAiException(
+        _localized(
+          (value) => value.accountAiConnectionFailed,
+          'Unable to connect to the account AI service.',
+        ),
+      );
     }
   }
 

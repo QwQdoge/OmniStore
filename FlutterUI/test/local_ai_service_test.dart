@@ -7,6 +7,72 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
+  test('discovers Ollama models without reading a credential', () async {
+    var keyRead = false;
+    final client = MockClient((request) async {
+      expect(request.method, 'GET');
+      expect(request.url.toString(), 'http://localhost:11434/api/tags');
+      expect(request.headers.containsKey('Authorization'), isFalse);
+      return http.Response(
+        jsonEncode({
+          'models': [
+            {'name': 'qwen2.5:1.5b'},
+            {'name': 'gemma3:1b'},
+          ],
+        }),
+        200,
+      );
+    });
+    final service = LocalAiService(
+      client: client,
+      keyReader: (_) async {
+        keyRead = true;
+        return 'unused';
+      },
+      consentPresenter: (_) async => false,
+    );
+
+    expect(
+      await service.discoverModels(
+        provider: 'ollama',
+        endpoint: 'http://localhost:11434',
+      ),
+      ['gemma3:1b', 'qwen2.5:1.5b'],
+    );
+    expect(keyRead, isFalse);
+  });
+
+  test('discovers compatible models with a write-only stored key', () async {
+    final client = MockClient((request) async {
+      expect(request.method, 'GET');
+      expect(request.url.toString(), 'https://yunwu.ai/v1/models');
+      expect(request.headers['authorization'], 'Bearer test-secret');
+      return http.Response(
+        jsonEncode({
+          'data': [
+            {'id': 'small-chat'},
+            {'id': 'small-chat'},
+            {'id': 'other-chat'},
+          ],
+        }),
+        200,
+      );
+    });
+    final service = LocalAiService(
+      client: client,
+      keyReader: (_) async => 'test-secret',
+      consentPresenter: (_) async => false,
+    );
+
+    expect(
+      await service.discoverModels(
+        provider: 'openai_compatible',
+        endpoint: 'https://yunwu.ai/v1',
+      ),
+      ['other-chat', 'small-chat'],
+    );
+  });
+
   const baseRequest = (
     provider: 'openai',
     endpoint: 'https://attacker.invalid/v1',
