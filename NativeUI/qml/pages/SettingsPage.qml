@@ -7,6 +7,75 @@ import MeoUI 1.0
 Item {
     id: root
 
+    function appearanceRows() {
+        return [{
+            "title": qsTr("Dark mode"),
+            "subtitle": qsTr("Use MeoUI's dark color roles in this OmniStore window."),
+            "leadingIcon": "dark_mode",
+            "trailingKind": "switch",
+            "checked": MeoTheme.isDarkMode,
+            "onToggled": function(value) { MeoTheme.isDarkMode = value }
+        }]
+    }
+
+    function pluginRows() {
+        const rows = []
+        for (let index = 0; index < backend.plugins.length; ++index) {
+            const plugin = backend.plugins[index]
+            const pluginId = String(plugin.id || "")
+            rows.push({
+                "title": String(plugin.name || plugin.id || qsTr("Source")),
+                "subtitle": String(plugin.description || plugin.id || ""),
+                "leadingIcon": plugin.enabled ? "extension" : "extension_off",
+                "trailingKind": "switch",
+                "checked": !!plugin.enabled,
+                "enabled": !backend.busy && pluginId.length > 0,
+                "onToggled": function(value) {
+                    backend.setPluginEnabled(pluginId, value)
+                }
+            })
+        }
+        if (rows.length === 0) {
+            rows.push({
+                "title": qsTr("No source registry available"),
+                "subtitle": backend.busy ? qsTr("Loading source plugins…")
+                                         : qsTr("The backend did not return any installed source plugins."),
+                "leadingIcon": "extension_off",
+                "trailingKind": "none",
+                "interactive": false
+            })
+        }
+        return rows
+    }
+
+    function backendRows() {
+        return [
+            {
+                "title": qsTr("Runtime"),
+                "subtitle": backend.backendDescription,
+                "leadingIcon": "terminal",
+                "trailingKind": "none",
+                "interactive": false
+            },
+            {
+                "title": qsTr("Current state"),
+                "subtitle": backend.statusMessage,
+                "leadingIcon": backend.busy ? "sync" : "check_circle",
+                "trailingKind": "none",
+                "interactive": false
+            },
+            {
+                "title": qsTr("Storage information"),
+                "subtitle": backend.storageInfo && Object.keys(backend.storageInfo).length > 0
+                            ? JSON.stringify(backend.storageInfo)
+                            : qsTr("No storage summary returned yet."),
+                "leadingIcon": "storage",
+                "trailingKind": "none",
+                "interactive": false
+            }
+        ]
+    }
+
     Component.onCompleted: {
         backend.loadPlugins()
         backend.loadConfig()
@@ -38,72 +107,20 @@ Item {
             MeoSettingsGroup {
                 Layout.fillWidth: true
                 title: qsTr("Appearance")
-
-                MeoSettingsRow {
-                    title: qsTr("Dark mode")
-                    subtitle: qsTr("Use MeoUI's dark color roles in this OmniStore window.")
-                    leadingIcon: "dark_mode"
-                    trailingKind: "switch"
-                    checked: MeoTheme.isDarkMode
-                    onToggled: function(value) { MeoTheme.isDarkMode = value }
-                }
+                model: root.appearanceRows()
             }
 
             MeoSettingsGroup {
                 Layout.fillWidth: true
                 title: qsTr("Package sources")
-
-                Repeater {
-                    model: backend.plugins
-                    delegate: MeoSettingsRow {
-                        id: sourceRow
-                        required property var modelData
-                        title: String(modelData.name || modelData.id || qsTr("Source"))
-                        subtitle: String(modelData.description || modelData.id || "")
-                        leadingIcon: modelData.enabled ? "extension" : "extension_off"
-                        trailingKind: "switch"
-                        checked: !!modelData.enabled
-                        enabled: !backend.busy
-                        onToggled: function(value) {
-                            backend.setPluginEnabled(String(sourceRow.modelData.id || ""), value)
-                        }
-                    }
-                }
-
-                MeoSettingsRow {
-                    visible: backend.plugins.length === 0
-                    title: qsTr("No source registry available")
-                    subtitle: backend.busy ? qsTr("Loading source plugins…")
-                                           : qsTr("The backend did not return any installed source plugins.")
-                    leadingIcon: "extension_off"
-                    trailingKind: "none"
-                }
+                subtitle: qsTr("These switches modify the existing OmniStore source-plugin registry, not a separate NativeUI setting.")
+                model: root.pluginRows()
             }
 
             MeoSettingsGroup {
                 Layout.fillWidth: true
                 title: qsTr("Backend")
-
-                MeoSettingsRow {
-                    title: qsTr("Runtime")
-                    subtitle: backend.backendDescription
-                    leadingIcon: "terminal"
-                    trailingKind: "none"
-                }
-                MeoSettingsRow {
-                    title: qsTr("Current state")
-                    subtitle: backend.statusMessage
-                    leadingIcon: backend.busy ? "sync" : "check_circle"
-                    trailingKind: "none"
-                }
-                MeoSettingsRow {
-                    title: qsTr("Storage information")
-                    subtitle: backend.storageInfo && Object.keys(backend.storageInfo).length > 0
-                              ? JSON.stringify(backend.storageInfo)
-                              : qsTr("No storage summary returned yet.")
-                    leadingIcon: "storage"
-                    trailingKind: "none"
-                }
+                model: root.backendRows()
             }
 
             MeoCard {
@@ -120,7 +137,7 @@ Item {
                     }
                     MeoText {
                         Layout.fillWidth: true
-                        text: qsTr("Read-only view for the migration phase. Existing config validation remains in Python instead of being duplicated in QML.")
+                        text: qsTr("Read-only during the native migration. Existing config validation remains in Python instead of being duplicated in QML.")
                         typeRole: "body"; typeSize: "small"
                         color: MeoTheme.contentOnSurfaceVariant
                         wrapMode: Text.WordWrap
