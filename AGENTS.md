@@ -15,6 +15,11 @@ the source tree and make only evidence-backed capability claims.
 - PKGBUILD and release exporter checks are package-source contracts. Keep
   versioned release bundles separate from an arbitrary development checkout.
 
+## Portable workspace roots
+
+- Never assume a developer username, home directory, checkout location, or Obsidian vault path.
+- Resolve external project records from `$MEO_DOCS_ROOT` and generated artifacts from `$MEO_OUTPUT_ROOT`. If either variable is unset, do not invent a machine-specific absolute path.
+
 ## Documentation and records
 
 - Keep code-bound documentation with the owning component or in docs/ for a
@@ -22,16 +27,15 @@ the source tree and make only evidence-backed capability claims.
 - Do not create root-level plan files, architecture drafts, audits, PR journals,
   agent journals, screenshots, build logs, or temporary notes.
 - Store plans, decisions, audits, and historical reports in
-  /home/shekong/Documents/Obsidian Vault/MeoArch/Projects/omni-store/, using
+  `$MEO_DOCS_ROOT/Projects/omni-store/`, using
   00-inbox, 01-overview, 02-decisions, 03-work, 04-validation, and 99-archive.
 - Already-classified root records and historical Agent material live in the
-  OmniStore Obsidian `99-archive/` with provenance preserved. Retained source,
+  OmniStore external `99-archive/` with provenance preserved. Retained source,
   build/cache folders, and artifacts are not routine-cleanup targets.
 
 ## Output rules
 
-New durable output belongs only under
-/home/shekong/Projects/outputs/omni-store/:
+New durable output belongs only under `$MEO_OUTPUT_ROOT/omni-store/`:
 
 | Kind | Path |
 | --- | --- |
@@ -47,7 +51,7 @@ output in the repository root.
 ## Security and deployment boundary
 
 - Never place user credentials, AI-provider secrets, API keys, or package
-  signing material in source, output, or Obsidian notes.
+  signing material in source, output, or external project records.
 - Do not add a local credential broker or account synchronization behavior
   without explicit, reviewed design and per-use consent.
 - Do not publish packages, alter remote package sources, deploy a service, or
