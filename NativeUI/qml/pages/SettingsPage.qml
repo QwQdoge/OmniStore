@@ -80,6 +80,7 @@ Item {
         backend.loadPlugins()
         backend.loadConfig()
         backend.loadStorageInfo()
+        repoBridge.refresh()
     }
 
     Flickable {
@@ -115,6 +116,10 @@ Item {
                 title: qsTr("Package sources")
                 subtitle: qsTr("These switches modify the existing OmniStore source-plugin registry, not a separate NativeUI setting.")
                 model: root.pluginRows()
+            }
+
+            RepositoryManager {
+                Layout.fillWidth: true
             }
 
             MeoSettingsGroup {
@@ -160,11 +165,12 @@ Item {
                     text: qsTr("Refresh settings")
                     type: "tonal"
                     icon.name: "refresh"
-                    enabled: !backend.busy
+                    enabled: !backend.busy && !repoBridge.busy
                     onClicked: {
                         backend.loadPlugins()
                         backend.loadConfig()
                         backend.loadStorageInfo()
+                        repoBridge.refresh()
                     }
                 }
             }
