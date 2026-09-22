@@ -1,12 +1,12 @@
 {
-    "cmake.sourceDirectory": "/home/shekong/Projects/Omnistore/FlutterUI/linux",
-    "python.defaultInterpreterPath": "/home/shekong/Projects/Omnistore/python/.venv/bin/python",
-    "python.interpreterPath": "/home/shekong/Projects/Omnistore/python/.venv/bin/python",
-    "python.analysis.venvPath": "/home/shekong/Projects/Omnistore/python",
+    "cmake.sourceDirectory": "${workspaceFolder}/FlutterUI/linux",
+    "python.defaultInterpreterPath": "${workspaceFolder}/python/.venv/bin/python",
+    "python.interpreterPath": "${workspaceFolder}/python/.venv/bin/python",
+    "python.analysis.venvPath": "${workspaceFolder}/python",
     "python.analysis.venv": ".venv",
     "python.analysis.extraPaths": [
-        "/home/shekong/Projects/Omnistore/python",
-        "/home/shekong/Projects/Omnistore/python/core"
+        "${workspaceFolder}/python",
+        "${workspaceFolder}/python/core"
     ],
     "cmake.ignoreCMakeListsMissing": true
 }
