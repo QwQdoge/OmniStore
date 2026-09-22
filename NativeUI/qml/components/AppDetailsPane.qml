@@ -8,8 +8,11 @@ import MeoUI 1.0
 Flickable {
     id: root
     property var fallbackApp: ({})
-    readonly property var app: backend.selectedApp && Object.keys(backend.selectedApp).length > 0
-                               ? backend.selectedApp : fallbackApp
+    readonly property string fallbackIdentity: String(fallbackApp.id || fallbackApp.name || "")
+    readonly property string selectedIdentity: String(backend.selectedApp.id || backend.selectedApp.name || "")
+    readonly property bool selectedMatches: fallbackIdentity.length > 0
+                                            && selectedIdentity === fallbackIdentity
+    readonly property var app: selectedMatches ? backend.selectedApp : fallbackApp
 
     clip: true
     contentWidth: width
@@ -67,7 +70,7 @@ Flickable {
 
         MeoProgressBar {
             Layout.fillWidth: true
-            visible: backend.busyAction === qsTr("app details")
+            visible: backend.busyAction === qsTr("app details") && !root.selectedMatches
             indeterminate: true
         }
 
