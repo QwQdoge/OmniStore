@@ -1,10 +1,20 @@
+import importlib.util
 from pathlib import Path
 import re
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
 NATIVE = ROOT / "NativeUI"
 QML_ROOT = NATIVE / "qml"
+
+_RELEASE_SPEC = importlib.util.spec_from_file_location(
+    "omnistore_native_release", NATIVE / "build_linux_release.py"
+)
+assert _RELEASE_SPEC is not None and _RELEASE_SPEC.loader is not None
+native_release = importlib.util.module_from_spec(_RELEASE_SPEC)
+_RELEASE_SPEC.loader.exec_module(native_release)
 
 
 def read(path: Path) -> str:
@@ -108,6 +118,13 @@ def test_meolistitem_is_not_given_settings_only_properties():
             assert "trailingKind:" not in block, path
 
 
+def test_details_only_accept_backend_payload_for_current_app():
+    details = read(QML_ROOT / "components" / "AppDetailsPane.qml")
+    assert "fallbackIdentity" in details
+    assert "selectedIdentity === fallbackIdentity" in details
+    assert "selectedMatches ? backend.selectedApp : fallbackApp" in details
+
+
 def test_native_ui_keeps_flutter_as_fallback_during_migration():
     assert (ROOT / "FlutterUI" / "pubspec.yaml").is_file()
     assert (ROOT / "FlutterUI" / "lib").is_dir()
@@ -123,3 +140,42 @@ def test_native_ui_does_not_duplicate_backend_package_logic():
         "dnf install",
     ):
         assert forbidden not in native_text
+
+
+def test_linux_overlay_requires_existing_backend_and_fallback(tmp_path):
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    binary = tmp_path / "omnistore-native"
+    binary.write_bytes(b"native")
+
+    with pytest.raises(RuntimeError, match="incomplete Linux release bundle"):
+        native_release.overlay_native(bundle, binary)
+
+
+def test_linux_overlay_adds_native_without_removing_flutter(tmp_path):
+    bundle = tmp_path / "bundle"
+    (bundle / "backends").mkdir(parents=True)
+    (bundle / "frontend").write_bytes(b"flutter")
+    (bundle / "backends" / "python_server").write_bytes(b"backend")
+    (bundle / "LICENSE").write_text("GPL\n", encoding="utf-8")
+    binary = tmp_path / "omnistore-native"
+    binary.write_bytes(b"native")
+
+    native_release.overlay_native(bundle, binary)
+
+    assert (bundle / "omnistore-native").read_bytes() == b"native"
+    assert (bundle / "frontend").read_bytes() == b"flutter"
+    assert (bundle / "backends" / "python_server").read_bytes() == b"backend"
+    assert (bundle / "data" / "native-ui-v1").is_file()
+
+
+def test_arch_package_prefers_native_but_keeps_old_release_compatible():
+    pkgbuild = read(ROOT / "PKGBUILD")
+    assert "meoui-qml: preferred native Qt/QML frontend on MeoArch" in pkgbuild
+    assert "[ -x /opt/omnistore/omnistore-native ]" in pkgbuild
+    assert "[ -f /usr/lib/qt6/qml/MeoUI/qmldir ]" in pkgbuild
+    assert "exec /opt/omnistore/omnistore-native" in pkgbuild
+    assert "exec /opt/omnistore/frontend" in pkgbuild
+    # Current published bundles remain valid until a new native asset exists.
+    release_check = pkgbuild.split("_release_source_dir()", 1)[1].split("prepare()", 1)[0]
+    assert "omnistore-native" not in release_check
