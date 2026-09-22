@@ -8,6 +8,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 NATIVE = ROOT / "NativeUI"
 QML_ROOT = NATIVE / "qml"
+TEXT_SOURCE_SUFFIXES = {".py", ".qml", ".cpp", ".h", ".md", ".txt"}
 
 _RELEASE_SPEC = importlib.util.spec_from_file_location(
     "omnistore_native_release", NATIVE / "build_linux_release.py"
@@ -19,6 +20,14 @@ _RELEASE_SPEC.loader.exec_module(native_release)
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def native_text_sources():
+    for path in NATIVE.rglob("*"):
+        if not path.is_file() or "__pycache__" in path.parts:
+            continue
+        if path.name == "CMakeLists.txt" or path.suffix in TEXT_SOURCE_SUFFIXES:
+            yield path
 
 
 def test_native_ui_uses_meoui_adaptive_shell():
@@ -131,7 +140,7 @@ def test_native_ui_keeps_flutter_as_fallback_during_migration():
 
 
 def test_native_ui_does_not_duplicate_backend_package_logic():
-    native_text = "\n".join(read(path) for path in NATIVE.rglob("*") if path.is_file())
+    native_text = "\n".join(read(path) for path in native_text_sources())
     for forbidden in (
         "pacman -S",
         "yay -S",
