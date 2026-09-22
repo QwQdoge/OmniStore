@@ -23,6 +23,8 @@ qt_add_executable(omnistore-native
     app/backendbridge.h
     app/repositorybridge.cpp
     app/repositorybridge.h
+    app/systembridge.cpp
+    app/systembridge.h
 )
 
 qt_add_qml_module(omnistore-native
@@ -33,6 +35,7 @@ qt_add_qml_module(omnistore-native
         qml/components/AppDetailsPane.qml
         qml/components/AppRow.qml
         qml/components/RepositoryManager.qml
+        qml/components/SystemStatusPanel.qml
         qml/components/UpdateRow.qml
         qml/components/PageHeading.qml
         qml/pages/HomePage.qml
