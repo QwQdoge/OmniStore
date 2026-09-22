@@ -28,6 +28,7 @@ qt_add_qml_module(omnistore-native
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+        qml/components/AppDetailsPane.qml
         qml/components/AppRow.qml
         qml/components/UpdateRow.qml
         qml/components/PageHeading.qml
