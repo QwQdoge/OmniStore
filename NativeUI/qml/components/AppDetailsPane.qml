@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import MeoUI 1.0
 
@@ -18,6 +19,14 @@ Flickable {
     function appName() { return String(app.name || app.id || qsTr("App details")) }
     function appId() { return String(app.id || app.name || "") }
     function sourceName() { return String(app.primary_source || app.source || "Native") }
+    function installUrl() {
+        const variants = app.variants || []
+        for (let index = 0; index < variants.length; ++index) {
+            if (String(variants[index].source || "") === sourceName() && variants[index].url)
+                return String(variants[index].url)
+        }
+        return String(app.url || "")
+    }
 
     ColumnLayout {
         id: detailColumn
@@ -121,7 +130,6 @@ Flickable {
                     headline: String(modelData.source || qsTr("Source"))
                     supportingText: String(modelData.version || qsTr("Unknown version"))
                     leadingIcon: modelData.installed ? "check_circle" : "package_2"
-                    trailingKind: "none"
                     interactive: false
                     isSegmented: true
                 }
@@ -141,13 +149,22 @@ Flickable {
                 onClicked: backend.launchApp(root.appId(), root.sourceName())
             }
             MeoButton {
+                visible: !!root.app.installed
+                Layout.fillWidth: true
+                text: qsTr("Remove")
+                type: "outlined"
+                icon.name: "delete"
+                enabled: !backend.busy
+                onClicked: removeDialog.open()
+            }
+            MeoButton {
                 visible: !root.app.installed
                 Layout.fillWidth: true
                 text: qsTr("Install")
                 type: "filled"
                 icon.name: "download"
                 enabled: !backend.busy
-                onClicked: backend.installApp(root.appId(), root.sourceName(), String(root.app.url || ""))
+                onClicked: installDialog.open()
             }
         }
 
@@ -159,5 +176,27 @@ Flickable {
             icon: "error"
             tone: "error"
         }
+    }
+
+    MeoDialog {
+        id: installDialog
+        parent: Overlay.overlay
+        title: qsTr("Install %1?").arg(root.appName())
+        message: qsTr("The existing OmniStore backend will install this app through %1. Authentication and package-manager safeguards remain unchanged.").arg(root.sourceName())
+        icon: "download"
+        confirmText: qsTr("Install")
+        cancelText: qsTr("Cancel")
+        onConfirmed: backend.installApp(root.appId(), root.sourceName(), root.installUrl())
+    }
+
+    MeoDialog {
+        id: removeDialog
+        parent: Overlay.overlay
+        title: qsTr("Remove %1?").arg(root.appName())
+        message: qsTr("The existing OmniStore backend will run the uninstall path for %1. Review Tasks for package-manager output and dependency warnings.").arg(root.sourceName())
+        icon: "delete"
+        confirmText: qsTr("Remove")
+        cancelText: qsTr("Cancel")
+        onConfirmed: backend.removeApp(root.appId(), root.sourceName())
     }
 }
