@@ -41,14 +41,11 @@ Item {
 
                 MeoSettingsRow {
                     title: qsTr("Dark mode")
-                    description: qsTr("Use MeoUI's dark color roles in this OmniStore window.")
+                    subtitle: qsTr("Use MeoUI's dark color roles in this OmniStore window.")
                     leadingIcon: "dark_mode"
-                    trailingControl: Component {
-                        MeoSwitch {
-                            checked: MeoTheme.isDarkMode
-                            onToggled: function(value) { MeoTheme.isDarkMode = value }
-                        }
-                    }
+                    trailingKind: "switch"
+                    checked: MeoTheme.isDarkMode
+                    onToggled: function(value) { MeoTheme.isDarkMode = value }
                 }
             }
 
@@ -62,17 +59,13 @@ Item {
                         id: sourceRow
                         required property var modelData
                         title: String(modelData.name || modelData.id || qsTr("Source"))
-                        description: String(modelData.description || modelData.id || "")
+                        subtitle: String(modelData.description || modelData.id || "")
                         leadingIcon: modelData.enabled ? "extension" : "extension_off"
-                        trailingControl: Component {
-                            MeoSwitch {
-                                checked: !!sourceRow.modelData.enabled
-                                enabled: !backend.busy
-                                Accessible.name: qsTr("Enable %1").arg(sourceRow.title)
-                                onToggled: function(value) {
-                                    backend.setPluginEnabled(String(sourceRow.modelData.id || ""), value)
-                                }
-                            }
+                        trailingKind: "switch"
+                        checked: !!modelData.enabled
+                        enabled: !backend.busy
+                        onToggled: function(value) {
+                            backend.setPluginEnabled(String(sourceRow.modelData.id || ""), value)
                         }
                     }
                 }
@@ -80,10 +73,10 @@ Item {
                 MeoSettingsRow {
                     visible: backend.plugins.length === 0
                     title: qsTr("No source registry available")
-                    description: backend.busy ? qsTr("Loading source plugins…")
-                                              : qsTr("The backend did not return any installed source plugins.")
+                    subtitle: backend.busy ? qsTr("Loading source plugins…")
+                                           : qsTr("The backend did not return any installed source plugins.")
                     leadingIcon: "extension_off"
-                    interactive: false
+                    trailingKind: "none"
                 }
             }
 
@@ -93,23 +86,23 @@ Item {
 
                 MeoSettingsRow {
                     title: qsTr("Runtime")
-                    description: backend.backendDescription
+                    subtitle: backend.backendDescription
                     leadingIcon: "terminal"
-                    interactive: false
+                    trailingKind: "none"
                 }
                 MeoSettingsRow {
                     title: qsTr("Current state")
-                    description: backend.statusMessage
+                    subtitle: backend.statusMessage
                     leadingIcon: backend.busy ? "sync" : "check_circle"
-                    interactive: false
+                    trailingKind: "none"
                 }
                 MeoSettingsRow {
                     title: qsTr("Storage information")
-                    description: backend.storageInfo && Object.keys(backend.storageInfo).length > 0
-                                 ? JSON.stringify(backend.storageInfo)
-                                 : qsTr("No storage summary returned yet.")
+                    subtitle: backend.storageInfo && Object.keys(backend.storageInfo).length > 0
+                              ? JSON.stringify(backend.storageInfo)
+                              : qsTr("No storage summary returned yet.")
                     leadingIcon: "storage"
-                    interactive: false
+                    trailingKind: "none"
                 }
             }
 
