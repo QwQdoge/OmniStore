@@ -90,12 +90,4 @@ Window {
         color: Qt.rgba(0, 0, 0, 0.30)
         TapHandler { onTapped: detailSheet.isOpen = false }
     }
-
-    Connections {
-        target: backend
-        function onOperationFinished(action, success) {
-            if (success && root.navigationIndex === 4 && !backend.busy)
-                return
-        }
-    }
 }
