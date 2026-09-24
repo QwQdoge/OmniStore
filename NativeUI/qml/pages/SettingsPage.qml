@@ -111,6 +111,10 @@ Item {
                 model: root.appearanceRows()
             }
 
+            SystemStatusPanel {
+                Layout.fillWidth: true
+            }
+
             MeoSettingsGroup {
                 Layout.fillWidth: true
                 title: qsTr("Package sources")
