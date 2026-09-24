@@ -134,6 +134,32 @@ def test_details_only_accept_backend_payload_for_current_app():
     assert "selectedMatches ? backend.selectedApp : fallbackApp" in details
 
 
+
+def test_native_system_status_panel_uses_existing_backend_contracts():
+    cmake = read(NATIVE / "CMakeLists.txt")
+    main = read(NATIVE / "app" / "main.cpp")
+    settings = read(QML_ROOT / "pages" / "SettingsPage.qml")
+    panel = read(QML_ROOT / "components" / "SystemStatusPanel.qml")
+
+    assert "qml/components/SystemStatusPanel.qml" in cmake
+    assert 'setContextProperty(QStringLiteral("systemBridge"), &systemBridge)' in main
+    assert "SystemStatusPanel" in settings
+    for action in (
+        "systemBridge.refreshAll()",
+        "systemBridge.switchBeta()",
+        "systemBridge.switchStable()",
+        "systemBridge.confirmStable(root.stablePlanHash())",
+        "systemBridge.bootstrapEnvironment()",
+    ):
+        assert action in panel
+
+    # Every mutating system action is gated by a visible Meo confirmation.
+    assert panel.count("MeoDialog") >= 4
+    assert "root.validStablePlan()" in panel
+    assert "systemBridge.clearStablePreview()" in panel
+    for forbidden in ("sudo ", "pacman ", "makepkg ", "/bin/sh", "/bin/bash"):
+        assert forbidden not in panel
+
 def test_native_ui_keeps_flutter_as_fallback_during_migration():
     assert (ROOT / "FlutterUI" / "pubspec.yaml").is_file()
     assert (ROOT / "FlutterUI" / "lib").is_dir()
