@@ -110,8 +110,8 @@ ColumnLayout {
         text: systemBridge.errorMessage
         icon: "error"
         tone: "error"
-        actionText: qsTr("Dismiss")
-        onActionTriggered: systemBridge.clearError()
+        confirmText: qsTr("Dismiss")
+        onConfirmed: systemBridge.clearError()
     }
 
     GridLayout {
