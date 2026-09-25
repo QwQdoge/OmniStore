@@ -35,9 +35,47 @@ def test_release_contract_requires_the_named_public_flag():
     assert not contract.advertises_exporter("usage: python_server --list-installed --json")
 
 
+def test_release_contract_requires_the_management_flags_together():
+    help_output = (
+        "usage: python_server --export-installed-usage --export-app-management "
+        "--app-action clear-cache --app-id APP --json"
+    )
+    assert contract.advertises_app_management(help_output)
+    assert not contract.advertises_app_management(
+        "usage: python_server --export-app-management --json"
+    )
+
+
 def test_release_contract_accepts_the_minimal_schema_v1_snapshot():
     payload = json.dumps(_snapshot()).encode("utf-8")
     assert contract.validate_snapshot(payload)["schema"] == "org.meo.omnistore.installed-usage"
+
+
+def test_release_contract_accepts_the_management_schema():
+    payload = json.dumps({
+        "schema": "org.meo.omnistore.app-management",
+        "version": 1,
+        "status": "success",
+        "generatedAt": "2026-09-25T00:00:00Z",
+        "applicationCount": 1,
+        "applications": [{
+            "id": "example",
+            "name": "Example",
+            "sourceId": "pacman",
+            "sourceName": "Pacman",
+            "sizeKind": "unknown",
+            "storageBytes": 0,
+            "storage": [],
+            "settings": {"available": False},
+            "capabilities": {
+                "uninstall": True,
+                "clearCache": False,
+                "resetSettings": False,
+                "clearData": False,
+            },
+        }],
+    }).encode("utf-8")
+    assert contract.validate_management_snapshot(payload)["applicationCount"] == 1
 
 
 def test_release_contract_requires_builtin_source_manifests(tmp_path):
