@@ -21,7 +21,7 @@ source=("${_release_archive}::https://github.com/QwQdoge/OmniStore/releases/down
         'verify_release_exporter_contract.py')
 noextract=("${_release_archive}")
 sha256sums=('SKIP'
-            '006c8dfd197ecf1634fecd78503cadead23a16105fbaa9d7ae7c0ae7442cb2a4')
+            'd4b7694e512898a32907be3a4fdf76ffba994b001ae2c957c0533b31b59c0773')
 
 _release_source_dir() {
   if [ -x "$srcdir/release_bundle/backends/python_server" ] \
@@ -110,6 +110,29 @@ cd /opt/omnistore
 exec /opt/omnistore/backends/python_server --export-installed-usage --json
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-apps-export"
+
+  cat > "${pkgdir}/usr/bin/omnistore-apps" <<'EOF'
+#!/bin/sh
+set -eu
+cd /opt/omnistore
+command="${1:-}"
+[ "$#" -ge 1 ] && shift || true
+case "$command" in
+  export)
+    [ "$#" -eq 0 ] || { echo "omnistore-apps export takes no arguments" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --export-app-management --json
+    ;;
+  clear-cache|reset-settings|clear-data|uninstall)
+    [ "$#" -eq 2 ] || { echo "omnistore-apps $command requires APP_ID SOURCE" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --app-action "$command" --app-id "$1" --source "$2" --json
+    ;;
+  *)
+    echo "usage: omnistore-apps export | {clear-cache|reset-settings|clear-data|uninstall} APP_ID SOURCE" >&2
+    exit 64
+    ;;
+esac
+EOF
+  chmod +x "${pkgdir}/usr/bin/omnistore-apps"
   cat > "${pkgdir}/usr/bin/omnistore-cli" <<'EOF'
 #!/bin/sh
 set -eu
