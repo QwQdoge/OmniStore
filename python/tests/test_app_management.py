@@ -74,8 +74,41 @@ def test_management_snapshot_exposes_safe_app_scoped_storage(tmp_path, monkeypat
     assert app["settings"]["provider"] == "meo-schema"
     assert app["capabilities"]["clearCache"] is True
     assert app["capabilities"]["resetSettings"] is True
+    assert app["capabilities"]["clearData"] is True
     assert app["storageBytes"] == 8
     assert all(path.startswith("~/") for row in app["storage"] for path in row["paths"])
+
+
+def test_flatpak_storage_is_discovered_without_a_manifest(tmp_path):
+    home = tmp_path / "home"
+    sandbox = home / ".var/app/org.example.Flatpak"
+    (sandbox / "config").mkdir(parents=True)
+    (sandbox / "cache").mkdir(parents=True)
+    (sandbox / "data").mkdir(parents=True)
+    (sandbox / "config/settings.json").write_bytes(b"{}")
+    (sandbox / "cache/thumb").write_bytes(b"123")
+    (sandbox / "data/state.db").write_bytes(b"abcd")
+
+    snapshot = build_app_management_snapshot(
+        [{
+            "id": "org.example.Flatpak",
+            "name": "org.example.Flatpak",
+            "primary_source": "Flatpak",
+            "installed": True,
+        }],
+        registry=ManifestRegistry([tmp_path / "missing"]),
+        home=home,
+    )
+
+    app = snapshot["applications"][0]
+    assert {row["id"] for row in app["storage"]} == {"config", "cache", "data"}
+    assert app["storageBytes"] == 9
+    assert app["capabilities"] == {
+        "uninstall": True,
+        "clearCache": True,
+        "resetSettings": True,
+        "clearData": True,
+    }
 
 
 @pytest.mark.asyncio
