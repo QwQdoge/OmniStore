@@ -380,7 +380,7 @@ def build_app_management_snapshot(
                 "uninstall": source_id not in {"unknown", ""},
                 "clearCache": any(target.category == "cache" for target in targets),
                 "resetSettings": any(target.category == "config" for target in targets),
-                "clearData": bool(targets),
+                "clearData": any(target.category in {"data", "state"} for target in targets),
             },
         }
         if size_bytes is not None:
