@@ -36,11 +36,15 @@ ROLLBACK_HELPER = Path("backends/meo_stable_rollback.py")
 
 
 def advertises_exporter(help_output: str) -> bool:
-    """Return whether a backend help response advertises both public app ABIs."""
+    """Return whether a backend help response advertises the legacy public export."""
+    return EXPORT_FLAG in help_output
+
+
+def advertises_app_management(help_output: str) -> bool:
+    """Return whether a backend help response advertises the management ABI."""
     return all(
         flag in help_output
         for flag in (
-            EXPORT_FLAG,
             MANAGEMENT_EXPORT_FLAG,
             MANAGEMENT_ACTION_FLAG,
             MANAGEMENT_APP_ID_FLAG,
@@ -142,9 +146,10 @@ def verify_release_backend(backend: Path, timeout: int) -> dict[str, Any]:
         )
     except (OSError, subprocess.TimeoutExpired) as error:
         raise ValueError("release backend could not be queried for supported arguments") from error
-    if help_result.returncode != 0 or not advertises_exporter(
-        help_result.stdout.decode("utf-8", errors="replace")
-    ):
+    help_output = help_result.stdout.decode("utf-8", errors="replace")
+    if (help_result.returncode != 0
+            or not advertises_exporter(help_output)
+            or not advertises_app_management(help_output)):
         raise ValueError(
             "release backend does not advertise the required app export/management flags; "
             "do not ship the Meo Settings wrappers from this bundle"
