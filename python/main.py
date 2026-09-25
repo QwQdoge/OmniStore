@@ -18,6 +18,12 @@ from core.cli_handler import handle_cli
 from core.friendly_messages import get_friendly_message
 from core.logging_config import configure_logging
 from core.apps_usage_export import SCHEMA, SCHEMA_VERSION, export_installed_usage
+from core.app_management import (
+    SCHEMA as APP_MANAGEMENT_SCHEMA,
+    SCHEMA_VERSION as APP_MANAGEMENT_VERSION,
+    export_app_management,
+    perform_app_action,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +74,8 @@ async def main():
     cmd.add_argument("--daemon", action="store_true")
     cmd.add_argument("--storage-info", action="store_true")
     cmd.add_argument("--export-installed-usage", action="store_true")
+    cmd.add_argument("--export-app-management", action="store_true")
+    cmd.add_argument("--app-action", choices=("clear-cache", "reset-settings", "clear-data", "uninstall"))
     cmd.add_argument("--meo-channel", choices=("status", "beta", "stable"))
     cmd.add_argument("--update-status", action="store_true")
     cmd.add_argument("--update-plan", action="store_true")
@@ -77,6 +85,7 @@ async def main():
 
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--source", default="AUR")
+    parser.add_argument("--app-id")
     parser.add_argument("--url")
     parser.add_argument("--ai-desc")
     parser.add_argument("--force-refresh", action="store_true")
@@ -85,7 +94,7 @@ async def main():
 
     # The cross-application export is intentionally always machine-readable:
     # Meo Settings must never parse Rich UI output or daemon traffic.
-    json_mode = args.json or args.export_installed_usage
+    json_mode = args.json or args.export_installed_usage or args.export_app_management or bool(args.app_action)
     setattr(hijacked_print, "json_mode_active", json_mode)
     setup_stdout_hijack()
 
@@ -95,6 +104,64 @@ async def main():
         json_mode=json_mode,
         component="omnistore.backend",
     )
+
+    if args.export_app_management:
+        try:
+            snapshot = await export_app_management(backend)
+        except Exception:
+            failure = {
+                "schema": APP_MANAGEMENT_SCHEMA,
+                "version": APP_MANAGEMENT_VERSION,
+                "status": "error",
+                "error": "app_management_unavailable",
+            }
+            sys.stdout.write(json.dumps(failure, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+            raise SystemExit(1)
+        sys.stdout.write(json.dumps(snapshot, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+        return
+
+    if args.app_action:
+        if not args.app_id:
+            failure = {
+                "schema": APP_MANAGEMENT_SCHEMA,
+                "version": APP_MANAGEMENT_VERSION,
+                "status": "error",
+                "error": "missing_app_id",
+            }
+            sys.stdout.write(json.dumps(failure, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+            raise SystemExit(64)
+        try:
+            result = await perform_app_action(
+                backend,
+                action=args.app_action,
+                app_id=args.app_id,
+                source=args.source,
+            )
+        except (ValueError, RuntimeError) as exc:
+            reason = str(exc)
+            if reason not in {
+                "unsupported_action",
+                "invalid_app_id",
+                "application_not_found",
+                "action_not_supported",
+                "uninstall_failed",
+            }:
+                reason = "app_action_failed"
+            failure = {
+                "schema": APP_MANAGEMENT_SCHEMA,
+                "version": APP_MANAGEMENT_VERSION,
+                "status": "error",
+                "error": reason,
+            }
+            sys.stdout.write(json.dumps(failure, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+            raise SystemExit(1)
+        sys.stdout.write(json.dumps(result, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+        return
 
     if args.export_installed_usage:
         try:
