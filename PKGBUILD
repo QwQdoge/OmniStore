@@ -21,7 +21,7 @@ source=("${_release_archive}::https://github.com/QwQdoge/OmniStore/releases/down
         'verify_release_exporter_contract.py')
 noextract=("${_release_archive}")
 sha256sums=('SKIP'
-            '006c8dfd197ecf1634fecd78503cadead23a16105fbaa9d7ae7c0ae7442cb2a4')
+            '35a648c5e1761ae5d79bcf8ce84ee3d62d7af9c92c1adc523b6676a4eb14df08')
 
 _release_source_dir() {
   if [ -x "$srcdir/release_bundle/backends/python_server" ] \
@@ -114,6 +114,7 @@ EOF
   cat > "${pkgdir}/usr/bin/omnistore-apps" <<'EOF'
 #!/bin/sh
 set -eu
+cd /opt/omnistore
 command="${1:-}"
 [ "$#" -ge 1 ] && shift || true
 case "$command" in
