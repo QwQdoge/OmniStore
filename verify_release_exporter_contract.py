@@ -30,6 +30,7 @@ MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 REQUIRED_SOURCE_MANIFESTS = (
     Path("plugins/sources/pacman/plugin.json"),
     Path("plugins/sources/flatpak/plugin.json"),
+    Path("data/app-manifests/schema.json"),
 )
 ROLLBACK_HELPER = Path("backends/meo_stable_rollback.py")
 
