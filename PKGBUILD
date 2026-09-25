@@ -110,6 +110,28 @@ cd /opt/omnistore
 exec /opt/omnistore/backends/python_server --export-installed-usage --json
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-apps-export"
+
+  cat > "${pkgdir}/usr/bin/omnistore-apps" <<'EOF'
+#!/bin/sh
+set -eu
+command="${1:-}"
+[ "$#" -ge 1 ] && shift || true
+case "$command" in
+  export)
+    [ "$#" -eq 0 ] || { echo "omnistore-apps export takes no arguments" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --export-app-management --json
+    ;;
+  clear-cache|reset-settings|clear-data|uninstall)
+    [ "$#" -eq 2 ] || { echo "omnistore-apps $command requires APP_ID SOURCE" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --app-action "$command" --app-id "$1" --source "$2" --json
+    ;;
+  *)
+    echo "usage: omnistore-apps export | {clear-cache|reset-settings|clear-data|uninstall} APP_ID SOURCE" >&2
+    exit 64
+    ;;
+esac
+EOF
+  chmod +x "${pkgdir}/usr/bin/omnistore-apps"
   cat > "${pkgdir}/usr/bin/omnistore-cli" <<'EOF'
 #!/bin/sh
 set -eu
