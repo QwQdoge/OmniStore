@@ -20,7 +20,11 @@ from typing import Any
 
 
 EXPORT_FLAG = "--export-installed-usage"
+MANAGEMENT_EXPORT_FLAG = "--export-app-management"
+MANAGEMENT_ACTION_FLAG = "--app-action"
+MANAGEMENT_APP_ID_FLAG = "--app-id"
 SCHEMA = "org.meo.omnistore.installed-usage"
+MANAGEMENT_SCHEMA = "org.meo.omnistore.app-management"
 SCHEMA_VERSION = 1
 MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 REQUIRED_SOURCE_MANIFESTS = (
@@ -31,8 +35,16 @@ ROLLBACK_HELPER = Path("backends/meo_stable_rollback.py")
 
 
 def advertises_exporter(help_output: str) -> bool:
-    """Return whether a backend help response advertises the public flag."""
-    return EXPORT_FLAG in help_output
+    """Return whether a backend help response advertises both public app ABIs."""
+    return all(
+        flag in help_output
+        for flag in (
+            EXPORT_FLAG,
+            MANAGEMENT_EXPORT_FLAG,
+            MANAGEMENT_ACTION_FLAG,
+            MANAGEMENT_APP_ID_FLAG,
+        )
+    )
 
 
 def _non_negative_int(value: Any) -> bool:
@@ -76,6 +88,42 @@ def validate_snapshot(output: bytes) -> dict[str, Any]:
     return value
 
 
+def validate_management_snapshot(output: bytes) -> dict[str, Any]:
+    """Parse the non-destructive app-management inventory contract."""
+    if not output or len(output) > MAX_OUTPUT_BYTES:
+        raise ValueError("app-management output is empty or exceeds the maximum size")
+    try:
+        value = json.loads(output)
+    except (TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("app-management output is not one JSON document") from error
+    if not isinstance(value, dict):
+        raise ValueError("app-management output must be a JSON object")
+    if value.get("schema") != MANAGEMENT_SCHEMA or value.get("version") != SCHEMA_VERSION:
+        raise ValueError("app-management output does not use the supported schema")
+    if value.get("status") != "success":
+        raise ValueError("app-management exporter did not report success")
+    applications = value.get("applications")
+    if not isinstance(applications, list) or not _non_negative_int(value.get("applicationCount")):
+        raise ValueError("app-management output is missing application data")
+    if value["applicationCount"] != len(applications):
+        raise ValueError("app-management output has an inconsistent application count")
+    for application in applications:
+        if not isinstance(application, dict):
+            raise ValueError("app-management output has an invalid application record")
+        for field in ("id", "name", "sourceId", "sourceName", "sizeKind"):
+            if not isinstance(application.get(field), str) or not application[field]:
+                raise ValueError(f"app-management application has an invalid {field}")
+        if not _non_negative_int(application.get("storageBytes")):
+            raise ValueError("app-management application has an invalid storageBytes")
+        if not isinstance(application.get("storage"), list):
+            raise ValueError("app-management application is missing storage rows")
+        if not isinstance(application.get("settings"), dict):
+            raise ValueError("app-management application is missing settings metadata")
+        if not isinstance(application.get("capabilities"), dict):
+            raise ValueError("app-management application is missing capabilities")
+    return value
+
+
 def verify_release_backend(backend: Path, timeout: int) -> dict[str, Any]:
     """Run the candidate release backend with an isolated XDG environment."""
     if not backend.is_file() or not os.access(backend, os.X_OK):
@@ -97,8 +145,8 @@ def verify_release_backend(backend: Path, timeout: int) -> dict[str, Any]:
         help_result.stdout.decode("utf-8", errors="replace")
     ):
         raise ValueError(
-            "release backend does not advertise --export-installed-usage; "
-            "do not ship the Meo Settings wrapper from this bundle"
+            "release backend does not advertise the required app export/management flags; "
+            "do not ship the Meo Settings wrappers from this bundle"
         )
 
     with tempfile.TemporaryDirectory(prefix="omnistore-export-contract-") as temporary_root:
@@ -130,7 +178,38 @@ def verify_release_backend(backend: Path, timeout: int) -> dict[str, Any]:
             raise ValueError("release backend could not run the installed-app export") from error
     if result.returncode != 0:
         raise ValueError("release backend returned a failure for the installed-app export")
-    return validate_snapshot(result.stdout)
+    usage_snapshot = validate_snapshot(result.stdout)
+
+    with tempfile.TemporaryDirectory(prefix="omnistore-management-contract-") as temporary_root:
+        root = Path(temporary_root)
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "XDG_CONFIG_HOME": str(root / "config"),
+                "XDG_CACHE_HOME": str(root / "cache"),
+                "XDG_DATA_HOME": str(root / "data"),
+                "XDG_STATE_HOME": str(root / "state"),
+                "NO_COLOR": "1",
+                "TERM": "dumb",
+            }
+        )
+        try:
+            management_result = subprocess.run(
+                [str(backend), MANAGEMENT_EXPORT_FLAG, "--json"],
+                cwd=bundle_root,
+                env=environment,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                timeout=timeout,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise ValueError("release backend could not run the app-management export") from error
+    if management_result.returncode != 0:
+        raise ValueError("release backend returned a failure for the app-management export")
+    management_snapshot = validate_management_snapshot(management_result.stdout)
+    return {"usage": usage_snapshot, "management": management_snapshot}
 
 
 def main() -> int:
@@ -145,14 +224,15 @@ def main() -> int:
     if arguments.timeout < 1 or arguments.timeout > 300:
         parser.error("--timeout must be between 1 and 300 seconds")
     try:
-        snapshot = verify_release_backend(arguments.backend, arguments.timeout)
+        snapshots = verify_release_backend(arguments.backend, arguments.timeout)
     except ValueError as error:
         print(f"release exporter contract failed: {error}", file=sys.stderr)
         return 1
     print(
         "release exporter contract verified: "
-        f"{snapshot['applicationCount']} applications, "
-        f"{snapshot['knownSizeBytes']} known bytes"
+        f"{snapshots['usage']['applicationCount']} usage applications, "
+        f"{snapshots['management']['applicationCount']} manageable applications, "
+        f"{snapshots['usage']['knownSizeBytes']} known bytes"
     )
     return 0
 
