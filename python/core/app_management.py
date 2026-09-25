@@ -139,6 +139,7 @@ class ManifestRegistry:
             or (
                 Path("/usr/share/omnistore/app-manifests"),
                 Path("/opt/omnistore/app-manifests"),
+                Path("/opt/omnistore/data/app-manifests"),
             )
         )
         self._manifests = self._load()
