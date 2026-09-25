@@ -21,7 +21,7 @@ source=("${_release_archive}::https://github.com/QwQdoge/OmniStore/releases/down
         'verify_release_exporter_contract.py')
 noextract=("${_release_archive}")
 sha256sums=('SKIP'
-            '9c5dd7adaf6d568a04bfdf510f595b18b96c6b6aa80d3520668b2deafa53ffb1')
+            'd4b7694e512898a32907be3a4fdf76ffba994b001ae2c957c0533b31b59c0773')
 
 _release_source_dir() {
   if [ -x "$srcdir/release_bundle/backends/python_server" ] \
