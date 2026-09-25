@@ -329,6 +329,15 @@ def assemble(platform, output_dir, build_dir):
     else:
         print(f"⚠️ can not find Pacman repository helper: {repository_helper}")
 
+    app_manifests_source = BASE_DIR / "data" / "app-manifests"
+    if app_manifests_source.is_dir():
+        shutil.copytree(
+            app_manifests_source,
+            flutter_bundle_dir / "data" / "app-manifests",
+            dirs_exist_ok=True,
+        )
+        print("✅ copy app-management manifest contract")
+
     systemd_source = BASE_DIR / "data" / "systemd" / "user"
     if systemd_source.is_dir():
         shutil.copytree(
