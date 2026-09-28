@@ -34,6 +34,13 @@ Window {
 
     Component.onCompleted: syncDynamicColor()
 
+    Connections {
+        target: MaterialColors
+        function onSchemeChanged() {
+            root.syncDynamicColor()
+        }
+    }
+
     function showDetails(app) {
         root.detailFallback = app || ({})
         const id = String(root.detailFallback.id || root.detailFallback.name || "")
