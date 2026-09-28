@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import MeoUI 1.0
+import Meo.System 1.0
 
 Window {
     id: root
@@ -17,6 +18,21 @@ Window {
     property int navigationIndex: 0
     property string pendingSearch: ""
     property var detailFallback: ({})
+    readonly property bool dynamicColorReady:
+        MeoTheme.colorSchemeMode === "dynamic"
+        && MeoTheme.hasActiveDynamicColorScheme
+
+    function syncDynamicColor() {
+        const lightScheme = MaterialColors.currentScheme(false)
+        const darkScheme = MaterialColors.currentScheme(true)
+        MeoTheme.applyDynamicColorSchemes(
+            lightScheme,
+            darkScheme,
+            "kde-" + MaterialColors.sourceId()
+        )
+    }
+
+    Component.onCompleted: syncDynamicColor()
 
     function showDetails(app) {
         root.detailFallback = app || ({})
@@ -70,6 +86,20 @@ Window {
     }
     Component { id: tasksPage; TasksPage {} }
     Component { id: settingsPage; SettingsPage {} }
+
+    MeoBanner {
+        id: dynamicColorWarning
+        z: 120
+        visible: !root.dynamicColorReady
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: 16 * MeoTheme.globalScale
+        title: qsTr("Dynamic color unavailable")
+        text: qsTr("OmniStore could not load the current Meo desktop color scheme. The interface is using the safe preview palette.")
+        icon: "palette"
+        tone: "warning"
+    }
 
     MeoSideSheet {
         id: detailSheet
