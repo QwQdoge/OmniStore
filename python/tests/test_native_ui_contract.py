@@ -45,6 +45,17 @@ def test_native_ui_uses_meoui_adaptive_shell():
     assert "MeoSideSheet" in main
 
 
+def test_native_ui_requires_shared_kde_dynamic_color_contract():
+    main = read(QML_ROOT / "Main.qml")
+    assert "import Meo.System 1.0" in main
+    assert "MaterialColors.currentScheme(false)" in main
+    assert "MaterialColors.currentScheme(true)" in main
+    assert "MeoTheme.applyDynamicColorSchemes(" in main
+    assert "MeoTheme.colorSchemeMode === \"dynamic\"" in main
+    assert "MeoTheme.hasActiveDynamicColorScheme" in main
+    assert "Dynamic color unavailable" in main
+
+
 def test_every_native_qml_file_is_declared_in_cmake_module():
     cmake = read(NATIVE / "CMakeLists.txt")
     qml_files = sorted(
