@@ -1,15 +1,18 @@
 from datetime import datetime, timezone
+import threading
 import json
 from pathlib import Path
 
 import pytest
 
+import core.app_management as app_management
 from core.app_management import (
     MANIFEST_SCHEMA,
     MANIFEST_VERSION,
     ManifestRegistry,
     SCHEMA,
     build_app_management_snapshot,
+    export_app_management,
     perform_app_action,
 )
 
@@ -163,3 +166,75 @@ async def test_unmanifested_native_app_has_no_destructive_storage_action(tmp_pat
             registry=ManifestRegistry([tmp_path / "missing"]),
             home=tmp_path / "home",
         )
+
+
+@pytest.mark.asyncio
+async def test_export_app_management_offloads_snapshot_work(monkeypatch):
+    caller_thread = threading.get_ident()
+    observed = {}
+
+    class Backend:
+        async def run_list_installed(self, *, json_mode):
+            return [{
+                "id": "example-app",
+                "name": "Example App",
+                "primary_source": "Pacman",
+                "installed": True,
+            }]
+
+    def fake_snapshot(packages, *, registry=None, home=None, generated_at=None):
+        observed["thread"] = threading.get_ident()
+        return {
+            "schema": SCHEMA,
+            "version": 1,
+            "status": "success",
+            "applicationCount": len(list(packages)),
+            "applications": [],
+        }
+
+    monkeypatch.setattr(app_management, "build_app_management_snapshot", fake_snapshot)
+    result = await export_app_management(Backend())
+
+    assert result["status"] == "success"
+    assert observed["thread"] != caller_thread
+
+
+@pytest.mark.asyncio
+async def test_app_action_offloads_destructive_filesystem_work(tmp_path, monkeypatch):
+    caller_thread = threading.get_ident()
+    observed = {}
+    home = tmp_path / "home"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(home / ".cache"))
+    manifest_root = tmp_path / "manifests"
+    _write_manifest(manifest_root)
+    cache = home / ".cache/example-app"
+    cache.mkdir(parents=True)
+    (cache / "payload").write_bytes(b"cache")
+
+    class Backend:
+        async def run_list_installed(self, *, json_mode):
+            return [{
+                "id": "example-app",
+                "name": "Example App",
+                "primary_source": "Pacman",
+                "installed": True,
+            }]
+
+    def fake_remove(path):
+        observed["thread"] = threading.get_ident()
+        observed["path"] = path
+        return 5
+
+    monkeypatch.setattr(app_management, "_remove_target", fake_remove)
+    result = await perform_app_action(
+        Backend(),
+        action="clear-cache",
+        app_id="example-app",
+        source="pacman",
+        registry=ManifestRegistry([manifest_root]),
+        home=home,
+    )
+
+    assert result["bytesFreed"] == 5
+    assert observed["thread"] != caller_thread
+    assert observed["path"] == cache
