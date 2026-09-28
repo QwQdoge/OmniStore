@@ -14,6 +14,7 @@ No caller-provided filesystem path is ever accepted.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import asyncio
 from datetime import datetime, timezone
 import json
 import os
@@ -419,7 +420,12 @@ async def export_app_management(
     if isinstance(result, Mapping) and result.get("status") != "success":
         raise RuntimeError("OmniStore could not collect installed applications")
     packages = _unwrap_packages(result)
-    return build_app_management_snapshot(packages, registry=registry, home=home)
+    return await asyncio.to_thread(
+        build_app_management_snapshot,
+        packages,
+        registry=registry,
+        home=home,
+    )
 
 
 def _find_package(
@@ -490,8 +496,11 @@ async def perform_app_action(
             "bytesFreed": 0,
         }
 
-    targets, _manifest = storage_targets(
-        package, registry=registry, home=home
+    targets, _manifest = await asyncio.to_thread(
+        storage_targets,
+        package,
+        registry=registry,
+        home=home,
     )
     categories = {
         "clear-cache": {"cache"},
@@ -504,7 +513,7 @@ async def perform_app_action(
 
     bytes_freed = 0
     for target in selected:
-        bytes_freed += _remove_target(target.path)
+        bytes_freed += await asyncio.to_thread(_remove_target, target.path)
 
     return {
         "schema": SCHEMA,
