@@ -54,6 +54,8 @@ def test_native_ui_requires_shared_kde_dynamic_color_contract():
     assert "MeoTheme.colorSchemeMode === \"dynamic\"" in main
     assert "MeoTheme.hasActiveDynamicColorScheme" in main
     assert "Dynamic color unavailable" in main
+    assert "target: MaterialColors" in main
+    assert "function onSchemeChanged()" in main
 
 
 def test_every_native_qml_file_is_declared_in_cmake_module():
