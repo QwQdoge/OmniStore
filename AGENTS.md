@@ -1,28 +1,47 @@
 # OmniStore agent rules
 
-## Scope
+## Start here
 
-- `FlutterUI/` owns the Flutter client. Run Flutter commands there.
-- `python/` owns the Python backend, source/plugin logic, tests, and daemon mode. There is no Rust daemon/Cargo workspace in this repository.
-- `NativeUI/` is the native Qt client path; keep native-only work there.
-- `plugins/sources/`, `PKGBUILD`, schemas, and release-exporter files are source/package contracts. A manifest or toggle is not proof that search/install/update works.
+Work only in the owning layer for the task. Inspect `git status`, the affected files, and the nearest relevant tests/contracts before editing; do not scan the whole repository or read every document by default.
 
-## Work sequence
+## Ownership
 
-1. Inspect `git status`, the files you will touch, and only the directly relevant contract/docs.
-2. Change the owning subtree; do not copy an implementation between Flutter, Python, NativeUI, or another Meo repository.
-3. Run the narrowest relevant check first, then the broader CI-equivalent check only when the changed surface warrants it.
-4. Report what actually ran and what remains unverified.
+- `FlutterUI/`: Flutter client. Run Flutter commands from this directory.
+- `python/`: Python backend, source/plugin logic, daemon mode, and Python tests.
+- `NativeUI/`: Qt native client surface.
+- `plugins/sources/`: source manifests. A manifest or toggle alone does not prove search/install/update support.
+- `PKGBUILD`, `auto_build.py`, release/export scripts: packaging and release contracts.
+- This repository has Python daemon code; it does **not** contain a Rust daemon/Cargo workspace. Do not invent or describe one.
 
-## Validation
+Shared OS/Plasma UI belongs in MeoUI or meo-kde rather than being copied here.
 
-- Flutter: from `FlutterUI/`, run `flutter analyze` and `flutter test --reporter expanded`. Build Linux release only for build/release-sensitive changes.
-- Python: from `python/`, run `python -m pytest -q`.
-- NativeUI: mirror `.github/workflows/native-quality.yml` for configure/build checks.
-- Packaging/source manifests: validate the specific recipe/export contract involved; do not infer runtime capability from static metadata.
+## Validation matrix
 
-## Boundaries
+Run the narrowest matching checks first.
 
-Use `$MEO_DOCS_ROOT/Projects/omni-store/` for plans/audits/decisions and `$MEO_OUTPUT_ROOT/omni-store/{build,install,validation,packages,tmp}/` for generated output. Never invent machine-specific absolute paths when those roots are unset. Keep generated files, screenshots, logs, and journals out of the repository root.
+- Flutter change:
+  `cd FlutterUI && flutter pub get && flutter analyze && flutter test --reporter expanded`
+  Add `flutter build linux --release` when Linux integration, dependencies, packaging, or release behavior changed.
+- Python/backend change:
+  `cd python && python -m pytest -q`
+  If dependencies changed, also install/check `requirements.txt` in an isolated environment.
+- NativeUI change:
+  mirror `.github/workflows/native-quality.yml`: configure with CMake using a real MeoUI checkout, then build target `omnistore-native`.
+- Plugin/source-manifest change: run the directly related Python/plugin tests and verify the claimed operations actually exist.
+- Packaging/release change: run the repository's existing contract/export checks; a successful package build is not proof of install/update behavior.
 
-Never store credentials, provider secrets, signing material, or user data here. Do not publish packages, alter package sources, deploy services, or modify a live machine without explicit authorization. Preserve unrelated dirty work; do not use `git reset`, `git clean`, or broad deletion as cleanup.
+Do not broaden validation to unrelated layers unless the change crosses that boundary.
+
+## Claims and security
+
+Keep capability claims evidence-based. Distinguish source/static tests, local runtime, package build, real installation, and live service behavior.
+
+Never commit credentials, provider secrets, signing material, service-role keys, tokens, or user data. Do not publish packages, change remote package sources, deploy services, or modify a live machine without explicit authorization.
+
+## Files and generated output
+
+Keep source and code-bound contracts in their owning directories. Do not create loose plans, audits, screenshots, logs, or journals in the repository root.
+
+Use `$MEO_DOCS_ROOT/Projects/omni-store/` for project records and `$MEO_OUTPUT_ROOT/omni-store/{build,install,validation,packages,tmp}/` for generated output. If these variables are unset, do not invent machine-specific absolute paths.
+
+Preserve unrelated dirty work. Never use `git reset`, `git clean`, or broad deletion as routine cleanup.
