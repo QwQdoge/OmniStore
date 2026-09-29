@@ -42,6 +42,6 @@ Never commit credentials, provider secrets, signing material, service-role keys,
 
 Keep source and code-bound contracts in their owning directories. Do not create loose plans, audits, screenshots, logs, or journals in the repository root.
 
-Use `$MEO_DOCS_ROOT/Projects/omni-store/` for project records and `$MEO_OUTPUT_ROOT/omni-store/{build,install,validation,packages,tmp}/` for generated output. If these variables are unset, do not invent machine-specific absolute paths.
+Use `$MEO_DOCS_ROOT/Projects/omni-store/` for project records. Existing tools/CI may use their normal ephemeral build/cache directories; retained logs, evidence, install handoffs, and packages belong under `$MEO_OUTPUT_ROOT/omni-store/{build,install,validation,packages,tmp}/`. If these variables are unset, do not invent machine-specific absolute paths.
 
 Preserve unrelated dirty work. Never use `git reset`, `git clean`, or broad deletion as routine cleanup.
