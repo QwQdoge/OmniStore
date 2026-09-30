@@ -9,7 +9,7 @@ import 'package:frontend/core/theme/omnistore_theme.dart';
 import 'package:frontend/features/apps/widgets/apps_page_skeleton.dart';
 import 'package:collection/collection.dart';
 import 'package:frontend/features/apps/widgets/apps_page_empty_state.dart';
-import 'package:frontend/features/apps/widgets/installed_app_list.dart';
+import 'package:frontend/features/task_manager/presentation/widgets/installed_app_list.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class AppsPage extends StatefulWidget {

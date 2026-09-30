@@ -10,8 +10,13 @@ import 'package:frontend/core/widgets/empty_state.dart';
 
 class InstalledAppList extends StatelessWidget {
   final List<AppPackage> filteredApps;
+  final Future<void> Function()? onRefresh;
 
-  const InstalledAppList({super.key, required this.filteredApps});
+  const InstalledAppList({
+    super.key,
+    required this.filteredApps,
+    this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +27,8 @@ class InstalledAppList extends StatelessWidget {
         title: AppLocalizations.of(context)!.noResults,
       );
     }
-    return ListView.builder(
+
+    Widget listView = ListView.builder(
       padding: const EdgeInsets.all(16),
       prototypeItem: Padding(
         padding: const EdgeInsets.only(bottom: 12),
@@ -40,6 +46,8 @@ class InstalledAppList extends StatelessWidget {
       itemBuilder: (context, index) {
         final app = filteredApps[index];
         final sizeText = app.diskSize ?? app.installedSize ?? app.downloadSize;
+        final heroTag = 'installed-app-${app.name}-${app.primarySource}';
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Semantics(
@@ -50,32 +58,35 @@ class InstalledAppList extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AppDetailsPage(app: app),
+                  builder: (context) => AppDetailsPage(app: app, heroTag: heroTag),
                 ),
               ),
               child: ListTile(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                leading: app.icon != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: CachedNetworkImage(
-                          imageUrl: app.icon!,
-                          width: 40,
-                          height: 40,
-                          memCacheWidth: 80,
-                          memCacheHeight: 80,
-                          placeholder: (context, url) => const Skeleton(
+                leading: Hero(
+                  tag: heroTag,
+                  child: app.icon != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: CachedNetworkImage(
+                            imageUrl: app.icon!,
                             width: 40,
                             height: 40,
-                            borderRadius: 16,
+                            memCacheWidth: 80,
+                            memCacheHeight: 80,
+                            placeholder: (context, url) => const Skeleton(
+                              width: 40,
+                              height: 40,
+                              borderRadius: 16,
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.apps),
                           ),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.apps),
-                        ),
-                      )
-                    : const Icon(Icons.apps, size: 40),
+                        )
+                      : const Icon(Icons.apps, size: 40),
+                ),
                 title: Text(
                   app.name,
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -128,5 +139,15 @@ class InstalledAppList extends StatelessWidget {
         );
       },
     );
+
+    if (onRefresh != null) {
+      return RefreshIndicator(
+        key: const ValueKey('list'),
+        onRefresh: onRefresh!,
+        child: listView,
+      );
+    }
+
+    return listView;
   }
 }
