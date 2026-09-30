@@ -177,6 +177,8 @@ class TaskController with ChangeNotifier {
       if (taskGeneration == _taskGeneration) {
         _isBusy = false;
         _progress = null;
+        _packageName = null;
+        _flag = null;
         notifyListeners();
       }
     }
@@ -199,9 +201,6 @@ class TaskController with ChangeNotifier {
         message: !hasError ? l10n.taskSuccessMsg : _status,
       ),
     );
-
-    _packageName = null;
-    _flag = null;
     notifyListeners();
 
     if (!hasError) {
@@ -260,6 +259,7 @@ class TaskController with ChangeNotifier {
         message: !hasError ? l10n.taskSuccessMsg : _status,
       ),
     );
+    notifyListeners();
   }
 
   TaskLogLevel? _parseLine(String line, AppLocalizations l10n) {

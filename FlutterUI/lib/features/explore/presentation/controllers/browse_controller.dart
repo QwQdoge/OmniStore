@@ -54,7 +54,9 @@ class BrowseController with ChangeNotifier {
     _recommendations = await _packageRepository.getRecommendations(
       forceRefresh: forceRefresh,
     );
-    notifyListeners();
+    if (!_disposed) {
+      notifyListeners();
+    }
 
     if (_packageRepository.activeFetchFuture != null) {
       try {
