@@ -135,13 +135,22 @@ class SearchResultTile extends StatelessWidget {
                 ? Selector<TaskController, String>(
                     selector: (context, c) => c.speed,
                     builder: (context, speed, child) {
-                      if (speed.trim().isEmpty) return const SizedBox.shrink();
-                      return Text(
-                        speed,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
+                      Widget content;
+                      if (speed.trim().isEmpty) {
+                        content = const SizedBox.shrink(key: ValueKey('speed_empty'));
+                      } else {
+                        content = Text(
+                          speed,
+                          key: const ValueKey('speed_text'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                        );
+                      }
+                      return SmoothSizeSwitcher(
+                        alignment: Alignment.centerRight,
+                        child: content,
                       );
                     },
                   )

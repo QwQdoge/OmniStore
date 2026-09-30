@@ -163,23 +163,30 @@ class UpdatesTab extends StatelessWidget {
                                   selector: (context, settings) =>
                                       settings.isAIEnabled,
                                   builder: (context, isAIEnabled, _) {
+                                    Widget content;
                                     if (!isAIEnabled) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    return IconButton(
-                                      icon: const AiMark(size: 20),
-                                      tooltip: AppLocalizations.of(
-                                        context,
-                                      )!.aiExplainUpdate,
-                                      onPressed: () => showDialog(
-                                        context: context,
-                                        builder: (_) => AIUpdateSummaryDialog(
-                                          name: update['name'],
-                                          currentVersion:
-                                              update['current_version'],
-                                          nextVersion: update['new_version'],
+                                      content = const SizedBox.shrink(key: ValueKey('ai_disabled'));
+                                    } else {
+                                      content = IconButton(
+                                        key: const ValueKey('ai_enabled'),
+                                        icon: const AiMark(size: 20),
+                                        tooltip: AppLocalizations.of(
+                                          context,
+                                        )!.aiExplainUpdate,
+                                        onPressed: () => showDialog(
+                                          context: context,
+                                          builder: (_) => AIUpdateSummaryDialog(
+                                            name: update['name'],
+                                            currentVersion:
+                                                update['current_version'],
+                                            nextVersion: update['new_version'],
+                                          ),
                                         ),
-                                      ),
+                                      );
+                                    }
+                                    return SmoothSizeSwitcher(
+                                      alignment: Alignment.center,
+                                      child: content,
                                     );
                                   },
                                 ),
