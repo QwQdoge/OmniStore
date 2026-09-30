@@ -12,7 +12,6 @@
   "help": "Help",
   "userAccount": "User Account",
   "install": "Install",
-  "download": "Download",
   "open": "Open",
   "uninstall": "Uninstall",
   "launch": "Launch",
@@ -334,7 +333,7 @@
   "@aiApiKey": {
     "description": "aiApiKey"
   },
-  "aiProxy": "Network proxy",
+  "aiProxy": "Network Proxy (Optional)",
   "@aiProxy": {
     "description": "aiProxy"
   },
@@ -1304,11 +1303,11 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "GitHub access token",
+  "configurePat": "GitHub access token (optional)",
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "Add a GitHub Classic PAT or fine-grained token when you need authenticated GitHub access.",
+  "patHelperText": "Provide a GitHub Classic PAT or Fine-grained Token.",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
@@ -1368,6 +1367,48 @@
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
   },
+  "sourceFilterSemantics": "Filter by source: {name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "meoChannelTitle": "Meo Update Channel",
+  "meoChannelSubtitle": "Read from the active pacman repository order",
+  "meoChannelBetaNotice": "Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.",
+  "meoChannelStableNotice": "Stable receives fully tested MeoArch release trains.",
+  "repoPriority": "Repository priority: {repos}",
+  "@repoPriority": {
+    "placeholders": {
+      "repos": {
+        "type": "String"
+      }
+    }
+  },
+  "betaWarningPanel": "Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.",
+  "downgradeReviewPending": "{count, plural, =1{Stable is configured, but 1 Meo package downgrade still requires review.} other{Stable is configured, but {count} Meo package downgrades still require review.}}",
+  "@downgradeReviewPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewDowngrades": "Review Downgrades",
+  "switchToStable": "Switch to Stable",
+  "downgradeNotice": "The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n{packages}",
+  "@downgradeNotice": {
+    "placeholders": {
+      "packages": {
+        "type": "String"
+      }
+    }
+  },
+  "channelStable": "Stable",
+  "channelBeta": "Beta",
+  "download": "Download",
   "systemAiProviderLabel": "System AI connection (KWallet / Recommended)",
   "systemAiSharedConnectionLabel": "System shared connection",
   "systemAiConnectionHelper": "Meo Account reads the key from KWallet; OmniStore cannot read the plaintext.",
@@ -1409,7 +1450,6 @@
   "secureCredentialUnavailable": "Unable to access the system credential store.",
   "signInMeoAccount": "Sign in to Meo Account",
   "signInMeoAccountDetail": "After signing in, choose an encrypted account AI connection. Its API key is never sent to OmniStore.",
-  "signIn": "Sign in",
   "accountAiLoading": "Reading account AI connections",
   "accountAiMetadataOnly": "Only names, providers, and masked key status are read.",
   "accountAiLoadError": "Unable to read account AI connections",
@@ -1453,35 +1493,38 @@
   "meoChannelStableSummary": "Get fully tested MeoArch release trains.",
   "meoChannelRepositoryPriority": "Repository priority: {repositories}",
   "@meoChannelRepositoryPriority": {
-    "placeholders": {
-      "repositories": {"type": "String"}
+  "placeholders": {
+    "repositories": {
+      "type": "String"
     }
-  },
-  "meoChannelBetaNotice": "Choose Beta only when you want newer components before Stable. It is not recommended for critical systems; Stable remains available as the fallback.",
+  }
+},
   "meoChannelDowngradePending": "{count, plural, =1{Stable is selected, but 1 Meo package downgrade still needs your review.} other{Stable is selected, but {count} Meo package downgrades still need your review.}}",
   "@meoChannelDowngradePending": {
-    "placeholders": {
-      "count": {"type": "int"}
+  "placeholders": {
+    "count": {
+      "type": "int"
     }
-  },
+  }
+},
   "meoChannelReviewDowngrades": "Review downgrades",
   "meoChannelSwitchToStable": "Switch to Stable",
   "meoChannelRollbackPreviewInvalid": "This Stable rollback preview is no longer valid. Refresh it and review it again.",
   "meoChannelDowngradeDialog": "These official Meo packages will move to their Stable versions. Arch and third-party packages won't be downgraded.\\n\\n{packages}",
   "@meoChannelDowngradeDialog": {
-    "placeholders": {
-      "packages": {"type": "String"}
+  "placeholders": {
+    "packages": {
+      "type": "String"
     }
-  },
-  "sourceFilterSemantics": "Filter by source: {name}",
-  "@providerLocalSecureKey": {"placeholders": {"provider": {"type": "String"}}},
-  "@sourceFilterSemantics": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
+  }
+},
+  "@providerLocalSecureKey": {
+  "placeholders": {
+    "provider": {
+      "type": "String"
     }
-  },
+  }
+},
   "aiConsentTitle": "Review this AI request",
   "aiConsentIntro": "Review the exact request before sending it. Your confirmation applies only to this request and its fingerprint.",
   "aiConsentProvider": "Provider",
@@ -1496,12 +1539,12 @@
   "aiConsentUserContent": "Your content",
   "aiConsentConfirmWithProvider": "I understand this content will be sent to {provider}.",
   "@aiConsentConfirmWithProvider": {
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
+  "placeholders": {
+    "provider": {
+      "type": "String"
     }
-  },
+  }
+},
   "aiConsentKeyNotExposed": "Your API key is not part of this prompt and is not shown here.",
   "aiConsentDeny": "Don't send",
   "aiConsentAllowOnce": "Confirm and send once",
@@ -1521,17 +1564,21 @@
   "flatpakLoadErrorDetail": "Could not load Flatpak apps. Check Flathub and your network connection, then try again.",
   "appCardSemantics": "App: {name}",
   "@appCardSemantics": {
-    "placeholders": {
-      "name": {"type": "String"}
+  "placeholders": {
+    "name": {
+      "type": "String"
     }
-  },
+  }
+},
   "diskSize": "Disk size",
   "diskSizeWithConfidence": "Disk size ({confidence})",
   "@diskSizeWithConfidence": {
-    "placeholders": {
-      "confidence": {"type": "String"}
+  "placeholders": {
+    "confidence": {
+      "type": "String"
     }
-  },
+  }
+},
   "accountAiSignInRequired": "Sign in to Meo Account before using Account AI.",
   "accountAiNoDefaultModel": "This AI connection has no default model. Choose a model in Settings first.",
   "accountAiInvalidConsent": "The account AI service did not return a valid consent summary.",
@@ -1573,10 +1620,12 @@
   "localAiUnavailable": "The AI service is temporarily unavailable.",
   "localAiRequestRejected": "The AI service rejected the request (HTTP {status}).",
   "@localAiRequestRejected": {
-    "placeholders": {
-      "status": {"type": "int"}
+  "placeholders": {
+    "status": {
+      "type": "int"
     }
-  },
+  }
+},
   "aiTestService": "Service",
   "aiTestConnected": "Connected",
   "aiTestUnavailable": "Unavailable",
@@ -1585,8 +1634,10 @@
   "aiTestLatency": "Latency",
   "featuredAppSemantics": "Featured app: {name}",
   "@featuredAppSemantics": {
-    "placeholders": {
-      "name": {"type": "String"}
+  "placeholders": {
+    "name": {
+      "type": "String"
     }
   }
+}
 }

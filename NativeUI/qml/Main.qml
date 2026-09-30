@@ -1,139 +1,130 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import MeoUI 1.0
-import "pages"
+import Meo.System 1.0
 
-ApplicationWindow {
-    id: window
-
-    width: 1280 * MeoTheme.globalScale
-    height: 820 * MeoTheme.globalScale
-    minimumWidth: 960 * MeoTheme.globalScale
-    minimumHeight: 640 * MeoTheme.globalScale
+Window {
+    id: root
+    width: 1360
+    height: 860
+    minimumWidth: 900
+    minimumHeight: 620
     visible: true
-    title: qsTr("OmniStore preview")
-    color: MeoTheme.surface
+    title: qsTr("OmniStore")
+    color: MeoTheme.surfaceContainerLow
 
-    property int currentPage: 0
-    required property var installedUsageSummary
-    required property var installedUsageModel
+    property int navigationIndex: 0
+    property string pendingSearch: ""
+    property var detailFallback: ({})
+    readonly property bool dynamicColorReady:
+        MeoTheme.colorSchemeMode === "dynamic"
+        && MeoTheme.hasActiveDynamicColorScheme
 
-    header: Item {
-        implicitHeight: 80 * MeoTheme.globalScale
+    function syncDynamicColor() {
+        const lightScheme = MaterialColors.currentScheme(false)
+        const darkScheme = MaterialColors.currentScheme(true)
+        MeoTheme.applyDynamicColorSchemes(
+            lightScheme,
+            darkScheme,
+            "kde-" + MaterialColors.sourceId()
+        )
+    }
 
-        Rectangle {
-            anchors.fill: parent
-            color: MeoTheme.surface
-        }
+    Component.onCompleted: syncDynamicColor()
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: MeoTheme.space32
-            anchors.rightMargin: MeoTheme.space32
-            spacing: MeoTheme.space12
-
-            MeoIcon {
-                icon: "storefront"
-                size: 28 * MeoTheme.globalScale
-                color: MeoTheme.primary
-                Accessible.ignored: true
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 0
-
-                MeoText {
-                    text: qsTr("OmniStore")
-                    typeRole: "title"
-                    typeSize: "medium"
-                    emphasized: true
-                }
-
-                MeoText {
-                    text: qsTr("Your local library, in preview")
-                    typeRole: "body"
-                    typeSize: "small"
-                    color: MeoTheme.contentOnSurfaceVariant
-                }
-            }
-
-            MeoText {
-                text: window.installedUsageSummary.available
-                      ? qsTr("Local library")
-                      : qsTr("Preview mode")
-                typeRole: "label"
-                typeSize: "medium"
-                color: MeoTheme.primary
-            }
+    Connections {
+        target: MaterialColors
+        function onSchemeChanged() {
+            root.syncDynamicColor()
         }
     }
 
-    RowLayout {
+    function showDetails(app) {
+        root.detailFallback = app || ({})
+        const id = String(root.detailFallback.id || root.detailFallback.name || "")
+        const source = String(root.detailFallback.primary_source || root.detailFallback.source || "")
+        detailSheet.title = String(root.detailFallback.name || root.detailFallback.id || qsTr("App details"))
+        detailSheet.isOpen = true
+        if (id.length > 0)
+            backend.loadDetails(id, source)
+    }
+
+    MeoAppLayout {
+        id: appLayout
         anchors.fill: parent
-        anchors.margins: MeoTheme.space24
-        spacing: MeoTheme.space24
+        currentIndex: root.navigationIndex
+        navigationModel: [
+            { "label": qsTr("Home"), "icon": "home" },
+            { "label": qsTr("Search"), "icon": "search" },
+            { "label": qsTr("Updates"), "icon": "system_update" },
+            { "label": qsTr("Installed"), "icon": "apps" },
+            { "label": qsTr("Tasks"), "icon": "download" },
+            { "label": qsTr("Settings"), "icon": "settings" }
+        ]
+        pages: [homePage, searchPage, updatesPage, installedPage, tasksPage, settingsPage]
+        onCurrentIndexChanged: root.navigationIndex = currentIndex
+    }
 
-        MeoCard {
-            Layout.preferredWidth: 240 * MeoTheme.globalScale
-            Layout.fillHeight: true
-            type: "filled"
-            radius: MeoTheme.shapeExtraLarge
-
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: MeoTheme.space16
-                spacing: MeoTheme.space8
-
-                MeoText {
-                    Layout.fillWidth: true
-                    text: qsTr("Library")
-                    typeRole: "label"
-                    typeSize: "medium"
-                    color: MeoTheme.contentOnSurfaceVariant
-                }
-
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Installed apps")
-                    icon.name: "inventory_2"
-                    type: window.currentPage === 0 ? "tonal" : "text"
-                    onClicked: window.currentPage = 0
-                }
-
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Discover")
-                    icon.name: "travel_explore"
-                    type: window.currentPage === 1 ? "tonal" : "text"
-                    onClicked: window.currentPage = 1
-                }
-
-                Item { Layout.fillHeight: true }
-
-                MeoText {
-                    Layout.fillWidth: true
-                    text: qsTr("This preview shows information only. It cannot change software on your device.")
-                    typeRole: "body"
-                    typeSize: "small"
-                    color: MeoTheme.contentOnSurfaceVariant
-                    wrapMode: Text.WordWrap
-                }
+    Component {
+        id: homePage
+        HomePage {
+            onSearchRequested: function(query) {
+                root.pendingSearch = query
+                root.navigationIndex = 1
             }
+            onDetailsRequested: function(app) { root.showDetails(app) }
         }
+    }
 
-        StackLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            currentIndex: window.currentPage
-
-            LibraryPage {
-                usageSummary: window.installedUsageSummary
-                applicationModel: window.installedUsageModel
-            }
-
-            DiscoverUnavailablePage {}
+    Component {
+        id: searchPage
+        SearchPage {
+            initialQuery: root.pendingSearch
+            onDetailsRequested: function(app) { root.showDetails(app) }
         }
+    }
+
+    Component { id: updatesPage; UpdatesPage {} }
+    Component {
+        id: installedPage
+        InstalledPage { onDetailsRequested: function(app) { root.showDetails(app) } }
+    }
+    Component { id: tasksPage; TasksPage {} }
+    Component { id: settingsPage; SettingsPage {} }
+
+    MeoBanner {
+        id: dynamicColorWarning
+        z: 120
+        visible: !root.dynamicColorReady
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: 16 * MeoTheme.globalScale
+        title: qsTr("Dynamic color unavailable")
+        text: qsTr("OmniStore could not load the current Meo desktop color scheme. The interface is using the safe preview palette.")
+        icon: "palette"
+        tone: "warning"
+    }
+
+    MeoSideSheet {
+        id: detailSheet
+        z: 100
+        height: root.height
+        width: Math.min(440 * MeoTheme.globalScale, root.width * 0.46)
+        isOpen: false
+        title: qsTr("App details")
+        content: Component {
+            AppDetailsPane { fallbackApp: root.detailFallback }
+        }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        z: 90
+        visible: detailSheet.isOpen && root.width < 1050 * MeoTheme.globalScale
+        color: Qt.rgba(0, 0, 0, 0.30)
+        TapHandler { onTapped: detailSheet.isOpen = false }
     }
 }

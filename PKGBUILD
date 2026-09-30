@@ -1,14 +1,15 @@
 pkgname=omnistore-bin
 pkgver=0.1.2
-pkgrel=4
-pkgdesc="OmniStore unified software repository client with Flutter and Python backends"
+pkgrel=5
+pkgdesc="OmniStore unified software manager with a native MeoUI frontend and Flutter fallback"
 arch=('x86_64')
 options=('!strip' '!debug')
 url="https://github.com/QwQdoge/OmniStore"
 license=('GPL-3.0-only')
 depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass'
          'pacman-contrib' 'python' 'pyalpm')
-optdepends=('meo-release: shared MeoArch application catalog and channel integration'
+optdepends=('meoui-qml: preferred native Qt/QML frontend on MeoArch'
+            'meo-release: shared MeoArch application catalog and channel integration'
             'flatpak: install applications from Flatpak remotes')
 makedepends=('python')
 provides=('omnistore')
@@ -20,7 +21,7 @@ source=("${_release_archive}::https://github.com/QwQdoge/OmniStore/releases/down
         'verify_release_exporter_contract.py')
 noextract=("${_release_archive}")
 sha256sums=('SKIP'
-            '006c8dfd197ecf1634fecd78503cadead23a16105fbaa9d7ae7c0ae7442cb2a4')
+            'd4b7694e512898a32907be3a4fdf76ffba994b001ae2c957c0533b31b59c0773')
 
 _release_source_dir() {
   if [ -x "$srcdir/release_bundle/backends/python_server" ] \
@@ -50,22 +51,6 @@ prepare() {
     return 1
   }
 
-  # Do not construct a mixed package from a newer launcher contract and an
-  # older release bundle.  The bundle itself must carry all Original masters
-  # that this package installs.
-  local _required_identity_asset
-  for _required_identity_asset in \
-    data/omnistore.desktop \
-    data/icons/hicolor/scalable/apps/org.meo.OmniStore.svg \
-    data/icons/hicolor/16x16/apps/org.meo.OmniStore.svg \
-    data/icons/hicolor/22x22/apps/org.meo.OmniStore.svg \
-    data/icons/hicolor/32x32/apps/org.meo.OmniStore.svg; do
-    if [[ ! -f "$_src_dir/$_required_identity_asset" ]]; then
-      error "Verified release bundle is missing required Original identity asset: $_required_identity_asset"
-      return 1
-    fi
-  done
-
   # Do not ship a command which a stale release backend cannot implement.
   # The verifier runs the bundled binary with an isolated XDG environment and
   # requires the exact schema consumed by Meo Settings.
@@ -74,17 +59,14 @@ prepare() {
 }
 
 package() {
-  # 1. 创建安装到系统 /opt/omnistore 的目录
-  install -d "${pkgdir}/opt/omnistore" 
+  install -d "${pkgdir}/opt/omnistore"
 
-  # 确定源文件目录
   local _src_dir
   _src_dir="$(_release_source_dir)" || {
     error "Could not find the verified OmniStore release bundle."
     return 1
   }
 
-  # 2. 拷贝解压出来的所有东西
   cp -r "$_src_dir"/* "${pkgdir}/opt/omnistore/"
 
   test -x "${pkgdir}/opt/omnistore/backends/meo_stable_rollback.py" || {
@@ -100,14 +82,25 @@ package() {
   install -Dm755 "${pkgdir}/opt/omnistore/backends/meo_repository_helper.py" \
     "${pkgdir}/usr/lib/omnistore/meo-repository-helper.py"
 
-  # 3. 在系统的 /usr/bin 下建一个软链接
   install -d "${pkgdir}/usr/bin"
-  echo -e '#!/bin/sh\ncd /opt/omnistore && ./frontend "$@"' > "${pkgdir}/usr/bin/omnistore"
+  cat > "${pkgdir}/usr/bin/omnistore" <<'EOF'
+#!/bin/sh
+set -eu
+cd /opt/omnistore
+# MeoArch installs the shared MeoUI QML module. New Linux release bundles add
+# omnistore-native; older bundles remain runnable through the Flutter frontend.
+if [ -x /opt/omnistore/omnistore-native ] \
+   && [ -f /usr/lib/qt6/qml/MeoUI/qmldir ]; then
+  exec /opt/omnistore/omnistore-native "$@"
+fi
+exec /opt/omnistore/frontend "$@"
+EOF
   chmod +x "${pkgdir}/usr/bin/omnistore"
+
   cat > "${pkgdir}/usr/bin/omnistore-apps-export" <<'EOF'
 #!/bin/sh
 # Stable, read-only ABI for Meo Settings.  It deliberately calls the bundled
-# Python backend instead of opening the Flutter GUI or connecting to a daemon.
+# Python backend instead of opening either graphical frontend or a daemon.
 set -eu
 if [ "$#" -ne 0 ]; then
   echo "omnistore-apps-export takes no arguments" >&2
@@ -117,6 +110,29 @@ cd /opt/omnistore
 exec /opt/omnistore/backends/python_server --export-installed-usage --json
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-apps-export"
+
+  cat > "${pkgdir}/usr/bin/omnistore-apps" <<'EOF'
+#!/bin/sh
+set -eu
+cd /opt/omnistore
+command="${1:-}"
+[ "$#" -ge 1 ] && shift || true
+case "$command" in
+  export)
+    [ "$#" -eq 0 ] || { echo "omnistore-apps export takes no arguments" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --export-app-management --json
+    ;;
+  clear-cache|reset-settings|clear-data|uninstall)
+    [ "$#" -eq 2 ] || { echo "omnistore-apps $command requires APP_ID SOURCE" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --app-action "$command" --app-id "$1" --source "$2" --json
+    ;;
+  *)
+    echo "usage: omnistore-apps export | {clear-cache|reset-settings|clear-data|uninstall} APP_ID SOURCE" >&2
+    exit 64
+    ;;
+esac
+EOF
+  chmod +x "${pkgdir}/usr/bin/omnistore-apps"
   cat > "${pkgdir}/usr/bin/omnistore-cli" <<'EOF'
 #!/bin/sh
 set -eu
@@ -167,19 +183,17 @@ EOF
   install -Dm644 "$_src_dir/LICENSE" \
     "${pkgdir}/usr/share/licenses/$pkgname/LICENSE"
 
-  # 4. Install the package-owned Original identity.  These are application
-  # assets, not MeoSymbols system-semantic icons; Studio can overlay them
-  # later without making Original depend on another package.
-  install -Dm644 "$_src_dir/data/icons/hicolor/scalable/apps/org.meo.OmniStore.svg" \
-    "${pkgdir}/usr/share/icons/hicolor/scalable/apps/org.meo.OmniStore.svg"
-  install -Dm644 "$_src_dir/data/icons/hicolor/16x16/apps/org.meo.OmniStore.svg" \
-    "${pkgdir}/usr/share/icons/hicolor/16x16/apps/org.meo.OmniStore.svg"
-  install -Dm644 "$_src_dir/data/icons/hicolor/22x22/apps/org.meo.OmniStore.svg" \
-    "${pkgdir}/usr/share/icons/hicolor/22x22/apps/org.meo.OmniStore.svg"
-  install -Dm644 "$_src_dir/data/icons/hicolor/32x32/apps/org.meo.OmniStore.svg" \
-    "${pkgdir}/usr/share/icons/hicolor/32x32/apps/org.meo.OmniStore.svg"
+  install -Dm644 "$_src_dir/omnistore.svg" "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"
 
-  # 5. Install the same desktop entry shipped in the verified release bundle.
-  install -Dm644 "$_src_dir/data/omnistore.desktop" \
-    "${pkgdir}/usr/share/applications/omnistore.desktop"
+  install -d "${pkgdir}/usr/share/applications"
+  cat > "${pkgdir}/usr/share/applications/omnistore.desktop" <<EOF
+[Desktop Entry]
+Name=OmniStore
+Comment=A unified software repository search and management tool
+Exec=/usr/bin/omnistore
+Icon=omnistore
+Terminal=false
+Type=Application
+Categories=Utility;
+EOF
 }

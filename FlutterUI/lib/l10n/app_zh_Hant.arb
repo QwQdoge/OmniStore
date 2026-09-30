@@ -12,7 +12,6 @@
   "help": "幫助",
   "userAccount": "使用者帳戶",
   "install": "安裝",
-  "download": "下載",
   "open": "開啟",
   "uninstall": "解除安裝",
   "launch": "啟動",
@@ -349,7 +348,7 @@
   "@aiApiKey": {
     "description": "Label for AI API key input"
   },
-  "aiProxy": "網路代理",
+  "aiProxy": "網路代理（可選）",
   "@aiProxy": {
     "description": "Label for optional AI proxy setting"
   },
@@ -1323,11 +1322,11 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "GitHub 存取權杖",
+  "configurePat": "GitHub 存取權杖（選用）",
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "如需使用需要登入的 GitHub 功能，請加入 GitHub Classic PAT 或細粒度權杖。",
+  "patHelperText": "請提供 GitHub Classic PAT 或 Fine-grained 權杖。",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
@@ -1387,6 +1386,27 @@
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
   },
+  "sourceFilterSemantics": "按軟體源篩選：{name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "meoChannelTitle": "Meo 更新通道",
+  "meoChannelSubtitle": "從目前 pacman 軟體源順序讀取",
+  "meoChannelBetaNotice": "Beta 通道可優先體驗最新的 Meo 元件。Arch 系統套件仍保持預設軟體源。",
+  "meoChannelStableNotice": "Stable 通道接收經過完整測試的 MeoArch 穩定發行版本。",
+  "repoPriority": "軟體源優先級：{repos}",
+  "betaWarningPanel": "Beta 為手動開啟選項，不建議在生產環境或關鍵系統中使用。Stable 仍為後備軟體源。",
+  "downgradeReviewPending": "已設定 Stable 通道，但仍有 {count} 個 Meo 套件降級項需要審查。",
+  "reviewDowngrades": "審查降級項",
+  "switchToStable": "切換至穩定版",
+  "downgradeNotice": "以下官方 Meo 套件需要降級至穩定版本。Arch 及第三方套件不會被降級。\n\n{packages}",
+  "channelStable": "穩定版",
+  "channelBeta": "Beta 版",
+  "download": "下載",
   "systemAiProviderLabel": "系統 AI 連線（KWallet / 建議）",
   "systemAiSharedConnectionLabel": "系統共用連線",
   "systemAiConnectionHelper": "金鑰由 Meo Account 從 KWallet 讀取，OmniStore 無法讀取明文。",
@@ -1428,7 +1448,6 @@
   "secureCredentialUnavailable": "無法存取系統安全憑證庫。",
   "signInMeoAccount": "登入 Meo Account",
   "signInMeoAccountDetail": "登入後即可選擇帳號中加密儲存的 AI 連線；API 金鑰不會傳給 OmniStore。",
-  "signIn": "登入帳號",
   "accountAiLoading": "正在讀取帳號 AI 連線",
   "accountAiMetadataOnly": "只讀取名稱、服務商與金鑰遮罩。",
   "accountAiLoadError": "無法讀取帳號 AI 連線",
@@ -1471,21 +1490,18 @@
   "meoChannelBetaSummary": "搶先使用較新的 Meo 元件；Arch 系統套件仍使用其正常軟體來源。",
   "meoChannelStableSummary": "使用經過完整測試的 MeoArch 發行列車。",
   "meoChannelRepositoryPriority": "軟體來源優先順序：{repositories}",
-  "meoChannelBetaNotice": "只有希望比穩定版更早取得新元件時才選擇測試版。關鍵系統不建議使用；穩定版始終可作為回退軟體來源。",
   "meoChannelDowngradePending": "{count, plural, =1{已選擇穩定版，但仍有 1 個 Meo 套件降級需要你確認。} other{已選擇穩定版，但仍有 {count} 個 Meo 套件降級需要你確認。}}",
   "meoChannelReviewDowngrades": "查看降級項目",
   "meoChannelSwitchToStable": "切換至穩定版",
   "meoChannelRollbackPreviewInvalid": "這份穩定版回退預覽已失效。請重新整理後再次查看。",
   "meoChannelDowngradeDialog": "以下官方 Meo 套件將切換至穩定版。Arch 或第三方套件不會降級。\\n\\n{packages}",
-  "sourceFilterSemantics": "按軟體源篩選：{name}",
-  "@providerLocalSecureKey": {"placeholders": {"provider": {"type": "String"}}},
-  "@sourceFilterSemantics": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
+  "@providerLocalSecureKey": {
+  "placeholders": {
+    "provider": {
+      "type": "String"
     }
-  },
+  }
+},
   "aiConsentTitle": "確認這次 AI 請求",
   "aiConsentIntro": "請先查看以下內容。你的確認只適用於這次請求及其指紋。",
   "aiConsentProvider": "服務商",
@@ -1500,12 +1516,12 @@
   "aiConsentUserContent": "你的內容",
   "aiConsentConfirmWithProvider": "我確認以上內容將傳送給 {provider}。",
   "@aiConsentConfirmWithProvider": {
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
+  "placeholders": {
+    "provider": {
+      "type": "String"
     }
-  },
+  }
+},
   "aiConsentKeyNotExposed": "API 金鑰不屬於這段提示內容，也不會在這裡顯示。",
   "aiConsentDeny": "暫不傳送",
   "aiConsentAllowOnce": "確認並傳送一次",
@@ -1525,17 +1541,21 @@
   "flatpakLoadErrorDetail": "無法載入 Flatpak 應用程式。請檢查 Flathub 與網路連線後再試一次。",
   "appCardSemantics": "應用程式：{name}",
   "@appCardSemantics": {
-    "placeholders": {
-      "name": {"type": "String"}
+  "placeholders": {
+    "name": {
+      "type": "String"
     }
-  },
+  }
+},
   "diskSize": "磁碟空間占用",
   "diskSizeWithConfidence": "磁碟空間占用（{confidence}）",
   "@diskSizeWithConfidence": {
-    "placeholders": {
-      "confidence": {"type": "String"}
+  "placeholders": {
+    "confidence": {
+      "type": "String"
     }
-  },
+  }
+},
   "accountAiSignInRequired": "請先登入 Meo Account，再使用帳號 AI。",
   "accountAiNoDefaultModel": "此 AI 連線沒有預設模型。請先在設定中選擇模型。",
   "accountAiInvalidConsent": "帳號 AI 服務未傳回有效的授權摘要。",
@@ -1577,10 +1597,12 @@
   "localAiUnavailable": "AI 服務暫時無法使用。",
   "localAiRequestRejected": "AI 服務拒絕了請求（HTTP {status}）。",
   "@localAiRequestRejected": {
-    "placeholders": {
-      "status": {"type": "int"}
+  "placeholders": {
+    "status": {
+      "type": "int"
     }
-  },
+  }
+},
   "aiTestService": "服務",
   "aiTestConnected": "已連線",
   "aiTestUnavailable": "無法使用",
@@ -1589,8 +1611,10 @@
   "aiTestLatency": "延遲",
   "featuredAppSemantics": "精選應用程式：{name}",
   "@featuredAppSemantics": {
-    "placeholders": {
-      "name": {"type": "String"}
+  "placeholders": {
+    "name": {
+      "type": "String"
     }
   }
+}
 }

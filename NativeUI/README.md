@@ -1,58 +1,54 @@
-# OmniStore NativeUI — Phase 0
+# OmniStore NativeUI
 
-This is an isolated Qt/QML preview for the future MeoArch-native OmniStore
-frontend. It is deliberately not packaged, registered as the desktop launcher,
-or connected to the current Flutter client. Those boundaries keep the existing
-Flutter work and its uncommitted changes intact while the native UI is proven.
+`NativeUI/` is the Linux/MeoArch frontend for OmniStore. It uses Qt 6 + QML and the shared `MeoUI 1.0` design-system module. It does **not** reimplement package managers, source plugins, update rules, privilege handling, or AI policy.
 
-## What it can do
+## Ownership boundary
 
-- Render a borderless, dynamic-MeoUI library and storage overview.
-- Read the versioned, zero-argument `/usr/bin/omnistore-apps-export` contract
-  (`org.meo.omnistore.installed-usage`, version 1) with a 45-second deadline
-  and a 4 MiB document limit.
-- Display a controlled unavailable state when that read-only contract is not
-  present or invalid.
+NativeUI owns presentation and local UI state:
 
-## What it intentionally cannot do
+- adaptive MeoUI navigation and pages;
+- search, recommendations, installed-app, updates, task, settings, and details surfaces;
+- explicit confirmation dialogs for install, remove, and update actions;
+- parsing the existing backend's JSON responses and `[CALLBACK]` task stream;
+- cancellation of the frontend-owned backend process.
 
-- Discover, search, detail, install, remove, update, or execute packages.
-- Call the unversioned JSON CLI flags, the loopback daemon, FastAPI, or any
-  privileged package-manager command.
-- Read credentials, contact an account service, or make network requests.
+The existing Python backend remains authoritative for:
 
-The source-bound adapter contract is in
-[`docs/installed-usage-adapter.md`](docs/installed-usage-adapter.md). A
-versioned catalog contract and explicit installation handoff are required
-before this can replace the current Flutter application.
+- source discovery and plugin manifests;
+- package search metadata and variants;
+- install, uninstall, update, launch, and package-manager authentication;
+- unified update behavior and Meo channel policy;
+- configuration validation and storage reporting;
+- any AI or Account flow that requires its existing consent/security contract.
 
-## Language and accessibility
+NativeUI invokes the backend with `QProcess` program/argument arrays. It never assembles a shell command from package metadata.
 
-The native preview has no Account connection or persistent application
-preferences, so its language follows the system locale. It ships Simplified
-Chinese and English; every Chinese system locale resolves to the Simplified
-Chinese catalog, while other locales use English until their own catalog is
-added. `--ui-language=zh_CN` and `--ui-language=en_US` are validation-only
-overrides and never alter the system, Plasma session, or an Account setting.
+## Development build
 
-The navigation controls retain normal keyboard button semantics, and the
-library and discovery surfaces describe their read-only availability rather
-than presenting a disabled package action as a selectable feature.
-
-## Local build
+Use a MeoUI checkout so the native target can validate against the same source used by MeoArch:
 
 ```bash
-cmake -S NativeUI -B /home/shekong/Projects/outputs/omni-store/build/native-ui \
-  -DCMAKE_BUILD_TYPE=Debug
-cmake --build /home/shekong/Projects/outputs/omni-store/build/native-ui --parallel
-ctest --test-dir /home/shekong/Projects/outputs/omni-store/build/native-ui \
-  --output-on-failure
+cmake --fresh -S NativeUI -B ../outputs/omni-store/native-ui-dev \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMEOUI_SOURCE_DIR=/path/to/MeoUI
+cmake --build ../outputs/omni-store/native-ui-dev --parallel
 ```
 
-For a deterministic, non-user-data preview, pass a test fixture:
+For a source-tree run, the bridge resolves `python/main.py` automatically. `OMNISTORE_PYTHON` can select another Python executable. A packaged run prefers `/opt/omnistore/backends/python_server`.
+
+## Linux release bundle
+
+The existing `auto_build.py` remains responsible for the backend and Flutter fallback. Build the MeoArch/Linux bundle through:
 
 ```bash
-QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
-  /home/shekong/Projects/outputs/omni-store/build/native-ui/OmniStoreNativePreview \
-  --fixture tests/fixtures/installed-usage-v1.json --screenshot preview.png
+python NativeUI/build_linux_release.py \
+  --meoui-source /path/to/MeoUI
 ```
+
+The script first assembles the normal Linux release, then overlays `omnistore-native` and a `data/native-ui-v1` marker. It refuses to overlay a bundle missing the existing `frontend`, `backends/python_server`, or project license.
+
+`PKGBUILD` prefers `/opt/omnistore/omnistore-native` when the shared `/usr/lib/qt6/qml/MeoUI/qmldir` module exists. Otherwise it executes the Flutter `frontend`. This fallback is intentional during migration and should not be removed until the native frontend reaches feature parity and end-to-end release validation.
+
+## Current migration boundary
+
+The native frontend currently covers the primary desktop workflow: Home/recommendations, Search, app details, Installed apps, Updates, live Tasks, package source toggles, and read-only backend/config status. Existing Flutter-only Account/AI and less-common repository-management surfaces remain fallback territory until their security and interaction contracts are ported explicitly.

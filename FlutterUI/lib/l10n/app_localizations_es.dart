@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -44,9 +43,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get install => 'Instalar';
-
-  @override
-  String get download => 'Descargar';
 
   @override
   String get open => 'Abrir';
@@ -1476,6 +1472,60 @@ class AppLocalizationsEs extends AppLocalizations {
       'Deslice hacia abajo para actualizar o pruebe otra categoría.';
 
   @override
+  String sourceFilterSemantics(String name) {
+    return 'Filtrar por origen: $name';
+  }
+
+  @override
+  String get meoChannelTitle => 'Canal de actualización de Meo';
+
+  @override
+  String get meoChannelSubtitle =>
+      'Leído desde el orden de repositorios activo de pacman';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta recibe componentes de Meo más recientes antes que Stable. Los paquetes del sistema Arch permanecen en sus repositorios habituales.';
+
+  @override
+  String get meoChannelStableNotice =>
+      'Stable recibe trenes de publicación de MeoArch totalmente probados.';
+
+  @override
+  String repoPriority(String repos) {
+    return 'Prioridad de repositorios: $repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta es opcional y no se recomienda para sistemas críticos. Stable sigue siendo el repositorio de respaldo.';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return 'Stable está configurado, pero $count degradación(es) de paquetes Meo aún requieren revisión.';
+  }
+
+  @override
+  String get reviewDowngrades => 'Revisar degradaciones';
+
+  @override
+  String get switchToStable => 'Cambiar a Stable';
+
+  @override
+  String downgradeNotice(String packages) {
+    return 'Los siguientes paquetes oficiales de Meo necesitan una versión Stable. Los paquetes de Arch y de terceros no se degradarán.\n\n$packages';
+  }
+
+  @override
+  String get channelStable => 'Stable';
+
+  @override
+  String get channelBeta => 'Beta';
+
+  @override
+  String get download => 'Descargar';
+
+  @override
   String get systemAiProviderLabel =>
       'System AI connection (KWallet / Recommended)';
 
@@ -1771,17 +1821,14 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get meoChannelBetaNotice =>
-      'Choose Beta only when you want newer components before Stable. It is not recommended for critical systems; Stable remains available as the fallback.';
-
-  @override
   String meoChannelDowngradePending(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other:
           'Stable is selected, but $count Meo package downgrades still need your review.',
-      one: 'Stable is selected, but 1 Meo package downgrade still needs your review.',
+      one:
+          'Stable is selected, but 1 Meo package downgrade still needs your review.',
     );
     return '$_temp0';
   }
@@ -1799,11 +1846,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String meoChannelDowngradeDialog(String packages) {
     return 'These official Meo packages will move to their Stable versions. Arch and third-party packages won\'t be downgraded.\\n\\n$packages';
-  }
-
-  @override
-  String sourceFilterSemantics(String name) {
-    return 'Filtrar por origen: $name';
   }
 
   @override

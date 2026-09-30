@@ -12,7 +12,6 @@
   "help": "帮助",
   "userAccount": "用户账户",
   "install": "安装",
-  "download": "下载",
   "open": "打开",
   "uninstall": "卸载",
   "launch": "启动",
@@ -349,7 +348,7 @@
   "@aiApiKey": {
     "description": "Label for AI API key input"
   },
-  "aiProxy": "网络代理",
+  "aiProxy": "网络代理（可选）",
   "@aiProxy": {
     "description": "Label for optional AI proxy setting"
   },
@@ -1324,11 +1323,11 @@
   "@githubIntegration": {
     "description": "Description for githubIntegration"
   },
-  "configurePat": "GitHub 访问令牌",
+  "configurePat": "GitHub 访问令牌（可选）",
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "如需使用需登录的 GitHub 功能，请添加 GitHub Classic PAT 或细粒度令牌。",
+  "patHelperText": "请提供 GitHub Classic PAT 或 Fine-grained 令牌。",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
@@ -1388,6 +1387,27 @@
   "@pullToRefreshCategory": {
     "description": "Description for pullToRefreshCategory"
   },
+  "sourceFilterSemantics": "按软件源筛选：{name}",
+  "@sourceFilterSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "meoChannelTitle": "Meo 更新通道",
+  "meoChannelSubtitle": "从当前 pacman 软件源顺序读取",
+  "meoChannelBetaNotice": "Beta 通道可优先体验最新的 Meo 组件。Arch 系统软件包仍保持默认软件源。",
+  "meoChannelStableNotice": "Stable 通道接收经过完整测试的 MeoArch 稳定发布版本。",
+  "repoPriority": "软件源优先级：{repos}",
+  "betaWarningPanel": "Beta 为手动开启选项，不建议在生产环境或关键系统中使用。Stable 仍为后备软件源。",
+  "downgradeReviewPending": "已配置 Stable 通道，但仍有 {count} 个 Meo 软件包降级项需要审查。",
+  "reviewDowngrades": "审查降级项",
+  "switchToStable": "切换至稳定版",
+  "downgradeNotice": "以下官方 Meo 软件包需要降级至稳定版本。Arch 及第三方软件包不会被降级。\n\n{packages}",
+  "channelStable": "稳定版",
+  "channelBeta": "Beta 版",
+  "download": "下载",
   "systemAiProviderLabel": "系统 AI 连接（KWallet / 推荐）",
   "systemAiSharedConnectionLabel": "系统共享连接",
   "systemAiConnectionHelper": "密钥由 Meo Account 从 KWallet 读取，OmniStore 无法读取明文。",
@@ -1429,7 +1449,6 @@
   "secureCredentialUnavailable": "无法访问系统安全凭据库。",
   "signInMeoAccount": "登录 Meo Account",
   "signInMeoAccountDetail": "登录后即可选择账号中加密保存的 AI 连接；API 密钥不会下发到 OmniStore。",
-  "signIn": "登录账号",
   "accountAiLoading": "正在读取账号 AI 连接",
   "accountAiMetadataOnly": "只读取名称、服务商和密钥掩码。",
   "accountAiLoadError": "无法读取账号 AI 连接",
@@ -1472,21 +1491,18 @@
   "meoChannelBetaSummary": "抢先使用较新的 Meo 组件；Arch 系统软件包仍使用其正常软件源。",
   "meoChannelStableSummary": "使用经过完整测试的 MeoArch 发布列车。",
   "meoChannelRepositoryPriority": "软件源优先级：{repositories}",
-  "meoChannelBetaNotice": "只有希望比稳定版更早获得新组件时才选择测试版。关键系统不建议使用；稳定版始终可作为回退来源。",
   "meoChannelDowngradePending": "{count, plural, =1{已选择稳定版，但仍有 1 个 Meo 软件包降级需要你确认。} other{已选择稳定版，但仍有 {count} 个 Meo 软件包降级需要你确认。}}",
   "meoChannelReviewDowngrades": "查看降级项目",
   "meoChannelSwitchToStable": "切换到稳定版",
   "meoChannelRollbackPreviewInvalid": "这份稳定版回退预览已失效。请刷新后重新查看。",
   "meoChannelDowngradeDialog": "以下官方 Meo 软件包将切换到稳定版。不会降级 Arch 或第三方软件包。\\n\\n{packages}",
-  "sourceFilterSemantics": "按软件源筛选：{name}",
-  "@providerLocalSecureKey": {"placeholders": {"provider": {"type": "String"}}},
-  "@sourceFilterSemantics": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
+  "@providerLocalSecureKey": {
+  "placeholders": {
+    "provider": {
+      "type": "String"
     }
-  },
+  }
+},
   "aiConsentTitle": "确认这一次 AI 请求",
   "aiConsentIntro": "请先查看以下内容。你的确认只适用于这一次请求及其指纹。",
   "aiConsentProvider": "服务商",
@@ -1501,12 +1517,12 @@
   "aiConsentUserContent": "你的内容",
   "aiConsentConfirmWithProvider": "我确认以上内容将发送给 {provider}。",
   "@aiConsentConfirmWithProvider": {
-    "placeholders": {
-      "provider": {
-        "type": "String"
-      }
+  "placeholders": {
+    "provider": {
+      "type": "String"
     }
-  },
+  }
+},
   "aiConsentKeyNotExposed": "API 密钥不属于这段提示内容，也不会在这里显示。",
   "aiConsentDeny": "暂不发送",
   "aiConsentAllowOnce": "确认并发送一次",
@@ -1526,17 +1542,21 @@
   "flatpakLoadErrorDetail": "无法加载 Flatpak 应用。请检查 Flathub 和网络连接后重试。",
   "appCardSemantics": "应用：{name}",
   "@appCardSemantics": {
-    "placeholders": {
-      "name": {"type": "String"}
+  "placeholders": {
+    "name": {
+      "type": "String"
     }
-  },
+  }
+},
   "diskSize": "磁盘占用",
   "diskSizeWithConfidence": "磁盘占用（{confidence}）",
   "@diskSizeWithConfidence": {
-    "placeholders": {
-      "confidence": {"type": "String"}
+  "placeholders": {
+    "confidence": {
+      "type": "String"
     }
-  },
+  }
+},
   "accountAiSignInRequired": "请先登录 Meo Account，再使用账号 AI。",
   "accountAiNoDefaultModel": "此 AI 连接没有默认模型。请先在设置中选择模型。",
   "accountAiInvalidConsent": "账号 AI 服务没有返回有效的授权摘要。",
@@ -1578,10 +1598,12 @@
   "localAiUnavailable": "AI 服务暂时不可用。",
   "localAiRequestRejected": "AI 服务拒绝了请求（HTTP {status}）。",
   "@localAiRequestRejected": {
-    "placeholders": {
-      "status": {"type": "int"}
+  "placeholders": {
+    "status": {
+      "type": "int"
     }
-  },
+  }
+},
   "aiTestService": "服务",
   "aiTestConnected": "已连接",
   "aiTestUnavailable": "不可用",
@@ -1590,8 +1612,10 @@
   "aiTestLatency": "延迟",
   "featuredAppSemantics": "精选应用：{name}",
   "@featuredAppSemantics": {
-    "placeholders": {
-      "name": {"type": "String"}
+  "placeholders": {
+    "name": {
+      "type": "String"
     }
   }
+}
 }

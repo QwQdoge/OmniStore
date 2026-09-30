@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -44,9 +43,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get install => '安装';
-
-  @override
-  String get download => '下载';
 
   @override
   String get open => '打开';
@@ -453,7 +449,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiApiKey => 'API 密钥';
 
   @override
-  String get aiProxy => '网络代理';
+  String get aiProxy => '网络代理（可选）';
 
   @override
   String get aiTemperature => '温度（创意度）';
@@ -1284,7 +1280,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hidePassword => '隐藏密码';
 
   @override
-  String get signIn => '登录账号';
+  String get signIn => '登录';
 
   @override
   String get createAccount => '创建 MeoArch 账户';
@@ -1315,11 +1311,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get githubIntegration => 'GitHub 集成';
 
   @override
-  String get configurePat => 'GitHub 访问令牌';
+  String get configurePat => 'GitHub 访问令牌（可选）';
 
   @override
-  String get patHelperText =>
-      '如需使用需登录的 GitHub 功能，请添加 GitHub Classic PAT 或细粒度令牌。';
+  String get patHelperText => '请提供 GitHub Classic PAT 或 Fine-grained 令牌。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 维护，离线时也始终可见';
@@ -1362,6 +1357,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pullToRefreshCategory => '下拉刷新或尝试其他分类。';
+
+  @override
+  String sourceFilterSemantics(String name) {
+    return '按软件源筛选：$name';
+  }
+
+  @override
+  String get meoChannelTitle => 'Meo 更新通道';
+
+  @override
+  String get meoChannelSubtitle => '从当前 pacman 软件源顺序读取';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta 通道可优先体验最新的 Meo 组件。Arch 系统软件包仍保持默认软件源。';
+
+  @override
+  String get meoChannelStableNotice => 'Stable 通道接收经过完整测试的 MeoArch 稳定发布版本。';
+
+  @override
+  String repoPriority(String repos) {
+    return '软件源优先级：$repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta 为手动开启选项，不建议在生产环境或关键系统中使用。Stable 仍为后备软件源。';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return '已配置 Stable 通道，但仍有 $count 个 Meo 软件包降级项需要审查。';
+  }
+
+  @override
+  String get reviewDowngrades => '审查降级项';
+
+  @override
+  String get switchToStable => '切换至稳定版';
+
+  @override
+  String downgradeNotice(String packages) {
+    return '以下官方 Meo 软件包需要降级至稳定版本。Arch 及第三方软件包不会被降级。\n\n$packages';
+  }
+
+  @override
+  String get channelStable => '稳定版';
+
+  @override
+  String get channelBeta => 'Beta 版';
+
+  @override
+  String get download => '下载';
 
   @override
   String get systemAiProviderLabel => '系统 AI 连接（KWallet / 推荐）';
@@ -1626,10 +1673,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get meoChannelBetaNotice =>
-      '只有希望比稳定版更早获得新组件时才选择测试版。关键系统不建议使用；稳定版始终可作为回退来源。';
-
-  @override
   String meoChannelDowngradePending(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1652,11 +1695,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String meoChannelDowngradeDialog(String packages) {
     return '以下官方 Meo 软件包将切换到稳定版。不会降级 Arch 或第三方软件包。\\n\\n$packages';
-  }
-
-  @override
-  String sourceFilterSemantics(String name) {
-    return '按软件源筛选：$name';
   }
 
   @override
@@ -1950,9 +1988,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get install => '安裝';
-
-  @override
-  String get download => '下載';
 
   @override
   String get open => '開啟';
@@ -2359,7 +2394,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get aiApiKey => 'API 金鑰';
 
   @override
-  String get aiProxy => '網路代理';
+  String get aiProxy => '網路代理（可選）';
 
   @override
   String get aiTemperature => '溫度（創意度）';
@@ -3190,7 +3225,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get hidePassword => '隱藏密碼';
 
   @override
-  String get signIn => '登入帳號';
+  String get signIn => '登入';
 
   @override
   String get createAccount => '建立 MeoArch 帳戶';
@@ -3221,11 +3256,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get githubIntegration => 'GitHub 整合';
 
   @override
-  String get configurePat => 'GitHub 存取權杖';
+  String get configurePat => 'GitHub 存取權杖（選用）';
 
   @override
-  String get patHelperText =>
-      '如需使用需要登入的 GitHub 功能，請加入 GitHub Classic PAT 或細粒度權杖。';
+  String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權杖。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 維護，離線時也始終可見';
@@ -3268,6 +3302,58 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get pullToRefreshCategory => '下拉重新整理或嘗試其他分類。';
+
+  @override
+  String sourceFilterSemantics(String name) {
+    return '按軟體源篩選：$name';
+  }
+
+  @override
+  String get meoChannelTitle => 'Meo 更新通道';
+
+  @override
+  String get meoChannelSubtitle => '從目前 pacman 軟體源順序讀取';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta 通道可優先體驗最新的 Meo 元件。Arch 系統套件仍保持預設軟體源。';
+
+  @override
+  String get meoChannelStableNotice => 'Stable 通道接收經過完整測試的 MeoArch 穩定發行版本。';
+
+  @override
+  String repoPriority(String repos) {
+    return '軟體源優先級：$repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta 為手動開啟選項，不建議在生產環境或關鍵系統中使用。Stable 仍為後備軟體源。';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return '已設定 Stable 通道，但仍有 $count 個 Meo 套件降級項需要審查。';
+  }
+
+  @override
+  String get reviewDowngrades => '審查降級項';
+
+  @override
+  String get switchToStable => '切換至穩定版';
+
+  @override
+  String downgradeNotice(String packages) {
+    return '以下官方 Meo 套件需要降級至穩定版本。Arch 及第三方套件不會被降級。\n\n$packages';
+  }
+
+  @override
+  String get channelStable => '穩定版';
+
+  @override
+  String get channelBeta => 'Beta 版';
+
+  @override
+  String get download => '下載';
 
   @override
   String get systemAiProviderLabel => '系統 AI 連線（KWallet / 建議）';
@@ -3532,10 +3618,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get meoChannelBetaNotice =>
-      '只有希望比穩定版更早取得新元件時才選擇測試版。關鍵系統不建議使用；穩定版始終可作為回退軟體來源。';
-
-  @override
   String meoChannelDowngradePending(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3558,11 +3640,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String meoChannelDowngradeDialog(String packages) {
     return '以下官方 Meo 套件將切換至穩定版。Arch 或第三方套件不會降級。\\n\\n$packages';
-  }
-
-  @override
-  String sourceFilterSemantics(String name) {
-    return '按軟體源篩選：$name';
   }
 
   @override

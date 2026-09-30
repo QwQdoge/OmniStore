@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/QwQdoge/OmniStore/blob/main/data/app-manifests/schema.json",
+  "title": "OmniStore app-management manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "match", "storage"],
+  "properties": {
+    "schema": {
+      "const": "org.meo.omnistore.app-manifest"
+    },
+    "version": {
+      "const": 1
+    },
+    "match": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "names": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 256},
+          "uniqueItems": true,
+          "maxItems": 32
+        },
+        "ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 256},
+          "uniqueItems": true,
+          "maxItems": 32
+        },
+        "sources": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 80},
+          "uniqueItems": true,
+          "maxItems": 16
+        }
+      },
+      "anyOf": [
+        {"required": ["names"]},
+        {"required": ["ids"]}
+      ]
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1, "maxLength": 80},
+        "label": {"type": "string", "minLength": 1, "maxLength": 120},
+        "route": {"type": "string", "minLength": 1, "maxLength": 160}
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "config": {"$ref": "#/$defs/pathList"},
+        "cache": {"$ref": "#/$defs/pathList"},
+        "data": {"$ref": "#/$defs/pathList"},
+        "state": {"$ref": "#/$defs/pathList"}
+      }
+    }
+  },
+  "$defs": {
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$"
+    },
+    "pathList": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "oneOf": [
+          {"$ref": "#/$defs/safeRelativePath"},
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["root", "path"],
+            "properties": {
+              "root": {
+                "enum": ["config", "cache", "data", "state", "home"]
+              },
+              "path": {"$ref": "#/$defs/safeRelativePath"}
+            }
+          }
+        ]
+      }
+    }
+  }
+}
