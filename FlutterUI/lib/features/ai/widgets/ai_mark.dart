@@ -14,9 +14,11 @@ class AiMark extends StatelessWidget {
       image: true,
       label: 'AI',
       child: ExcludeSemantics(
-        child: CustomPaint(
-          size: Size.square(size),
-          painter: const _AiMarkPainter(),
+        child: Center(
+          child: SizedBox.square(
+            dimension: size,
+            child: CustomPaint(painter: const _AiMarkPainter()),
+          ),
         ),
       ),
     );
