@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -938,7 +939,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addCustomSourceDesc =>
-      '配置自定义 Flatpak 远程软件源、AppImage 订阅或 GitHub/Bitu 软件源';
+      '配置自定义 Pacman/Flatpak 仓库、AppImage 订阅或 GitHub/Bitu 软件源';
+
+  @override
+  String get pacmanRepoType => 'Pacman 软件仓库';
+
+  @override
+  String get pacmanRepoSafety =>
+      '仅接受 HTTPS 仓库并强制软件包签名。OmniStore 不会下载签名密钥，也不会运行 pacman -Sy；该来源会在下一次完整系统升级时生效。';
 
   @override
   String get sourceType => '软件源类型';
@@ -1355,6 +1363,50 @@ class AppLocalizationsZh extends AppLocalizations {
   String sourceFilterSemantics(String name) {
     return '按软件源筛选：$name';
   }
+
+  @override
+  String get meoChannelTitle => 'Meo 更新通道';
+
+  @override
+  String get meoChannelSubtitle => '从当前 pacman 软件源顺序读取';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta 通道可优先体验最新的 Meo 组件。Arch 系统软件包仍保持默认软件源。';
+
+  @override
+  String get meoChannelStableNotice => 'Stable 通道接收经过完整测试的 MeoArch 稳定发布版本。';
+
+  @override
+  String repoPriority(String repos) {
+    return '软件源优先级：$repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta 为手动开启选项，不建议在生产环境或关键系统中使用。Stable 仍为后备软件源。';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return '已配置 Stable 通道，但仍有 $count 个 Meo 软件包降级项需要审查。';
+  }
+
+  @override
+  String get reviewDowngrades => '审查降级项';
+
+  @override
+  String get switchToStable => '切换至稳定版';
+
+  @override
+  String downgradeNotice(String packages) {
+    return '以下官方 Meo 软件包需要降级至稳定版本。Arch 及第三方软件包不会被降级。\n\n$packages';
+  }
+
+  @override
+  String get channelStable => '稳定版';
+
+  @override
+  String get channelBeta => 'Beta 版';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2291,7 +2343,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get addCustomSourceDesc =>
-      '設定自訂 Flatpak 遠端軟體源、AppImage 訂閱或 GitHub/Bitu 軟體源';
+      '設定自訂 Pacman/Flatpak 倉庫、AppImage 訂閱或 GitHub/Bitu 軟體源';
+
+  @override
+  String get pacmanRepoType => 'Pacman 軟體倉庫';
+
+  @override
+  String get pacmanRepoSafety =>
+      '僅接受 HTTPS 倉庫並強制套件簽章。OmniStore 不會下載簽章金鑰，也不會執行 pacman -Sy；此來源會在下一次完整系統升級時生效。';
 
   @override
   String get sourceType => '軟體源類型';
@@ -2708,4 +2767,48 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String sourceFilterSemantics(String name) {
     return '按軟體源篩選：$name';
   }
+
+  @override
+  String get meoChannelTitle => 'Meo 更新通道';
+
+  @override
+  String get meoChannelSubtitle => '從目前 pacman 軟體源順序讀取';
+
+  @override
+  String get meoChannelBetaNotice =>
+      'Beta 通道可優先體驗最新的 Meo 元件。Arch 系統套件仍保持預設軟體源。';
+
+  @override
+  String get meoChannelStableNotice => 'Stable 通道接收經過完整測試的 MeoArch 穩定發行版本。';
+
+  @override
+  String repoPriority(String repos) {
+    return '軟體源優先級：$repos';
+  }
+
+  @override
+  String get betaWarningPanel =>
+      'Beta 為手動開啟選項，不建議在生產環境或關鍵系統中使用。Stable 仍為後備軟體源。';
+
+  @override
+  String downgradeReviewPending(int count) {
+    return '已設定 Stable 通道，但仍有 $count 個 Meo 套件降級項需要審查。';
+  }
+
+  @override
+  String get reviewDowngrades => '審查降級項';
+
+  @override
+  String get switchToStable => '切換至穩定版';
+
+  @override
+  String downgradeNotice(String packages) {
+    return '以下官方 Meo 套件需要降級至穩定版本。Arch 及第三方套件不會被降級。\n\n$packages';
+  }
+
+  @override
+  String get channelStable => '穩定版';
+
+  @override
+  String get channelBeta => 'Beta 版';
 }

@@ -7,22 +7,26 @@ void main() {
   final projectRoot = Directory.current.parent.path;
 
   test('systemd background unit is oneshot and cannot restart-loop', () {
-    final updateService = File(
+    final packageService = File(
       p.join(
         projectRoot,
-        'FlutterUI',
-        'lib',
-        'services',
-        'update_service.dart',
+        'data',
+        'systemd',
+        'user',
+        'omnistore-update.service',
       ),
     ).readAsStringSync();
+    final packageTimer = File(
+      p.join(projectRoot, 'data', 'systemd', 'user', 'omnistore-update.timer'),
+    ).readAsStringSync();
 
-    expect(updateService, contains('Type=oneshot'));
-    expect(updateService, contains('Restart=no'));
-    expect(updateService, contains('TimeoutStartSec=10min'));
-    expect(updateService, contains('OnUnitInactiveSec='));
-    expect(updateService, isNot(contains('Restart=always')));
-    expect(updateService, isNot(contains('Restart=on-failure')));
+    expect(packageService, contains('Type=oneshot'));
+    expect(packageService, contains('Restart=no'));
+    expect(packageService, contains('TimeoutStartSec=10min'));
+    expect(packageTimer, contains('OnUnitInactiveSec=6h'));
+    expect(packageTimer, contains('Persistent=true'));
+    expect(packageService, isNot(contains('Restart=always')));
+    expect(packageService, isNot(contains('Restart=on-failure')));
   });
 
   test('backend daemon uses a one-shot health timer and lightweight ping', () {
@@ -85,25 +89,31 @@ void main() {
     expect(backendService, isNot(contains('apiKey: apiKey')));
   });
 
-  test('systemd disable path removes installed user unit files', () {
-    final updateService = File(
-      p.join(
-        projectRoot,
-        'FlutterUI',
-        'lib',
-        'services',
-        'update_service.dart',
-      ),
-    ).readAsStringSync();
+  test(
+    'systemd disable path preserves package units and removes only drop-in',
+    () {
+      final updateService = File(
+        p.join(
+          projectRoot,
+          'FlutterUI',
+          'lib',
+          'services',
+          'update_service.dart',
+        ),
+      ).readAsStringSync();
 
-    expect(updateService, contains("'disable'"));
-    expect(updateService, contains("'--now'"));
-    expect(updateService, contains("'omnistore-update.timer'"));
-    expect(updateService, contains("'omnistore-update.service'"));
-    expect(updateService, contains('unitFile.deleteSync()'));
-    expect(updateService, contains("'daemon-reload'"));
-    expect(updateService, contains('removeSystemdBackgroundTimer()'));
-  });
+      expect(updateService, contains("'disable'"));
+      expect(updateService, contains("'--now'"));
+      expect(updateService, contains("'omnistore-update.timer'"));
+      expect(updateService, contains("'omnistore-update.service'"));
+      expect(updateService, contains("'omnistore-update.timer.d'"));
+      expect(updateService, contains("'interval.conf'"));
+      expect(updateService, contains('intervalDropIn.deleteSync()'));
+      expect(updateService, isNot(contains('unitFile.deleteSync()')));
+      expect(updateService, contains("'daemon-reload'"));
+      expect(updateService, contains('removeSystemdBackgroundTimer()'));
+    },
+  );
 
   test('settings systemd switch writes systemd config, not daemon config', () {
     final settingsPage = File(

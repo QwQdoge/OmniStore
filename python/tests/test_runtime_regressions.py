@@ -268,36 +268,6 @@ def test_update_all_passes_graphical_askpass_to_aur_helper(monkeypatch):
     assert aur_call.kwargs["env"]["SUDO_ASKPASS"] == "/usr/bin/ksshaskpass"
 
 
-def test_custom_repo_pacman_conf_preserves_non_utf8_bytes(tmp_path, monkeypatch):
-    conf_path = tmp_path / "pacman.conf"
-    raw_content = b"[custom_repo]\nServer = https://example.org/repo\n# Non-UTF8 byte \x80\xff\xfe comment\n"
-    conf_path.write_bytes(raw_content)
-
-    monkeypatch.setattr("sys.platform", "linux")
-    monkeypatch.setattr("os.path.exists", lambda path: True if path == "/etc/pacman.conf" else False)
-
-    manager = CustomRepoManager(config_manager=None, executor=None)
-
-    orig_open = open
-
-    def mock_open(file, mode="r", *args, **kwargs):
-        if file == "/etc/pacman.conf":
-            return orig_open(conf_path, mode, *args, **kwargs)
-        return orig_open(file, mode, *args, **kwargs)
-
-    monkeypatch.setattr("builtins.open", mock_open)
-
-    repos = asyncio.run(manager.list_pacman_repos())
-    assert len(repos) == 1
-    assert repos[0]["name"] == "custom_repo"
-    assert repos[0]["url"] == "https://example.org/repo"
-
-    with open("/etc/pacman.conf", "r", encoding="utf-8", errors="surrogateescape") as f:
-        read_text = f.read()
-    assert read_text.encode("utf-8", errors="surrogateescape") == raw_content
-    assert "\ufffd" not in read_text
-
-
 def test_custom_repo_config_write_failure_fails_closed(monkeypatch):
     monkeypatch.setattr("sys.platform", "linux")
     monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak" if name == "flatpak" else None)
@@ -364,45 +334,16 @@ def test_remove_flatpak_remote_rollback_on_config_failure(monkeypatch):
     assert any("remote-add" in cmd for cmd in subproc_calls)
 
 
-def test_remove_pacman_repo_rollback_on_config_failure(tmp_path, monkeypatch):
+def test_remove_pacman_repo_config_failure_fails_closed(monkeypatch):
     monkeypatch.setattr("sys.platform", "linux")
-    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/pacman" if name == "pacman" else None)
-    monkeypatch.setattr("os.path.exists", lambda path: True)
-
-    conf_path = tmp_path / "pacman.conf"
-    conf_path.write_bytes(b"[testing]\nServer = https://example.org\n")
-
-    orig_open = open
-
-    def mock_open(file, mode="r", *args, **kwargs):
-        if file == "/etc/pacman.conf":
-            return orig_open(conf_path, mode, *args, **kwargs)
-        return orig_open(file, mode, *args, **kwargs)
-
-    monkeypatch.setattr("builtins.open", mock_open)
-
-    subproc_calls = []
-
-    class MockProcess:
-        returncode = 0
-        async def communicate(self):
-            return b"", b""
-
-    class MockSubprocessContext:
-        def __init__(self, *cmd):
-            subproc_calls.append(list(cmd))
-        async def __aenter__(self):
-            return MockProcess()
-        async def __aexit__(self, exc_type, exc, tb):
-            pass
-
-    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", lambda *cmd, **kwargs: MockSubprocessContext(*cmd))
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/pacman-conf" if name == "pacman-conf" else None)
 
     class FailingConfigManager:
+        data = {"custom_repos": {"pacman": [{"name": "testing", "url": "https://example.org"}]}}
         def get(self, key, default=None):
             return [{"name": "testing", "url": "https://example.org"}]
-        def set(self, key, value):
-            raise IOError("Config disk error")
+        def save(self, value):
+            return False
 
     class MockExecutor:
         async def _ensure_privileged(self, callback):
@@ -414,7 +355,6 @@ def test_remove_pacman_repo_rollback_on_config_failure(tmp_path, monkeypatch):
 
     result = asyncio.run(manager.remove_pacman_repo("testing"))
     assert result is False
-    assert len([cmd for cmd in subproc_calls if cmd[:2] == ["sudo", "cp"]]) == 2
 
 
 def test_unexpected_programming_exceptions_are_re_raised():

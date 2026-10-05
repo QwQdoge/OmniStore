@@ -1,0 +1,15 @@
+{
+  "schema": "org.meo.omnistore.app-manifest",
+  "version": 1,
+  "match": {
+    "names": ["kitty"]
+  },
+  "storage": {
+    "config": [
+      {"root": "config", "path": "kitty"}
+    ],
+    "cache": [
+      {"root": "cache", "path": "kitty"}
+    ]
+  }
+}

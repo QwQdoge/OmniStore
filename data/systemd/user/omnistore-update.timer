@@ -1,0 +1,12 @@
+[Unit]
+Description=Periodically check Meo and OmniStore update sources
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=6h
+Persistent=true
+RandomizedDelaySec=20min
+Unit=omnistore-update.service
+
+[Install]
+WantedBy=timers.target

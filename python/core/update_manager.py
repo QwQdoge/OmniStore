@@ -1,11 +1,16 @@
 import asyncio
+import fcntl
 from core.subprocess_utils import safe_subprocess
 import shutil
 import re
 import inspect
+import os
+import platform
+from pathlib import Path
 from typing import Awaitable, Callable, List, Dict, Optional
 
 from core.sources.utils import PrivilegeManager
+from core.update_state import build_state, normalize_candidate, write_state
 
 class UpdateManager:
     def __init__(self, config=None):
@@ -22,6 +27,23 @@ class UpdateManager:
         package named ``all`` to an individual source can install the wrong
         package or report a false success.
         """
+        lock_file = self._acquire_update_lock()
+        if lock_file is None:
+            await self._emit(
+                callback,
+                "[ERROR] Another system update is already running for this user.",
+            )
+            return False
+        try:
+            return await self._apply_all_updates_locked(callback)
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+            lock_file.close()
+
+    async def _apply_all_updates_locked(
+        self,
+        callback: Optional[Callable[[str], Awaitable[None]]] = None,
+    ) -> bool:
         commands = []
         privilege_env = None
         if shutil.which("pacman"):
@@ -68,7 +90,39 @@ class UpdateManager:
             )
         if succeeded:
             await self._emit(callback, "[INFO] All enabled package sources are up to date.")
+            postflight = await self.postflight_report()
+            try:
+                write_state(build_state([], postflight=postflight))
+            except (OSError, ValueError) as exc:
+                await self._emit(callback, f"[WARNING] Could not persist update status: {exc}")
+            await self._emit_postflight(callback, postflight)
         return succeeded
+
+    @staticmethod
+    def _acquire_update_lock():
+        """Take a per-user, non-blocking lock for the mutating update path."""
+        runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
+        if runtime_dir:
+            lock_root = Path(runtime_dir)
+        else:
+            preferred = Path("/run/user") / str(os.getuid())
+            lock_root = preferred if preferred.is_dir() else Path.home() / ".cache" / "omnistore"
+        try:
+            lock_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+            lock_file = (lock_root / "meo-update.lock").open("a+", encoding="utf-8")
+            os.chmod(lock_file.name, 0o600)
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            lock_file.seek(0)
+            lock_file.truncate()
+            lock_file.write(f"{os.getpid()}\n")
+            lock_file.flush()
+            return lock_file
+        except (OSError, BlockingIOError):
+            try:
+                lock_file.close()
+            except (NameError, OSError):
+                pass
+            return None
 
     async def _run_update_command(self, command, callback, env=None) -> bool:
         try:
@@ -115,10 +169,14 @@ class UpdateManager:
         combined = []
         for res in results:
             if isinstance(res, list):
-                combined.extend(res)
+                combined.extend(normalize_candidate(item) for item in res)
             elif isinstance(res, Exception):
                 print(f"[UpdateManager] Error checking updates: {res}")
 
+        try:
+            write_state(build_state(combined))
+        except (OSError, ValueError) as exc:
+            print(f"[UpdateManager] Could not write shared update state: {exc}")
         return combined
 
     async def check_pacman_updates(self) -> List[Dict]:
@@ -126,9 +184,9 @@ class UpdateManager:
         if not shutil.which("checkupdates"):
             # Fallback to pacman -Qu if checkupdates is not installed
             # Note: pacman -Qu only works if the DB is already synced (pacman -Sy)
-            return await self._run_qu_command(["pacman", "-Qu"], "Native")
+            return await self._run_qu_command(["pacman", "-Qu"], "Pacman")
 
-        return await self._run_qu_command(["checkupdates"], "Native")
+        return await self._run_qu_command(["checkupdates"], "Pacman")
 
     async def check_aur_updates(self) -> List[Dict]:
         """Check for AUR updates using yay -Qua"""
@@ -154,6 +212,9 @@ class UpdateManager:
                     if match:
                         name, old_ver, new_ver = match.groups()
                         updates.append({
+                            "id": name,
+                            "resource_id": f"{source.casefold()}:{name}",
+                            "source_id": source.casefold(),
                             "name": name,
                             "source": source,
                             "current_version": old_ver,
@@ -185,6 +246,8 @@ class UpdateManager:
                     parts = [p.strip() for p in line.split('\t')]
                     if len(parts) >= 4:
                         updates.append({
+                            "resource_id": f"flatpak:{parts[1]}",
+                            "source_id": "flatpak",
                             "name": parts[0],
                             "id": parts[1],
                             "source": "Flatpak",
@@ -195,3 +258,48 @@ class UpdateManager:
                 return updates
         except Exception:
             return []
+
+    async def postflight_report(self) -> Dict:
+        """Report maintenance follow-ups without mutating or restarting anything."""
+        report = {
+            "reboot_required": False,
+            "pacnew_files": [],
+            "failed_units": [],
+        }
+        if platform.system() == "Linux":
+            report["reboot_required"] = not os.path.exists(
+                f"/usr/lib/modules/{platform.release()}/vmlinuz"
+            )
+        if shutil.which("pacdiff"):
+            report["pacnew_files"] = await self._capture_lines(["pacdiff", "-o"], limit=128)
+        if shutil.which("systemctl"):
+            report["failed_units"] = await self._capture_lines(
+                ["systemctl", "--failed", "--no-legend", "--plain"], limit=128
+            )
+        return report
+
+    async def _capture_lines(self, command: List[str], *, limit: int) -> List[str]:
+        try:
+            async with safe_subprocess(
+                *command,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+            ) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=15)
+                if proc.returncode not in (0, 1):
+                    return []
+                return [
+                    line.strip()[:512]
+                    for line in stdout.decode("utf-8", errors="replace").splitlines()
+                    if line.strip()
+                ][:limit]
+        except Exception:
+            return []
+
+    async def _emit_postflight(self, callback, report: Dict) -> None:
+        if report.get("reboot_required"):
+            await self._emit(callback, "[WARNING] A reboot is required to load the installed kernel.")
+        if report.get("pacnew_files"):
+            await self._emit(callback, f"[WARNING] {len(report['pacnew_files'])} pacnew file(s) need review.")
+        if report.get("failed_units"):
+            await self._emit(callback, f"[WARNING] {len(report['failed_units'])} systemd unit(s) are failed.")

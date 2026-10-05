@@ -51,7 +51,11 @@ class CLIArguments(BaseModel):
     daemon: bool = False
     storage_info: bool = False
     meo_channel: Optional[str] = None
+    update_status: bool = False
+    update_plan: bool = False
+    background_update_check: bool = False
     confirm_meo_stable_downgrades: bool = False
+    meo_stable_plan_hash: Optional[str] = Field(default=None, max_length=64)
     json_mode: bool = Field(default=False, alias="json")
     source: str = "AUR"
     url: Optional[str] = None
@@ -138,6 +142,13 @@ class CLIArguments(BaseModel):
             if not re.match(r'^[a-zA-Z0-9._-]+$', v_stripped):
                 raise ValueError("Invalid plugin id")
             return v_stripped
+        return v
+
+    @field_validator("meo_stable_plan_hash")
+    @classmethod
+    def validate_meo_stable_plan_hash(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not re.fullmatch(r"[0-9a-f]{64}", v):
+            raise ValueError("Stable rollback plan hash must be a SHA-256 digest")
         return v
 
     @field_validator("ai_changelog")
@@ -276,10 +287,57 @@ async def handle_cli(backend: OmnistoreBackend, args):
                 payload = await manager.switch_to_beta()
             else:
                 payload = await manager.switch_to_stable(
-                    confirm_downgrades=validated_args.confirm_meo_stable_downgrades
+                    confirm_downgrades=validated_args.confirm_meo_stable_downgrades,
+                    confirmed_plan_hash=validated_args.meo_stable_plan_hash,
                 )
         except MeoChannelError as error:
             payload = {"status": "error", "error": str(error)}
+        sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+
+    async def _handle_update_status():
+        from core.update_state import read_state
+
+        try:
+            payload = read_state()
+        except (OSError, ValueError, json.JSONDecodeError):
+            payload = {
+                "schema": "org.meo.update-state",
+                "version": 1,
+                "status": "unavailable",
+                "count": 0,
+                "sources": {},
+                "updates": [],
+            }
+        sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+
+    async def _handle_update_plan():
+        from core.update_state import canonical_plan
+
+        updates = await backend.updater.check_all_updates()
+        sys.stdout.write(json.dumps(canonical_plan(updates), ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+
+    async def _handle_background_update_check():
+        from core.update_state import read_state
+
+        updates = await backend.updater.check_all_updates()
+        if updates and shutil.which("notify-send"):
+            try:
+                async with safe_subprocess(
+                    "notify-send",
+                    "--app-name=OmniStore",
+                    "--icon=omnistore",
+                    "Updates available",
+                    f"{len(updates)} resource package(s) can be updated. Open OmniStore to review them.",
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=asyncio.subprocess.DEVNULL,
+                ) as process:
+                    await asyncio.wait_for(process.wait(), timeout=10)
+            except (OSError, asyncio.TimeoutError):
+                pass
+        payload = read_state()
         sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n")
         sys.stdout.flush()
 
@@ -322,6 +380,9 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "locate": lambda: backend.run_locate(validated_args.locate, validated_args.source, validated_args.json_mode),
         "storage_info": lambda: backend.run_get_storage_info(validated_args.json_mode),
         "meo_channel": lambda: _handle_meo_channel(validated_args.meo_channel),
+        "update_status": _handle_update_status,
+        "update_plan": _handle_update_plan,
+        "background_update_check": _handle_background_update_check,
     }
 
     for flag, handler in REGISTRY.items():

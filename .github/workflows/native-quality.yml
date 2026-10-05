@@ -1,0 +1,56 @@
+name: NativeUI quality
+
+on:
+  pull_request:
+    paths:
+      - 'NativeUI/**'
+      - 'PKGBUILD'
+      - '.github/workflows/native-quality.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'NativeUI/**'
+      - 'PKGBUILD'
+      - '.github/workflows/native-quality.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Qt 6.8 + MeoUI compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out OmniStore
+        uses: actions/checkout@v6
+
+      - name: Check out MeoUI
+        uses: actions/checkout@v6
+        with:
+          repository: QwQdoge/MeoUI
+          ref: main
+          path: MeoUI
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          modules: 'qtshadertools'
+          cache: true
+
+      - name: Configure NativeUI
+        run: >-
+          cmake --fresh -S NativeUI -B build/native-ui
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DBUILD_TESTING=OFF
+          -DMEOUI_SOURCE_DIR="$GITHUB_WORKSPACE/MeoUI"
+
+      - name: Build NativeUI
+        run: cmake --build build/native-ui --target omnistore-native --parallel 2

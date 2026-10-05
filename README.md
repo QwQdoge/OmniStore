@@ -6,6 +6,12 @@ MeoArch integration support. It manages software-source discovery and package
 operations; a source toggle or manifest is not proof that every runtime action
 is supported.
 
+## License
+
+OmniStore is licensed under the GNU General Public License v3.0 only
+(`GPL-3.0-only`). See [LICENSE](LICENSE). Bundled dependencies and assets retain
+their own upstream licenses.
+
 ## What is in this repository
 
 | Path | Purpose |
@@ -17,6 +23,11 @@ is supported.
 | PKGBUILD | Arch package recipe for the distributable project. |
 | config_schema.json | Versioned configuration schema. |
 | verify_release_exporter_contract.py | Release-bundle contract check for the Meo Settings usage export. |
+
+The packaged update integration is documented in
+[`docs/UNIFIED_UPDATES.md`](docs/UNIFIED_UPDATES.md). `meo-update` is the
+shared, versioned entry point used by OmniStore, Meo Settings, and the
+package-owned systemd user timer.
 
 The checked-out source contains Python daemon-mode/update code in python/main.py
 and python/daemon_main.py. It does not contain a Rust daemon source directory
@@ -31,8 +42,8 @@ python/. Keep code-bound component documentation with its component; a new
 root-wide implementation or deployment contract belongs in docs/ when one is
 needed. The root README and AGENTS files are orientation only.
 
-Already-classified root notes and historical Agent material were moved to the
-OmniStore Obsidian archive with their provenance preserved. Retained source,
+Already-classified root notes and historical Agent material belong in the
+external OmniStore archive with their provenance preserved. Retained source,
 package configuration, build/cache directories, and artifacts are not an
 invitation to add more root-level plans, architecture drafts, audit reports,
 Agent journals, screenshots, logs, or release notes. Any further migration or
@@ -52,29 +63,43 @@ removal needs a separate, recoverable task.
 
 ## Filing rule for new material
 
+Never assume a developer username, home directory, checkout location, or
+Obsidian vault path. Resolve external project records from `$MEO_DOCS_ROOT` and
+generated artifacts from `$MEO_OUTPUT_ROOT`.
+
 | Material | Required location |
 | --- | --- |
 | Flutter, Python, plugin, script, package, and schema source | Their existing owning directory. |
 | Contract tied to code, packaging, or deployment | The owning component documentation directory or docs/. |
-| Plans, audits, decisions, agent journals, and historical reports | /home/shekong/Documents/Obsidian Vault/MeoArch/Projects/omni-store/ |
-| Reproducible build work | /home/shekong/Projects/outputs/omni-store/build/ |
-| Install/ISO handoff material | /home/shekong/Projects/outputs/omni-store/install/ |
-| Validation evidence | /home/shekong/Projects/outputs/omni-store/validation/<UTC-run-id>/ |
-| Release bundles and package candidates | /home/shekong/Projects/outputs/omni-store/packages/ |
-| Disposable generated work | /home/shekong/Projects/outputs/omni-store/tmp/ |
+| Plans, audits, decisions, agent journals, and historical reports | `$MEO_DOCS_ROOT/Projects/omni-store/` |
+| Reproducible build work | `$MEO_OUTPUT_ROOT/omni-store/build/` |
+| Install/ISO handoff material | `$MEO_OUTPUT_ROOT/omni-store/install/` |
+| Validation evidence | `$MEO_OUTPUT_ROOT/omni-store/validation/<UTC-run-id>/` |
+| Release bundles and package candidates | `$MEO_OUTPUT_ROOT/omni-store/packages/` |
+| Disposable generated work | `$MEO_OUTPUT_ROOT/omni-store/tmp/` |
 
 Use a UTC run identifier in the form YYYY-MM-DDTHHMMSSZ-short-label, such as
-2026-08-26T143015Z-linux-smoke. Use the numbered
-folders in the Obsidian project directory: 00-inbox, 01-overview,
-02-decisions, 03-work, 04-validation, and 99-archive.
+2026-08-26T143015Z-linux-smoke. Use the numbered folders in the external
+project directory: 00-inbox, 01-overview, 02-decisions, 03-work,
+04-validation, and 99-archive.
 
-`python3 auto_build.py --all` now puts PyInstaller spec, work, and interim
-binary trees in `outputs/omni-store/build/`, and its assembled bundle in
-`outputs/omni-store/packages/omnistore-<platform>/`. `--output-dir` is the
-explicit assembled-bundle target and takes priority; `--output-root` (or
-`MEO_OUTPUT_ROOT`) changes the shared root, while `--build-dir` changes only
-the PyInstaller build tree. This avoids default `release_bundle`,
-`python/build_cache`, and `python/dist` output in the source checkout.
+`python3 auto_build.py --all` puts PyInstaller spec, work, and interim binary
+trees under the configured OmniStore build root, and its assembled bundle under
+the configured package root. `--output-dir` is the explicit assembled-bundle
+target and takes priority; `--output-root` (or `MEO_OUTPUT_ROOT`) changes the
+shared root, while `--build-dir` changes only the PyInstaller build tree. This
+avoids generated output in the source checkout.
+
+## Meo Account AI release configuration
+
+Every normal Flutter release build must embed the public Account client
+configuration, otherwise the app cannot authenticate or reach the Account AI
+broker. Before `python3 auto_build.py --all`, provide
+`MEO_ACCOUNT_SUPABASE_URL` and `MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY` in the
+build environment. They are public client settings, never an AI provider key,
+service-role key, or user credential. The build deliberately stops if either
+value is missing. An offline developer build may opt out explicitly with
+`--allow-account-disabled`; it must not be presented as Account-capable.
 
 ## Safety and release boundary
 

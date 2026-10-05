@@ -1,0 +1,12 @@
+{
+  "schema": "org.meo.omnistore.app-manifest",
+  "version": 1,
+  "match": {
+    "names": ["foot"]
+  },
+  "storage": {
+    "config": [
+      {"root": "config", "path": "foot"}
+    ]
+  }
+}
