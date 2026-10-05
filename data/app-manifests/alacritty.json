@@ -1,0 +1,12 @@
+{
+  "schema": "org.meo.omnistore.app-manifest",
+  "version": 1,
+  "match": {
+    "names": ["alacritty"]
+  },
+  "storage": {
+    "config": [
+      {"root": "config", "path": "alacritty"}
+    ]
+  }
+}

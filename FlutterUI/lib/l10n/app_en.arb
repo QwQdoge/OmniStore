@@ -768,7 +768,9 @@
   "@addCustomSource": {
     "description": "Button to add a custom source"
   },
-  "addCustomSourceDesc": "Configure custom Flatpak remotes, AppImage feeds, or GitHub/Bitu repos",
+  "addCustomSourceDesc": "Configure custom Pacman/Flatpak repositories, AppImage feeds, or GitHub/Bitu sources",
+  "pacmanRepoType": "Pacman repository",
+  "pacmanRepoSafety": "Only HTTPS repositories with required package signatures are accepted. OmniStore never downloads signing keys or runs pacman -Sy. The source takes effect during the next full system upgrade.",
   "sourceType": "Source Type",
   "@sourceType": {
     "description": "Label for source type"
@@ -1372,5 +1374,38 @@
         "type": "String"
       }
     }
-  }
+  },
+  "meoChannelTitle": "Meo Update Channel",
+  "meoChannelSubtitle": "Read from the active pacman repository order",
+  "meoChannelBetaNotice": "Beta receives newer Meo components before Stable. Arch system packages stay on their normal repositories.",
+  "meoChannelStableNotice": "Stable receives fully tested MeoArch release trains.",
+  "repoPriority": "Repository priority: {repos}",
+  "@repoPriority": {
+    "placeholders": {
+      "repos": {
+        "type": "String"
+      }
+    }
+  },
+  "betaWarningPanel": "Beta is opt-in and is not recommended for critical systems. Stable remains the fallback repository.",
+  "downgradeReviewPending": "{count, plural, =1{Stable is configured, but 1 Meo package downgrade still requires review.} other{Stable is configured, but {count} Meo package downgrades still require review.}}",
+  "@downgradeReviewPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewDowngrades": "Review Downgrades",
+  "switchToStable": "Switch to Stable",
+  "downgradeNotice": "The following official Meo packages need a Stable version. Arch and third-party packages will not be downgraded.\n\n{packages}",
+  "@downgradeNotice": {
+    "placeholders": {
+      "packages": {
+        "type": "String"
+      }
+    }
+  },
+  "channelStable": "Stable",
+  "channelBeta": "Beta"
 }

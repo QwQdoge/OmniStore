@@ -1,56 +1,47 @@
 # OmniStore agent rules
 
-This repository owns the OmniStore Flutter client, Python backend, source
-plugin manifests, package recipe, and release/ISO integration inputs. Preserve
-the source tree and make only evidence-backed capability claims.
+## Start here
 
-## Source ownership and runtime facts
+Work only in the owning layer for the task. Inspect `git status`, the affected files, and the nearest relevant tests/contracts before editing; do not scan the whole repository or read every document by default.
 
-- Flutter work belongs in FlutterUI/. Run Flutter commands from that directory.
-- Python backend and daemon-mode code belong in python/. This checkout has
-  Python daemon-mode code; it does not contain a Rust daemon/Cargo workspace.
-  Do not claim or scaffold a Rust daemon as though one already exists.
-- Source manifests belong in plugins/sources/. A manifest or UI switch alone
-  does not establish search/install/update support.
-- PKGBUILD and release exporter checks are package-source contracts. Keep
-  versioned release bundles separate from an arbitrary development checkout.
+## Ownership
 
-## Documentation and records
+- `FlutterUI/`: Flutter client. Run Flutter commands from this directory.
+- `python/`: Python backend, source/plugin logic, daemon mode, and Python tests.
+- `NativeUI/`: Qt native client surface.
+- `plugins/sources/`: source manifests. A manifest or toggle alone does not prove search/install/update support.
+- `PKGBUILD`, `auto_build.py`, release/export scripts: packaging and release contracts.
+- This repository has Python daemon code; it does **not** contain a Rust daemon/Cargo workspace. Do not invent or describe one.
 
-- Keep code-bound documentation with the owning component or in docs/ for a
-  new root-wide contract.
-- Do not create root-level plan files, architecture drafts, audits, PR journals,
-  agent journals, screenshots, build logs, or temporary notes.
-- Store plans, decisions, audits, and historical reports in
-  /home/shekong/Documents/Obsidian Vault/MeoArch/Projects/omni-store/, using
-  00-inbox, 01-overview, 02-decisions, 03-work, 04-validation, and 99-archive.
-- Already-classified root records and historical Agent material live in the
-  OmniStore Obsidian `99-archive/` with provenance preserved. Retained source,
-  build/cache folders, and artifacts are not routine-cleanup targets.
+Shared OS/Plasma UI belongs in MeoUI or meo-kde rather than being copied here.
 
-## Output rules
+## Validation matrix
 
-New durable output belongs only under
-/home/shekong/Projects/outputs/omni-store/:
+Run the narrowest matching checks first.
 
-| Kind | Path |
-| --- | --- |
-| Reproducible build work | build/ |
-| Install or ISO handoff | install/ |
-| Validation evidence | validation/<UTC-run-id>/ |
-| Release bundles/packages | packages/ |
-| Disposable work | tmp/ |
+- Flutter change:
+  `cd FlutterUI && flutter pub get && flutter analyze && flutter test --reporter expanded`
+  Add `flutter build linux --release` when Linux integration, dependencies, packaging, or release behavior changed.
+- Python/backend change:
+  `cd python && python -m pytest -q`
+  If dependencies changed, also install/check `requirements.txt` in an isolated environment.
+- NativeUI change:
+  mirror `.github/workflows/native-quality.yml`: configure with CMake using a real MeoUI checkout, then build target `omnistore-native`.
+- Plugin/source-manifest change: run the directly related Python/plugin tests and verify the claimed operations actually exist.
+- Packaging/release change: run the repository's existing contract/export checks; a successful package build is not proof of install/update behavior.
 
-Use YYYY-MM-DDTHHMMSSZ-short-label for every validation run. Do not put generated
-output in the repository root.
+Do not broaden validation to unrelated layers unless the change crosses that boundary.
 
-## Security and deployment boundary
+## Claims and security
 
-- Never place user credentials, AI-provider secrets, API keys, or package
-  signing material in source, output, or Obsidian notes.
-- Do not add a local credential broker or account synchronization behavior
-  without explicit, reviewed design and per-use consent.
-- Do not publish packages, alter remote package sources, deploy a service, or
-  modify a live machine/service without explicit user authorization.
-- Avoid git reset, git clean, broad deletion, and unreviewed recursive
-  commands. Preserve dirty work and state validation limits honestly.
+Keep capability claims evidence-based. Distinguish source/static tests, local runtime, package build, real installation, and live service behavior.
+
+Never commit credentials, provider secrets, signing material, service-role keys, tokens, or user data. Do not publish packages, change remote package sources, deploy services, or modify a live machine without explicit authorization.
+
+## Files and generated output
+
+Keep source and code-bound contracts in their owning directories. Do not create loose plans, audits, screenshots, logs, or journals in the repository root.
+
+Use `$MEO_DOCS_ROOT/Projects/omni-store/` for project records. Existing tools/CI may use their normal ephemeral build/cache directories; retained logs, evidence, install handoffs, and packages belong under `$MEO_OUTPUT_ROOT/omni-store/{build,install,validation,packages,tmp}/`. If these variables are unset, do not invent machine-specific absolute paths.
+
+Preserve unrelated dirty work. Never use `git reset`, `git clean`, or broad deletion as routine cleanup.

@@ -5,6 +5,7 @@ import os
 import sys
 import re
 import shutil
+import tempfile
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 from pathlib import Path
@@ -165,19 +166,37 @@ class GitHubSource(UnifiedSource):
                     if dl_resp.status != 200:
                         if callback: await callback(f"[ERROR] Download failed: HTTP {dl_resp.status}")
                         return False
-                    total = int(dl_resp.headers.get('content-length', 0))
+                    try:
+                        total = int(dl_resp.headers.get('content-length', 0))
+                    except (TypeError, ValueError):
+                        total = 0
                     downloaded = 0
-                    with open(dest_path, 'wb') as f:
-                        async for chunk in dl_resp.content.iter_chunked(8192):
-                            f.write(chunk)
-                            downloaded += len(chunk)
-                            if total > 0 and callback:
-                                await callback(f"[PROGRESS] {int(downloaded/total*100)}")
+                    fd, tmp_path_str = tempfile.mkstemp(
+                        dir=str(install_dir), prefix=".tmp_", suffix="_" + asset_name
+                    )
+                    tmp_path = Path(tmp_path_str)
+                    try:
+                        with os.fdopen(fd, 'wb') as f:
+                            async for chunk in dl_resp.content.iter_chunked(8192):
+                                f.write(chunk)
+                                downloaded += len(chunk)
+                                if total > 0 and callback:
+                                    await callback(f"[PROGRESS] {int(downloaded/total*100)}")
+                            f.flush()
+                            os.fsync(f.fileno())
+                            if os.name != "nt":
+                                os.fchmod(f.fileno(), 0o755)
+                        tmp_path.replace(dest_path)
+                    finally:
+                        if tmp_path.exists():
+                            tmp_path.unlink(missing_ok=True)
 
+            # Local copies still need an executable mode. Network downloads set
+            # the mode on the temporary file before replacement on POSIX.
             dest_path.chmod(0o755)
             if callback: await callback(f"[INFO] Installed to {dest_path}")
             return True
-        except Exception as e:
+        except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
             if callback: await callback(f"[ERROR] GitHub installation failed: {e}")
             return False
 

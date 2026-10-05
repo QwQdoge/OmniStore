@@ -32,13 +32,16 @@ integration boundary in the project validation record.
 
 ## Filing rule
 
+Never assume a developer username, home directory, checkout location, or
+Obsidian vault path.
+
 - Client source, tests, and assets stay in their existing folders here.
 - A client contract tied to source belongs in this component's documentation
   tree; project-wide contracts belong in the repository docs/ area when added.
 - Plans, audits, decisions, and agent journals go to
-  /home/shekong/Documents/Obsidian Vault/MeoArch/Projects/omni-store/.
+  `$MEO_DOCS_ROOT/Projects/omni-store/`.
 - New build work, installs, validation evidence, packages, and temporary output
-  go under /home/shekong/Projects/outputs/omni-store/ in build/, install/,
+  go under `$MEO_OUTPUT_ROOT/omni-store/` in build/, install/,
   validation/<UTC-run-id>/, packages/, and tmp/ respectively.
 
 Use UTC identifiers in the form YYYY-MM-DDTHHMMSSZ-short-label for validation

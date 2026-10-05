@@ -1089,6 +1089,7 @@ class BackendService {
   Future<Map<String, dynamic>> setMeoChannel(
     String channel, {
     bool confirmStableDowngrades = false,
+    String? stablePlanHash,
   }) async {
     if (channel != "stable" && channel != "beta") {
       throw ArgumentError("Unknown Meo channel");
@@ -1097,6 +1098,9 @@ class BackendService {
     final arguments = <String>["--meo-channel", channel];
     if (confirmStableDowngrades) {
       arguments.add("--confirm-meo-stable-downgrades");
+      if (stablePlanHash != null) {
+        arguments.addAll(["--meo-stable-plan-hash", stablePlanHash]);
+      }
     }
     arguments.add("--json");
     final result = await _safeRun(
@@ -1543,6 +1547,23 @@ class BackendService {
       return res?.exitCode == 0;
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<Map<String, dynamic>> listCustomRepos() async {
+    if (kIsWeb) return {};
+    try {
+      final result = await _safeRun([
+        "--list-custom-repos",
+        "--json",
+      ], timeout: const Duration(seconds: 30));
+      if (result == null || result.exitCode != 0) return {};
+      final decoded = _safeJsonDecode(result.stdout.toString());
+      return decoded is Map
+          ? Map<String, dynamic>.from(decoded)
+          : <String, dynamic>{};
+    } catch (_) {
+      return {};
     }
   }
 
