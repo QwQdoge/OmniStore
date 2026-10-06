@@ -10,7 +10,7 @@ set(QT_QML_GENERATE_QMLLS_INI ON)
 # builds deliberately report "development" rather than a stale product version.
 set(OMNISTORE_RELEASE_VERSION "development" CACHE STRING "OmniStore release version shown by the native client")
 
-find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
+find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Network Qml Quick QuickControls2)
 qt_standard_project_setup(REQUIRES 6.6)
 
 # Development builds can point at a MeoUI checkout. Production MeoArch builds
@@ -29,6 +29,8 @@ qt_add_executable(omnistore-native
     app/repositorybridge.h
     app/systembridge.cpp
     app/systembridge.h
+    app/transactionclient.cpp
+    app/transactionclient.h
 )
 
 qt_add_qml_module(omnistore-native
@@ -55,6 +57,7 @@ qt_add_qml_module(omnistore-native
 target_link_libraries(omnistore-native PRIVATE
     Qt6::Core
     Qt6::Gui
+    Qt6::Network
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
