@@ -2,9 +2,9 @@
 """Build the MeoUI Linux frontend and overlay it onto the normal OmniStore bundle.
 
 The existing auto_build.py remains authoritative for the frozen Python backend,
-source manifests, license, update units, and Flutter fallback.  This script is
-Linux-only: it invokes that existing release assembly first, then adds the
-native Qt/QML executable without changing Windows, macOS, or APK packaging.
+source manifests, license, update units, and Flutter fallback during migration.
+This script is Linux-only: it invokes that existing release assembly first, then
+adds the native Qt/QML executable without changing other platform packaging.
 """
 
 from __future__ import annotations
@@ -78,7 +78,7 @@ def build_existing_bundle(args: argparse.Namespace, build_root: Path, bundle: Pa
     run(command, cwd=REPO_ROOT)
 
 
-def build_native(build_root: Path, meoui_source: Path) -> Path:
+def build_native(build_root: Path, meoui_source: Path, release_version: str) -> Path:
     if not meoui_source or not (meoui_source / "CMakeLists.txt").is_file():
         raise RuntimeError(
             "MeoUI source checkout is required for the native release build. "
@@ -96,6 +96,7 @@ def build_native(build_root: Path, meoui_source: Path) -> Path:
         str(native_build),
         "-DCMAKE_BUILD_TYPE=Release",
         f"-DMEOUI_SOURCE_DIR={meoui_source}",
+        f"-DOMNISTORE_RELEASE_VERSION={release_version}",
     ])
     run([
         "cmake",
@@ -131,7 +132,7 @@ def overlay_native(bundle: Path, binary: Path) -> None:
     marker = bundle / "data" / "native-ui-v1"
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text(
-        "OmniStore NativeUI contract: Qt/QML + MeoUI frontend; Flutter frontend retained as fallback.\n",
+        "OmniStore NativeUI contract: Qt/QML + MeoUI frontend; Flutter frontend retained only during migration.\n",
         encoding="utf-8",
     )
     print(f"[native-release] native frontend: {destination}")
@@ -145,6 +146,11 @@ def main() -> int:
     parser.add_argument("--output-dir")
     parser.add_argument("--build-dir")
     parser.add_argument("--meoui-source")
+    parser.add_argument(
+        "--version",
+        default=os.environ.get("OMNISTORE_VERSION", "development"),
+        help="release-visible OmniStore version injected into the native client",
+    )
     parser.add_argument(
         "--allow-account-disabled",
         action="store_true",
@@ -163,7 +169,7 @@ def main() -> int:
 
     if not args.skip_base_bundle:
         build_existing_bundle(args, build_root, bundle)
-    binary = build_native(build_root, meoui_source)
+    binary = build_native(build_root, meoui_source, args.version)
     overlay_native(bundle, binary)
     return 0
 
