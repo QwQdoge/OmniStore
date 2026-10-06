@@ -43,12 +43,19 @@ Window {
         tasksSheet.isOpen = true
     }
 
-    Component.onCompleted: syncDynamicColor()
+    function refreshPackageState() {
+        backend.loadInstalled(true)
+        backend.loadUpdates()
+    }
 
-    // Temporary release fail-safe until mutating work is owned by the
-    // persistent OmniStore transaction service. BackendBridge currently owns
-    // its child process, so allowing the window to close while it is busy can
-    // terminate an install/update in its destructor.
+    Component.onCompleted: {
+        syncDynamicColor()
+        transactions.reconnect()
+    }
+
+    // Direct read/legacy bridge work is still process-owned, so avoid tearing
+    // that helper down mid-request. Package install/remove/update work is owned
+    // by the background transaction service and does NOT block window closure.
     onClosing: function(close) {
         if (!backend.busy)
             return
@@ -60,6 +67,14 @@ Window {
         target: MaterialColors
         function onSchemeChanged() {
             root.syncDynamicColor()
+        }
+    }
+
+    Connections {
+        target: transactions
+        function onOperationFinished(action, success) {
+            if (success)
+                root.refreshPackageState()
         }
     }
 
@@ -87,10 +102,10 @@ Window {
     Component {
         id: tasksAction
         MeoIconButton {
-            icon.name: backend.busy ? "sync" : "download"
-            type: backend.busy ? "filled" : "tonal"
+            icon.name: transactions.busy ? "sync" : "download"
+            type: transactions.busy ? "filled" : "tonal"
             visible: !root.overlaySheetOpen
-            Accessible.name: qsTr("Tasks")
+            Accessible.name: transactions.busy ? qsTr("Active package task") : qsTr("Tasks")
             onClicked: root.openTasks()
         }
     }
@@ -208,8 +223,8 @@ Window {
     MeoDialog {
         id: closeBlockedDialog
         parent: Overlay.overlay
-        title: qsTr("OmniStore is still working")
-        message: qsTr("Keep OmniStore open until the current operation finishes. Closing it now could interrupt the package backend.")
+        title: qsTr("OmniStore is still loading")
+        message: qsTr("Wait for the current direct backend request to finish before closing this window. Package transactions run separately and are safe to leave running in the background.")
         icon: "hourglass_top"
         confirmText: qsTr("Keep open")
         showRejectButton: false
