@@ -18,20 +18,42 @@ Item {
         }]
     }
 
+    function pluginSubtitle(plugin) {
+        const parts = []
+        if (!plugin.available)
+            parts.push(qsTr("Unavailable on this system"))
+        else if (plugin.trusted)
+            parts.push(qsTr("Trusted source"))
+        else if (plugin.requires_review)
+            parts.push(qsTr("Requires review"))
+        else
+            parts.push(qsTr("Available"))
+
+        const capabilities = Array.isArray(plugin.capabilities) ? plugin.capabilities : []
+        if (capabilities.length > 0)
+            parts.push(capabilities.slice(0, 4).join(" · "))
+        if (String(plugin.error || "").length > 0)
+            parts.push(String(plugin.error))
+        return parts.join("  •  ")
+    }
+
     function pluginRows() {
         const rows = []
         for (let index = 0; index < backend.plugins.length; ++index) {
             const plugin = backend.plugins[index]
             const pluginId = String(plugin.id || "")
+            const available = !!plugin.available
             rows.push({
                 "title": String(plugin.name || plugin.id || qsTr("Source")),
-                "subtitle": String(plugin.description || plugin.id || ""),
-                "leadingIcon": plugin.enabled ? "extension" : "extension_off",
-                "trailingKind": "switch",
-                "checked": !!plugin.enabled,
-                "enabled": !backend.busy && pluginId.length > 0,
+                "subtitle": root.pluginSubtitle(plugin),
+                "leadingIcon": !available ? "block" : (plugin.enabled ? "extension" : "extension_off"),
+                "trailingKind": available ? "switch" : "none",
+                "checked": available && !!plugin.enabled,
+                "enabled": available && !backend.busy && pluginId.length > 0,
+                "interactive": available,
                 "onToggled": function(value) {
-                    backend.setPluginEnabled(pluginId, value)
+                    if (available)
+                        backend.setPluginEnabled(pluginId, value)
                 }
             })
         }
@@ -117,8 +139,8 @@ Item {
 
             MeoSettingsGroup {
                 Layout.fillWidth: true
-                title: qsTr("Package sources")
-                subtitle: qsTr("These switches modify the existing OmniStore source-plugin registry, not a separate NativeUI setting.")
+                title: qsTr("Software sources")
+                subtitle: qsTr("Availability, trust and capabilities come from the detected OmniStore source registry for this system.")
                 model: root.pluginRows()
             }
 
