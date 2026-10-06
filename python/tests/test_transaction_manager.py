@@ -68,8 +68,9 @@ def test_daemon_protocol_allows_only_named_transaction_actions():
     for action in ("task.submit", "task.get", "task.list"):
         assert DaemonRequest(action=action)
 
-    with pytest.raises(Exception):
-        DaemonRequest(action="task.exec")
+    for forbidden in ("task.exec", "run_install", "run_uninstall", "run_update"):
+        with pytest.raises(Exception):
+            DaemonRequest(action=forbidden)
 
 
 def test_transaction_manager_rejects_unknown_kinds():
