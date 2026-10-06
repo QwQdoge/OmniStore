@@ -2,8 +2,6 @@ import importlib.util
 from pathlib import Path
 import re
 
-import pytest
-
 
 ROOT = Path(__file__).resolve().parents[2]
 NATIVE = ROOT / "NativeUI"
@@ -34,15 +32,11 @@ def test_native_ui_uses_meoui_adaptive_shell():
     main = read(QML_ROOT / "Main.qml")
     assert "import MeoUI 1.0" in main
     assert "MeoAppLayout" in main
-    assert all(label in main for label in (
-        'qsTr("Home")',
-        'qsTr("Search")',
-        'qsTr("Updates")',
-        'qsTr("Installed")',
-        'qsTr("Tasks")',
-        'qsTr("Settings")',
-    ))
-    assert "MeoSideSheet" in main
+    for primary in ('"home"', '"explore"', '"installed"', '"updates"', '"settings"'):
+        assert primary in main
+    assert 'id: searchSheet' in main
+    assert 'id: tasksSheet' in main
+    assert "topAppBarActions: [searchAction, tasksAction]" in main
 
 
 def test_native_ui_requires_shared_kde_dynamic_color_contract():
@@ -83,7 +77,7 @@ def test_backend_bridge_never_uses_a_shell_for_package_actions():
     assert "QStringList arguments" in bridge
 
 
-def test_native_actions_reuse_existing_backend_cli_contract():
+def test_read_side_native_actions_reuse_existing_backend_cli_contract():
     bridge = read(NATIVE / "app" / "backendbridge.cpp")
     for flag in (
         "--recommend",
@@ -94,9 +88,6 @@ def test_native_actions_reuse_existing_backend_cli_contract():
         "--get-config",
         "--storage-info",
         "--details",
-        "--install",
-        "--remove",
-        "--update",
         "--launch",
         "--set-plugin-enabled",
         "--json",
@@ -104,19 +95,45 @@ def test_native_actions_reuse_existing_backend_cli_contract():
         assert flag in bridge
 
 
-def test_mutating_ui_actions_have_explicit_confirmation_surfaces():
+def test_package_mutations_use_persistent_transaction_client_with_confirmation():
     app_row = read(QML_ROOT / "components" / "AppRow.qml")
     update_row = read(QML_ROOT / "components" / "UpdateRow.qml")
     details = read(QML_ROOT / "components" / "AppDetailsPane.qml")
     updates = read(QML_ROOT / "pages" / "UpdatesPage.qml")
+    main_cpp = read(NATIVE / "app" / "main.cpp")
+    client = read(NATIVE / "app" / "transactionclient.cpp")
 
     assert app_row.count("MeoDialog") >= 2
-    assert "onConfirmed: backend.installApp" in app_row
-    assert "onConfirmed: backend.removeApp" in app_row
-    assert "onConfirmed: backend.updateApp" in update_row
-    assert "onConfirmed: backend.installApp" in details
-    assert "onConfirmed: backend.removeApp" in details
-    assert "onConfirmed: backend.updateAll" in updates
+    assert "onConfirmed: transactions.installApp" in app_row
+    assert "onConfirmed: transactions.removeApp" in app_row
+    assert "onConfirmed: transactions.updateApp" in update_row
+    assert "onConfirmed: transactions.installApp" in details
+    assert "onConfirmed: transactions.removeApp" in details
+    assert "onConfirmed: transactions.updateAll" in updates
+    assert 'setContextProperty(QStringLiteral("transactions"), &transactions)' in main_cpp
+    assert 'QStringLiteral("task.submit")' in client
+    assert 'QStringLiteral("task.get")' in client
+    assert 'QStringLiteral("task.list")' in client
+
+    # Release QML must no longer own package mutation through BackendBridge.
+    qml_text = "\n".join(read(path) for path in QML_ROOT.rglob("*.qml"))
+    for forbidden in (
+        "backend.installApp(",
+        "backend.removeApp(",
+        "backend.updateApp(",
+        "backend.updateAll(",
+    ):
+        assert forbidden not in qml_text
+
+
+def test_tasks_surface_is_reconnectable_and_does_not_fake_safe_cancellation():
+    tasks = read(QML_ROOT / "pages" / "TasksPage.qml")
+    assert "transactions.reconnect()" in tasks
+    assert "transactions.taskId" in tasks
+    assert "transactions.progress" in tasks
+    assert "transactions.log" in tasks
+    assert "Closing OmniStore is not cancellation" in tasks
+    assert "backend.cancelOperation()" not in tasks
 
 
 def test_settings_groups_use_meoui_data_models_not_free_form_rows():
@@ -147,7 +164,6 @@ def test_details_only_accept_backend_payload_for_current_app():
     assert "selectedMatches ? backend.selectedApp : fallbackApp" in details
 
 
-
 def test_native_system_status_panel_uses_existing_backend_contracts():
     cmake = read(NATIVE / "CMakeLists.txt")
     main = read(NATIVE / "app" / "main.cpp")
@@ -166,16 +182,11 @@ def test_native_system_status_panel_uses_existing_backend_contracts():
     ):
         assert action in panel
 
-    # Every mutating system action is gated by a visible Meo confirmation.
     assert panel.count("MeoDialog") >= 4
     assert "root.validStablePlan()" in panel
     assert "systemBridge.clearStablePreview()" in panel
     for forbidden in ("sudo ", "pacman ", "makepkg ", "/bin/sh", "/bin/bash"):
         assert forbidden not in panel
-
-def test_native_ui_keeps_flutter_as_fallback_during_migration():
-    assert (ROOT / "FlutterUI" / "pubspec.yaml").is_file()
-    assert (ROOT / "FlutterUI" / "lib").is_dir()
 
 
 def test_native_ui_does_not_duplicate_backend_package_logic():
@@ -190,40 +201,36 @@ def test_native_ui_does_not_duplicate_backend_package_logic():
         assert forbidden not in native_text
 
 
-def test_linux_overlay_requires_existing_backend_and_fallback(tmp_path):
+def test_linux_release_assembly_is_native_only(tmp_path):
     bundle = tmp_path / "bundle"
+    backend = tmp_path / "python_server"
+    binary = tmp_path / "omnistore-native"
+    backend.write_bytes(b"backend")
+    binary.write_bytes(b"native")
+
+    # Prove stale migration output is actively removed rather than silently
+    # becoming a hidden second frontend.
     bundle.mkdir()
-    binary = tmp_path / "omnistore-native"
-    binary.write_bytes(b"native")
-
-    with pytest.raises(RuntimeError, match="incomplete Linux release bundle"):
-        native_release.overlay_native(bundle, binary)
-
-
-def test_linux_overlay_adds_native_without_removing_flutter(tmp_path):
-    bundle = tmp_path / "bundle"
-    (bundle / "backends").mkdir(parents=True)
     (bundle / "frontend").write_bytes(b"flutter")
-    (bundle / "backends" / "python_server").write_bytes(b"backend")
-    (bundle / "LICENSE").write_text("GPL\n", encoding="utf-8")
-    binary = tmp_path / "omnistore-native"
-    binary.write_bytes(b"native")
 
-    native_release.overlay_native(bundle, binary)
+    native_release.assemble_native_bundle(
+        bundle,
+        backend=backend,
+        native_binary=binary,
+        release_version="test-version",
+    )
 
     assert (bundle / "omnistore-native").read_bytes() == b"native"
-    assert (bundle / "frontend").read_bytes() == b"flutter"
     assert (bundle / "backends" / "python_server").read_bytes() == b"backend"
-    assert (bundle / "data" / "native-ui-v1").is_file()
+    assert not (bundle / "frontend").exists()
+    assert (bundle / "data" / "native-ui-v2").is_file()
+    assert (bundle / "data" / "systemd" / "user" / "omnistore-task.service").is_file()
 
 
-def test_arch_package_prefers_native_but_keeps_old_release_compatible():
-    pkgbuild = read(ROOT / "PKGBUILD")
-    assert "meoui-qml: preferred native Qt/QML frontend on MeoArch" in pkgbuild
-    assert "[ -x /opt/omnistore/omnistore-native ]" in pkgbuild
-    assert "[ -f /usr/lib/qt6/qml/MeoUI/qmldir ]" in pkgbuild
-    assert "exec /opt/omnistore/omnistore-native" in pkgbuild
-    assert "exec /opt/omnistore/frontend" in pkgbuild
-    # Current published bundles remain valid until a new native asset exists.
-    release_check = pkgbuild.split("_release_source_dir()", 1)[1].split("prepare()", 1)[0]
-    assert "omnistore-native" not in release_check
+def test_native_release_builder_does_not_build_flutter():
+    release = read(NATIVE / "build_linux_release.py")
+    assert "build_native(" in release
+    assert "build_backend(" in release
+    assert "assemble_native_bundle(" in release
+    assert "build_flutter(" not in release
+    assert "FlutterUI" not in release
