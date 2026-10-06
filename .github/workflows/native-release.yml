@@ -26,6 +26,7 @@ on:
       - main
     paths:
       - '.github/workflows/native-release.yml'
+      - 'NativeUI/build_linux_release.py'
 
 permissions:
   contents: write
