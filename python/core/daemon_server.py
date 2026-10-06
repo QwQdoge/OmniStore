@@ -44,9 +44,12 @@ class DaemonRequest(BaseModel):
     @field_validator("action")
     @classmethod
     def validate_action(cls, v):
+        # Package mutation entry points are intentionally absent here. A daemon
+        # client must use task.submit so ownership transfers to TransactionManager
+        # before the client receives a response. The standalone CLI can still
+        # call run_install/run_uninstall/run_update directly when explicitly used.
         ALLOWED_ACTIONS = {
-            "run_search", "run_install", "run_uninstall", "run_update",
-            "run_check_updates", "run_recommendations", "run_app_details",
+            "run_search", "run_check_updates", "run_recommendations", "run_app_details",
             "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
             "run_remove_custom_repo", "run_launch", "run_locate",
             "run_list_installed_sources", "run_list_plugins",
@@ -83,9 +86,9 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
     Murphy-proof daemon client handler.
     Ensures per-client isolation, payload limits, and robust error recovery.
 
-    Package mutations should use task.submit/task.get/task.list. Those actions
-    hand ownership to TransactionManager before returning, so a disconnected UI
-    does not implicitly cancel the package transaction.
+    Package mutations use task.submit/task.get/task.list. Those actions hand
+    ownership to TransactionManager before returning, so a disconnected UI does
+    not implicitly cancel the package transaction.
     """
     client_addr = writer.get_extra_info('peername')
     logging.debug(f"New daemon client connected: {client_addr}")
