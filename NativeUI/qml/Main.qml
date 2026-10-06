@@ -53,15 +53,9 @@ Window {
         transactions.reconnect()
     }
 
-    // Direct read/legacy bridge work is still process-owned, so avoid tearing
-    // that helper down mid-request. Package install/remove/update work is owned
-    // by the background transaction service and does NOT block window closure.
-    onClosing: function(close) {
-        if (!backend.busy)
-            return
-        close.accepted = false
-        closeBlockedDialog.open()
-    }
+    // Package mutations are owned by omnistore-task.service rather than this
+    // Window. Closing the UI must therefore never cancel an install, remove or
+    // update operation; reopening OmniStore reconnects through task.list.
 
     Connections {
         target: MaterialColors
@@ -218,15 +212,5 @@ Window {
                 tasksSheet.isOpen = false
             }
         }
-    }
-
-    MeoDialog {
-        id: closeBlockedDialog
-        parent: Overlay.overlay
-        title: qsTr("OmniStore is still loading")
-        message: qsTr("Wait for the current direct backend request to finish before closing this window. Package transactions run separately and are safe to leave running in the background.")
-        icon: "hourglass_top"
-        confirmText: qsTr("Keep open")
-        showRejectButton: false
     }
 }
