@@ -98,7 +98,7 @@ MeoCard {
                 text: qsTr("Remove")
                 type: "outlined"
                 icon.name: "delete"
-                enabled: !backend.busy
+                enabled: !backend.busy && !transactions.busy
                 onClicked: removeDialog.open()
             }
             MeoButton {
@@ -106,7 +106,7 @@ MeoCard {
                 text: qsTr("Install")
                 type: "filled"
                 icon.name: "download"
-                enabled: !backend.busy
+                enabled: !backend.busy && !transactions.busy && transactions.available
                 onClicked: installDialog.open()
             }
             MeoIconButton {
@@ -122,21 +122,21 @@ MeoCard {
         id: installDialog
         parent: Overlay.overlay
         title: qsTr("Install %1?").arg(root.appName())
-        message: qsTr("OmniStore will ask the existing %1 backend to install this app. Package permissions and authentication remain handled by the current backend.").arg(root.sourceName())
+        message: qsTr("OmniStore will hand this install to its background transaction service using %1. You can close the store after the task starts.").arg(root.sourceName())
         icon: "download"
         confirmText: qsTr("Install")
         cancelText: qsTr("Cancel")
-        onConfirmed: backend.installApp(root.appId(), root.sourceName(), root.installUrl())
+        onConfirmed: transactions.installApp(root.appId(), root.sourceName(), root.installUrl())
     }
 
     MeoDialog {
         id: removeDialog
         parent: Overlay.overlay
         title: qsTr("Remove %1?").arg(root.appName())
-        message: qsTr("This uses OmniStore's existing uninstall path for %1. Review the task output if the package manager asks for authentication or reports dependent packages.").arg(root.sourceName())
+        message: qsTr("OmniStore will hand this uninstall to its background transaction service using %1. Package-manager safeguards remain unchanged.").arg(root.sourceName())
         icon: "delete"
         confirmText: qsTr("Remove")
         cancelText: qsTr("Cancel")
-        onConfirmed: backend.removeApp(root.appId(), root.sourceName())
+        onConfirmed: transactions.removeApp(root.appId(), root.sourceName())
     }
 }
