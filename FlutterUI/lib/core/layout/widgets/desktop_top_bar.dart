@@ -8,8 +8,10 @@ class DesktopTopBar extends StatelessWidget {
     required this.title,
     required this.showSearch,
     required this.onSearch,
+    this.showNavigation = false,
   });
 
+  final bool showNavigation;
   final String title;
   final bool showSearch;
   final VoidCallback onSearch;
@@ -31,6 +33,14 @@ class DesktopTopBar extends StatelessWidget {
       ),
       child: Row(
         children: [
+          if (showNavigation)
+            Builder(
+              builder: (context) => IconButton(
+                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(

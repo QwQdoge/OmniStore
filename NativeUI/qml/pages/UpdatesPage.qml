@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MeoUI 1.0
+import "../components"
 
 Item {
     id: root

@@ -62,6 +62,9 @@ target_compile_definitions(omnistore-native PRIVATE
 
 if(TARGET meoui_module)
     add_dependencies(omnistore-native meoui_module)
+    if(TARGET meoui_moduleplugin)
+        add_dependencies(omnistore-native meoui_moduleplugin)
+    endif()
     target_compile_definitions(omnistore-native PRIVATE
         OMNISTORE_MEOUI_BUILD_IMPORT_PATH="${CMAKE_BINARY_DIR}/meoui"
     )

@@ -4,6 +4,8 @@ import QtQuick
 import QtQuick.Controls
 import MeoUI 1.0
 import Meo.System 1.0
+import "components"
+import "pages"
 
 Window {
     id: root
@@ -56,14 +58,15 @@ Window {
         anchors.fill: parent
         currentIndex: root.navigationIndex
         navigationModel: [
-            { "label": qsTr("Home"), "icon": "home" },
-            { "label": qsTr("Search"), "icon": "search" },
-            { "label": qsTr("Updates"), "icon": "system_update" },
-            { "label": qsTr("Installed"), "icon": "apps" },
-            { "label": qsTr("Tasks"), "icon": "download" },
-            { "label": qsTr("Settings"), "icon": "settings" }
+            { "id": "home", "label": qsTr("Home"), "icon": "home" },
+            { "id": "search", "label": qsTr("Search"), "icon": "search" },
+            { "id": "updates", "label": qsTr("Updates"), "icon": "system_update" },
+            { "id": "installed", "label": qsTr("Installed"), "icon": "apps" },
+            { "id": "tasks", "label": qsTr("Tasks"), "icon": "download" },
+            { "id": "settings", "label": qsTr("Settings"), "icon": "settings" }
         ]
         pages: [homePage, searchPage, updatesPage, installedPage, tasksPage, settingsPage]
+        sidebarTitle: qsTr("OmniStore")
         onCurrentIndexChanged: root.navigationIndex = currentIndex
     }
 

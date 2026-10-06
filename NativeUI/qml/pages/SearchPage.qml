@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import MeoUI 1.0
+import "../components"
 
 Item {
     id: root

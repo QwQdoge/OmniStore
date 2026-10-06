@@ -84,7 +84,7 @@ Flickable {
 
         MeoCard {
             Layout.fillWidth: true
-            visible: root.app.developer || root.app.license || root.app.installed_size || root.app.install_location
+            visible: !!(root.app.developer || root.app.license || root.app.installed_size || root.app.install_location)
             type: "filled"
             padding: 14 * MeoTheme.globalScale
             ColumnLayout {
