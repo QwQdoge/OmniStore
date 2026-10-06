@@ -21,6 +21,8 @@ Window {
     readonly property bool dynamicColorReady:
         MeoTheme.colorSchemeMode === "dynamic"
         && MeoTheme.hasActiveDynamicColorScheme
+    readonly property bool overlaySheetOpen:
+        detailSheet.isOpen || searchSheet.isOpen || tasksSheet.isOpen
 
     function syncDynamicColor() {
         const lightScheme = MaterialColors.currentScheme(false)
@@ -30,6 +32,15 @@ Window {
             darkScheme,
             "kde-" + MaterialColors.sourceId()
         )
+    }
+
+    function openSearch(query) {
+        root.pendingSearch = String(query || "")
+        searchSheet.isOpen = true
+    }
+
+    function openTasks() {
+        tasksSheet.isOpen = true
     }
 
     Component.onCompleted: syncDynamicColor()
@@ -67,43 +78,67 @@ Window {
         anchors.fill: parent
         currentIndex: root.navigationIndex
         navigationModel: [
-            { "label": qsTr("Home"), "icon": "home" },
-            { "label": qsTr("Search"), "icon": "search" },
-            { "label": qsTr("Updates"), "icon": "system_update" },
-            { "label": qsTr("Installed"), "icon": "apps" },
-            { "label": qsTr("Tasks"), "icon": "download" },
-            { "label": qsTr("Settings"), "icon": "settings" }
+            { "id": "home", "label": qsTr("Home"), "icon": "home" },
+            { "id": "explore", "label": qsTr("Explore"), "icon": "explore" },
+            { "id": "installed", "label": qsTr("Installed"), "icon": "apps" },
+            { "id": "updates", "label": qsTr("Updates"), "icon": "system_update" },
+            { "id": "settings", "label": qsTr("Settings"), "icon": "settings" }
         ]
-        pages: [homePage, searchPage, updatesPage, installedPage, tasksPage, settingsPage]
+        pages: [homePage, explorePage, installedPage, updatesPage, settingsPage]
+        compactNavigationLimit: 5
+        sidebarTitle: qsTr("OmniStore")
         onCurrentIndexChanged: root.navigationIndex = currentIndex
     }
 
     Component {
         id: homePage
         HomePage {
-            onSearchRequested: function(query) {
-                root.pendingSearch = query
-                root.navigationIndex = 1
-            }
+            onSearchRequested: function(query) { root.openSearch(query) }
             onDetailsRequested: function(app) { root.showDetails(app) }
         }
     }
 
     Component {
-        id: searchPage
-        SearchPage {
-            initialQuery: root.pendingSearch
+        id: explorePage
+        ExplorePage {
             onDetailsRequested: function(app) { root.showDetails(app) }
         }
     }
 
-    Component { id: updatesPage; UpdatesPage {} }
     Component {
         id: installedPage
         InstalledPage { onDetailsRequested: function(app) { root.showDetails(app) } }
     }
-    Component { id: tasksPage; TasksPage {} }
+    Component { id: updatesPage; UpdatesPage {} }
     Component { id: settingsPage; SettingsPage {} }
+
+    // Store-level utilities are intentionally not primary navigation items.
+    // These controls act as the current app-bar actions while MeoAppLayout's
+    // shared top-bar action slot is being generalized.
+    Row {
+        id: globalActions
+        z: 80
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: 8 * MeoTheme.globalScale
+        anchors.rightMargin: 10 * MeoTheme.globalScale
+        spacing: 4 * MeoTheme.globalScale
+        visible: !root.overlaySheetOpen
+
+        MeoIconButton {
+            icon.name: "search"
+            type: "tonal"
+            Accessible.name: qsTr("Search")
+            onClicked: root.openSearch("")
+        }
+
+        MeoIconButton {
+            icon.name: backend.busy ? "sync" : "download"
+            type: backend.busy ? "filled" : "tonal"
+            Accessible.name: qsTr("Tasks")
+            onClicked: root.openTasks()
+        }
+    }
 
     MeoBanner {
         id: dynamicColorWarning
@@ -120,10 +155,38 @@ Window {
     }
 
     MeoSideSheet {
+        id: searchSheet
+        z: 100
+        height: root.height
+        width: Math.min(720 * MeoTheme.globalScale, root.width * 0.72)
+        isOpen: false
+        title: qsTr("Search")
+        content: Component {
+            SearchPage {
+                initialQuery: root.pendingSearch
+                onDetailsRequested: function(app) {
+                    searchSheet.isOpen = false
+                    root.showDetails(app)
+                }
+            }
+        }
+    }
+
+    MeoSideSheet {
+        id: tasksSheet
+        z: 100
+        height: root.height
+        width: Math.min(620 * MeoTheme.globalScale, root.width * 0.68)
+        isOpen: false
+        title: qsTr("Tasks")
+        content: Component { TasksPage {} }
+    }
+
+    MeoSideSheet {
         id: detailSheet
         z: 100
         height: root.height
-        width: Math.min(440 * MeoTheme.globalScale, root.width * 0.46)
+        width: Math.min(520 * MeoTheme.globalScale, root.width * 0.50)
         isOpen: false
         title: qsTr("App details")
         content: Component {
@@ -134,9 +197,15 @@ Window {
     Rectangle {
         anchors.fill: parent
         z: 90
-        visible: detailSheet.isOpen && root.width < 1050 * MeoTheme.globalScale
+        visible: root.overlaySheetOpen && root.width < 1180 * MeoTheme.globalScale
         color: Qt.rgba(0, 0, 0, 0.30)
-        TapHandler { onTapped: detailSheet.isOpen = false }
+        TapHandler {
+            onTapped: {
+                detailSheet.isOpen = false
+                searchSheet.isOpen = false
+                tasksSheet.isOpen = false
+            }
+        }
     }
 
     MeoDialog {
