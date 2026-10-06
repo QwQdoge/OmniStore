@@ -43,6 +43,7 @@ qt_add_qml_module(omnistore-native
         qml/components/UpdateRow.qml
         qml/components/PageHeading.qml
         qml/pages/HomePage.qml
+        qml/pages/ExplorePage.qml
         qml/pages/SearchPage.qml
         qml/pages/UpdatesPage.qml
         qml/pages/InstalledPage.qml
