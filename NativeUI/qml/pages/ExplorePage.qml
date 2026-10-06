@@ -9,9 +9,11 @@ Item {
     signal detailsRequested(var app)
 
     property string activeCategory: ""
+    property string activeCategoryQuery: ""
 
     function browseCategory(category, label) {
         root.activeCategory = label
+        root.activeCategoryQuery = category
         backend.search("category:" + category)
     }
 
@@ -152,8 +154,8 @@ Item {
                     Accessible.name: qsTr("Refresh")
                     enabled: !backend.busy
                     onClicked: {
-                        if (root.activeCategory.length > 0)
-                            backend.search("category:" + root.activeCategory)
+                        if (root.activeCategoryQuery.length > 0)
+                            backend.search("category:" + root.activeCategoryQuery)
                         else
                             backend.loadRecommendations()
                     }
