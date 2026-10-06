@@ -73,6 +73,28 @@ Window {
             backend.loadDetails(id, source)
     }
 
+    Component {
+        id: searchAction
+        MeoIconButton {
+            icon.name: "search"
+            type: "tonal"
+            visible: !root.overlaySheetOpen
+            Accessible.name: qsTr("Search")
+            onClicked: root.openSearch("")
+        }
+    }
+
+    Component {
+        id: tasksAction
+        MeoIconButton {
+            icon.name: backend.busy ? "sync" : "download"
+            type: backend.busy ? "filled" : "tonal"
+            visible: !root.overlaySheetOpen
+            Accessible.name: qsTr("Tasks")
+            onClicked: root.openTasks()
+        }
+    }
+
     MeoAppLayout {
         id: appLayout
         anchors.fill: parent
@@ -87,6 +109,8 @@ Window {
         pages: [homePage, explorePage, installedPage, updatesPage, settingsPage]
         compactNavigationLimit: 5
         sidebarTitle: qsTr("OmniStore")
+        showTopAppBarOnExpanded: true
+        topAppBarActions: [searchAction, tasksAction]
         onCurrentIndexChanged: root.navigationIndex = currentIndex
     }
 
@@ -94,6 +118,7 @@ Window {
         id: homePage
         HomePage {
             onSearchRequested: function(query) { root.openSearch(query) }
+            onExploreRequested: root.navigationIndex = 1
             onDetailsRequested: function(app) { root.showDetails(app) }
         }
     }
@@ -111,34 +136,6 @@ Window {
     }
     Component { id: updatesPage; UpdatesPage {} }
     Component { id: settingsPage; SettingsPage {} }
-
-    // Store-level utilities are intentionally not primary navigation items.
-    // These controls act as the current app-bar actions while MeoAppLayout's
-    // shared top-bar action slot is being generalized.
-    Row {
-        id: globalActions
-        z: 80
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.topMargin: 8 * MeoTheme.globalScale
-        anchors.rightMargin: 10 * MeoTheme.globalScale
-        spacing: 4 * MeoTheme.globalScale
-        visible: !root.overlaySheetOpen
-
-        MeoIconButton {
-            icon.name: "search"
-            type: "tonal"
-            Accessible.name: qsTr("Search")
-            onClicked: root.openSearch("")
-        }
-
-        MeoIconButton {
-            icon.name: backend.busy ? "sync" : "download"
-            type: backend.busy ? "filled" : "tonal"
-            Accessible.name: qsTr("Tasks")
-            onClicked: root.openTasks()
-        }
-    }
 
     MeoBanner {
         id: dynamicColorWarning
@@ -158,7 +155,7 @@ Window {
         id: searchSheet
         z: 100
         height: root.height
-        width: Math.min(720 * MeoTheme.globalScale, root.width * 0.72)
+        width: Math.min(760 * MeoTheme.globalScale, root.width * 0.72)
         isOpen: false
         title: qsTr("Search")
         content: Component {
@@ -186,7 +183,7 @@ Window {
         id: detailSheet
         z: 100
         height: root.height
-        width: Math.min(520 * MeoTheme.globalScale, root.width * 0.50)
+        width: Math.min(640 * MeoTheme.globalScale, root.width * 0.58)
         isOpen: false
         title: qsTr("App details")
         content: Component {
