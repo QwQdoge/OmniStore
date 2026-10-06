@@ -9,13 +9,16 @@ def read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def test_native_window_blocks_close_while_backend_is_busy():
+def test_native_window_does_not_own_package_transaction_lifetime():
     main = read(NATIVE / "qml" / "Main.qml")
-    assert "onClosing: function(close)" in main
-    assert "if (!backend.busy)" in main
-    assert "close.accepted = false" in main
-    assert 'title: qsTr("OmniStore is still working")' in main
-    assert "showRejectButton: false" in main
+    transaction_client = read(NATIVE / "app" / "transactionclient.cpp")
+
+    assert "omnistore-task.service" in transaction_client
+    assert 'QStringLiteral("task.list")' in transaction_client
+    assert 'QStringLiteral("task.submit")' in transaction_client
+    assert "onClosing: function(close)" not in main
+    assert "close.accepted = false" not in main
+    assert "transactions.reconnect()" in main
 
 
 def test_native_version_is_build_injected_not_stale_literal():
