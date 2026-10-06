@@ -81,6 +81,24 @@ def build_backend(build_root: Path) -> Path:
     return backend
 
 
+def _native_parallelism() -> int:
+    """Return a conservative release-build parallelism value.
+
+    MeoUI compiles a large generated QML resource translation unit.  Hosted CI
+    runners can OOM when CMake expands to every advertised CPU, so release
+    builds default to two jobs.  Builders with known memory headroom can raise
+    this explicitly without changing the release contract.
+    """
+    raw = os.environ.get("OMNISTORE_BUILD_JOBS", "2").strip()
+    try:
+        jobs = int(raw)
+    except ValueError as exc:
+        raise RuntimeError("OMNISTORE_BUILD_JOBS must be a positive integer") from exc
+    if jobs < 1:
+        raise RuntimeError("OMNISTORE_BUILD_JOBS must be at least 1")
+    return jobs
+
+
 def build_native(build_root: Path, meoui_source: Path, release_version: str) -> Path:
     if not meoui_source or not (meoui_source / "CMakeLists.txt").is_file():
         raise RuntimeError(
@@ -108,6 +126,7 @@ def build_native(build_root: Path, meoui_source: Path, release_version: str) -> 
         "--target",
         "omnistore-native",
         "--parallel",
+        str(_native_parallelism()),
     ])
 
     binary = native_build / "omnistore-native"
