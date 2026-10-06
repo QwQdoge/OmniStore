@@ -3,6 +3,7 @@ import argparse
 import logging
 import asyncio
 import json
+import os
 import signal
 from pathlib import Path
 from rich.panel import Panel
@@ -89,6 +90,10 @@ async def main():
     parser.add_argument("--url")
     parser.add_argument("--ai-desc")
     parser.add_argument("--force-refresh", action="store_true")
+    parser.add_argument(
+        "--daemon-socket",
+        help="Run --daemon on this private Unix socket instead of the legacy TCP endpoint",
+    )
 
     args = parser.parse_args()
 
@@ -183,9 +188,10 @@ async def main():
         return
 
     if not json_mode:
+        release_version = os.environ.get("OMNISTORE_VERSION", "development").strip() or "development"
         console.print(
             Panel.fit(
-                f"[bold blue]OmniStore[/bold blue] v0.1.0\n"
+                f"[bold blue]OmniStore[/bold blue] v{release_version}\n"
                 f"[dim]{get_friendly_message()}[/dim]",
                 border_style="blue",
             )
@@ -224,15 +230,35 @@ async def main():
         return
 
     if args.daemon:
+        daemon_socket_path = None
         try:
             async with backend:
-                server = await asyncio.start_server(
-                    lambda r, w: handle_daemon_client(backend, r, w, stop_event),
-                    "127.0.0.1",
-                    9081,
-                    limit=512 * 1024,
-                )
-                logger.info("Python daemon started on 127.0.0.1:9081")
+                if args.daemon_socket:
+                    daemon_socket_path = Path(args.daemon_socket).expanduser()
+                    daemon_socket_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                    if daemon_socket_path.is_symlink():
+                        raise RuntimeError("Refusing to replace a symlink at the daemon socket path")
+                    if daemon_socket_path.exists():
+                        if not daemon_socket_path.is_socket():
+                            raise RuntimeError("Daemon socket path exists and is not a Unix socket")
+                        daemon_socket_path.unlink()
+                    server = await asyncio.start_unix_server(
+                        lambda r, w: handle_daemon_client(backend, r, w, stop_event),
+                        path=str(daemon_socket_path),
+                        limit=512 * 1024,
+                    )
+                    daemon_socket_path.chmod(0o600)
+                    logger.info("OmniStore daemon started on %s", daemon_socket_path)
+                else:
+                    # Legacy development transport. MeoArch release packaging
+                    # uses the private per-user Unix socket service instead.
+                    server = await asyncio.start_server(
+                        lambda r, w: handle_daemon_client(backend, r, w, stop_event),
+                        "127.0.0.1",
+                        9081,
+                        limit=512 * 1024,
+                    )
+                    logger.info("OmniStore legacy daemon started on 127.0.0.1:9081")
 
                 async with server:
                     watchdog_task = asyncio.create_task(
@@ -253,8 +279,6 @@ async def main():
                         return_when=asyncio.FIRST_COMPLETED,
                     )
 
-                    # Surface unexpected task failures instead of silently
-                    # continuing with a half-dead daemon.
                     for task in done:
                         if task is wait_task or task.cancelled():
                             continue
@@ -272,6 +296,13 @@ async def main():
             logger.exception("Daemon fatal error")
             await backend._handle_error("Daemon Fatal Error", exc, json_mode)
             raise SystemExit(1) from exc
+        finally:
+            if daemon_socket_path is not None:
+                try:
+                    if daemon_socket_path.exists() and daemon_socket_path.is_socket():
+                        daemon_socket_path.unlink()
+                except OSError:
+                    logger.warning("Could not remove daemon socket %s", daemon_socket_path)
     elif not any(vars(args).values()):
         parser.print_help()
 
