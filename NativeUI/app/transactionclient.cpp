@@ -9,6 +9,8 @@
 #include <QProcessEnvironment>
 #include <QStandardPaths>
 
+#include <utility>
+
 namespace {
 constexpr int PollIntervalMs = 650;
 constexpr int ReconnectDelayMs = 250;
