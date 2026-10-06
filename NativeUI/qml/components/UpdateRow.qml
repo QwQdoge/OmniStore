@@ -63,7 +63,7 @@ MeoCard {
             text: qsTr("Update")
             type: "tonal"
             icon.name: "upgrade"
-            enabled: !backend.busy
+            enabled: !backend.busy && !transactions.busy && transactions.available
             onClicked: updateDialog.open()
         }
     }
@@ -72,10 +72,10 @@ MeoCard {
         id: updateDialog
         parent: Overlay.overlay
         title: qsTr("Update %1?").arg(root.packageName())
-        message: qsTr("OmniStore will update this package through %1 using the existing backend and package-manager safeguards.").arg(root.sourceName())
+        message: qsTr("The background OmniStore transaction service will update this package through %1. The task continues if you close the store.").arg(root.sourceName())
         icon: "upgrade"
         confirmText: qsTr("Update")
         cancelText: qsTr("Cancel")
-        onConfirmed: backend.updateApp(root.packageName(), root.sourceName())
+        onConfirmed: transactions.updateApp(root.packageName(), root.sourceName())
     }
 }
