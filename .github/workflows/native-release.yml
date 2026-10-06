@@ -1,0 +1,153 @@
+name: Native OmniStore release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, for example v0.1.5-beta.1'
+        required: true
+        type: string
+      version:
+        description: 'Display/package version without leading v, for example 0.1.5-beta.1'
+        required: true
+        type: string
+      meoui_ref:
+        description: 'MeoUI ref used to build the release'
+        required: true
+        default: 'main'
+        type: string
+      publish:
+        description: 'Create/update the GitHub prerelease after validation'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omnistore-native-release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and verify native Linux bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Validate release inputs
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          case "$RELEASE_TAG" in
+            v*) ;;
+            *) echo 'tag must start with v' >&2; exit 64 ;;
+          esac
+          test "${RELEASE_TAG#v}" = "$RELEASE_VERSION" || {
+            echo 'tag and version must describe the same release' >&2
+            exit 64
+          }
+
+      - name: Check out OmniStore
+        uses: actions/checkout@v6
+
+      - name: Check out MeoUI
+        uses: actions/checkout@v6
+        with:
+          repository: QwQdoge/MeoUI
+          ref: ${{ inputs.meoui_ref }}
+          path: MeoUI
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          modules: 'qtshadertools'
+          cache: true
+
+      - name: Prepare Python build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-venv patchelf
+
+      - name: Build native release bundle
+        env:
+          OMNISTORE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 NativeUI/build_linux_release.py \
+            --version "$OMNISTORE_VERSION" \
+            --meoui-source "$GITHUB_WORKSPACE/MeoUI" \
+            --output-root "$RUNNER_TEMP/meo-output" \
+            --output-dir "$RUNNER_TEMP/omnistore-linux"
+
+      - name: Validate native-only release contract
+        run: |
+          set -euo pipefail
+          bundle="$RUNNER_TEMP/omnistore-linux"
+          test -x "$bundle/omnistore-native"
+          test -x "$bundle/backends/python_server"
+          test -f "$bundle/data/systemd/user/omnistore-task.service"
+          test ! -e "$bundle/frontend"
+          python3 verify_release_exporter_contract.py \
+            --backend "$bundle/backends/python_server"
+          grep -F '/usr/bin/omnistore-daemon --daemon' \
+            "$bundle/data/systemd/user/omnistore-task.service"
+
+      - name: Assemble immutable release asset
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          asset="$RUNNER_TEMP/omnistore-linux-x64.tar.gz"
+          tar -C "$RUNNER_TEMP/omnistore-linux" -czf "$asset" .
+          asset_sha="$(sha256sum "$asset" | awk '{print $1}')"
+          verifier_sha="$(sha256sum verify_release_exporter_contract.py | awk '{print $1}')"
+          cat > "$RUNNER_TEMP/release-metadata.json" <<EOF
+          {
+            "tag": "$RELEASE_TAG",
+            "version": "$RELEASE_VERSION",
+            "commit": "$GITHUB_SHA",
+            "asset": "omnistore-linux-x64.tar.gz",
+            "assetSha256": "$asset_sha",
+            "sourceUrl": "https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/omnistore-linux-x64.tar.gz",
+            "verifierUrl": "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_SHA/verify_release_exporter_contract.py",
+            "verifierSha256": "$verifier_sha"
+          }
+          EOF
+          cat "$RUNNER_TEMP/release-metadata.json"
+
+      - name: Upload validated release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnistore-native-${{ inputs.version }}
+          path: |
+            ${{ runner.temp }}/omnistore-linux-x64.tar.gz
+            ${{ runner.temp }}/release-metadata.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish GitHub prerelease
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" \
+              "$RUNNER_TEMP/omnistore-linux-x64.tar.gz#OmniStore Linux x64 native MeoUI bundle" \
+              --clobber
+          else
+            gh release create "$RELEASE_TAG" \
+              "$RUNNER_TEMP/omnistore-linux-x64.tar.gz#OmniStore Linux x64 native MeoUI bundle" \
+              --target "$GITHUB_SHA" \
+              --title "OmniStore $RELEASE_VERSION" \
+              --prerelease \
+              --notes "Native MeoArch OmniStore release: Qt/QML + MeoUI frontend, persistent package transaction service, and no Flutter runtime fallback."
+          fi
