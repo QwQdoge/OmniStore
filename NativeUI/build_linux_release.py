@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Build the MeoUI Linux frontend and overlay it onto the normal OmniStore bundle.
+"""Build the native Qt/QML + MeoUI OmniStore release bundle for MeoArch.
 
-The existing auto_build.py remains authoritative for the frozen Python backend,
-source manifests, license, update units, and Flutter fallback during migration.
-This script is Linux-only: it invokes that existing release assembly first, then
-adds the native Qt/QML executable without changing other platform packaging.
+This Linux release path intentionally does not build or assemble Flutter.  It
+reuses the existing PyInstaller backend build helper, then assembles the
+release bundle around the native client and the shared backend contracts.
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import shutil
 import subprocess
@@ -20,6 +20,17 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 NATIVE_ROOT = REPO_ROOT / "NativeUI"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT.parent / "outputs"
+
+
+def _load_auto_build():
+    spec = importlib.util.spec_from_file_location(
+        "omnistore_auto_build", REPO_ROOT / "auto_build.py"
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Could not load auto_build.py for backend packaging")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path]:
@@ -61,21 +72,13 @@ def run(command: list[str], *, cwd: Path | None = None) -> None:
     subprocess.run(command, cwd=str(cwd) if cwd else None, check=True)
 
 
-def build_existing_bundle(args: argparse.Namespace, build_root: Path, bundle: Path) -> None:
-    command = [
-        sys.executable,
-        str(REPO_ROOT / "auto_build.py"),
-        "--all",
-        "--platform",
-        "linux",
-        "--build-dir",
-        str(build_root),
-        "--output-dir",
-        str(bundle),
-    ]
-    if args.allow_account_disabled:
-        command.append("--allow-account-disabled")
-    run(command, cwd=REPO_ROOT)
+def build_backend(build_root: Path) -> Path:
+    auto_build = _load_auto_build()
+    auto_build.build_python(build_root)
+    backend = auto_build.pyinstaller_paths(build_root, "python_server")["dist"] / "python_server"
+    if not backend.is_file():
+        raise RuntimeError(f"backend build did not produce {backend}")
+    return backend
 
 
 def build_native(build_root: Path, meoui_source: Path, release_version: str) -> Path:
@@ -113,34 +116,86 @@ def build_native(build_root: Path, meoui_source: Path, release_version: str) -> 
     return binary
 
 
-def overlay_native(bundle: Path, binary: Path) -> None:
-    required_existing = (
-        bundle / "frontend",
-        bundle / "backends" / "python_server",
-        bundle / "LICENSE",
-    )
-    missing = [str(path) for path in required_existing if not path.exists()]
-    if missing:
-        raise RuntimeError(
-            "refusing to overlay an incomplete Linux release bundle: " + ", ".join(missing)
-        )
+def _copy_tree(source: Path, destination: Path) -> None:
+    if source.is_dir():
+        shutil.copytree(source, destination, dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+
+
+def assemble_native_bundle(
+    bundle: Path,
+    *,
+    backend: Path,
+    native_binary: Path,
+    release_version: str,
+) -> None:
+    bundle.mkdir(parents=True, exist_ok=True)
+
+    backend_dir = bundle / "backends"
+    backend_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(backend, backend_dir / "python_server")
+    (backend_dir / "python_server").chmod((backend_dir / "python_server").stat().st_mode | 0o111)
+
+    for helper_name in ("meo_stable_rollback.py", "meo_repository_helper.py"):
+        helper = REPO_ROOT / "python" / "helpers" / helper_name
+        if not helper.is_file():
+            raise RuntimeError(f"required backend helper is missing: {helper}")
+        shutil.copy2(helper, backend_dir / helper_name)
+        (backend_dir / helper_name).chmod((backend_dir / helper_name).stat().st_mode | 0o111)
 
     destination = bundle / "omnistore-native"
-    shutil.copy2(binary, destination)
+    shutil.copy2(native_binary, destination)
     destination.chmod(destination.stat().st_mode | 0o111)
 
-    marker = bundle / "data" / "native-ui-v1"
+    _copy_tree(REPO_ROOT / "plugins" / "sources", bundle / "plugins" / "sources")
+    _copy_tree(REPO_ROOT / "data" / "app-manifests", bundle / "data" / "app-manifests")
+    _copy_tree(REPO_ROOT / "data" / "systemd" / "user", bundle / "data" / "systemd" / "user")
+
+    docs_dir = bundle / "data" / "docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    for doc_name in (
+        "UNIFIED_UPDATES.md",
+        "NATIVE_MEOUI_FRONTEND.md",
+        "TRANSACTION_RELEASE_CONTRACT.md",
+    ):
+        source = REPO_ROOT / "docs" / doc_name
+        if source.is_file():
+            shutil.copy2(source, docs_dir / doc_name)
+
+    license_file = REPO_ROOT / "LICENSE"
+    if not license_file.is_file():
+        raise RuntimeError(f"required project license is missing: {license_file}")
+    shutil.copy2(license_file, bundle / "LICENSE")
+
+    icon = REPO_ROOT / "omnistore.svg"
+    if icon.is_file():
+        shutil.copy2(icon, bundle / "omnistore.svg")
+
+    marker = bundle / "data" / "native-ui-v2"
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text(
-        "OmniStore NativeUI contract: Qt/QML + MeoUI frontend; Flutter frontend retained only during migration.\n",
+        "OmniStore MeoArch release: Qt/QML + MeoUI is the only graphical frontend.\n"
+        f"Version: {release_version}\n",
         encoding="utf-8",
     )
+
+    # A release bundle with a Flutter frontend would reintroduce two divergent
+    # products. Refuse stale output instead of silently shipping both.
+    stale_frontend = bundle / "frontend"
+    if stale_frontend.exists():
+        if stale_frontend.is_dir():
+            shutil.rmtree(stale_frontend)
+        else:
+            stale_frontend.unlink()
+
     print(f"[native-release] native frontend: {destination}")
+    print(f"[native-release] backend: {backend_dir / 'python_server'}")
+    print(f"[native-release] bundle: {bundle}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build the normal Linux OmniStore bundle and overlay the MeoUI NativeUI frontend."
+        description="Build the native MeoUI OmniStore release bundle for MeoArch."
     )
     parser.add_argument("--output-root")
     parser.add_argument("--output-dir")
@@ -152,14 +207,9 @@ def main() -> int:
         help="release-visible OmniStore version injected into the native client",
     )
     parser.add_argument(
-        "--allow-account-disabled",
+        "--skip-backend-build",
         action="store_true",
-        help="forward the intentionally-offline developer option to auto_build.py",
-    )
-    parser.add_argument(
-        "--skip-base-bundle",
-        action="store_true",
-        help="overlay an already assembled Linux bundle instead of rerunning auto_build.py",
+        help="reuse an already built python_server under the configured build root",
     )
     args = parser.parse_args()
 
@@ -167,10 +217,20 @@ def main() -> int:
     build_root.mkdir(parents=True, exist_ok=True)
     bundle.mkdir(parents=True, exist_ok=True)
 
-    if not args.skip_base_bundle:
-        build_existing_bundle(args, build_root, bundle)
-    binary = build_native(build_root, meoui_source, args.version)
-    overlay_native(bundle, binary)
+    auto_build = _load_auto_build()
+    backend = auto_build.pyinstaller_paths(build_root, "python_server")["dist"] / "python_server"
+    if not args.skip_backend_build:
+        backend = build_backend(build_root)
+    elif not backend.is_file():
+        raise RuntimeError(f"--skip-backend-build requested but {backend} does not exist")
+
+    native_binary = build_native(build_root, meoui_source, args.version)
+    assemble_native_bundle(
+        bundle,
+        backend=backend,
+        native_binary=native_binary,
+        release_version=args.version,
+    )
     return 0
 
 
