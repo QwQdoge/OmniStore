@@ -141,7 +141,7 @@ Flickable {
                 text: qsTr("Remove")
                 type: "outlined"
                 icon.name: "delete"
-                enabled: !backend.busy
+                enabled: !backend.busy && !transactions.busy && transactions.available
                 onClicked: removeDialog.open()
             }
             MeoButton {
@@ -150,15 +150,28 @@ Flickable {
                 text: qsTr("Install")
                 type: "filled"
                 icon.name: "download"
-                enabled: !backend.busy
+                enabled: !backend.busy && !transactions.busy && transactions.available
                 onClicked: installDialog.open()
             }
         }
 
+        MeoBanner {
+            Layout.fillWidth: true
+            visible: !transactions.available && !transactions.busy
+            title: qsTr("Transaction service unavailable")
+            text: transactions.errorMessage.length > 0
+                  ? transactions.errorMessage
+                  : qsTr("Install, remove and update actions require the OmniStore background transaction service.")
+            icon: "cloud_off"
+            tone: "warning"
+        }
+
         MeoProgressBar {
             Layout.fillWidth: true
-            visible: backend.busyAction === qsTr("app details") && !root.selectedMatches
-            indeterminate: true
+            visible: (backend.busyAction === qsTr("app details") && !root.selectedMatches)
+                     || transactions.busy
+            indeterminate: transactions.busy ? transactions.progress < 0 : true
+            value: transactions.progress >= 0 ? transactions.progress : 0
         }
 
         ColumnLayout {
@@ -236,18 +249,8 @@ Flickable {
                 ColumnLayout {
                     width: parent.width
                     spacing: 3 * MeoTheme.globalScale
-                    MeoText {
-                        text: qsTr("Source")
-                        typeRole: "label"; typeSize: "small"
-                        color: MeoTheme.contentOnSurfaceVariant
-                    }
-                    MeoText {
-                        Layout.fillWidth: true
-                        text: root.sourceName()
-                        typeRole: "title"; typeSize: "small"; emphasized: true
-                        color: MeoTheme.contentOnSurface
-                        elide: Text.ElideRight
-                    }
+                    MeoText { text: qsTr("Source"); typeRole: "label"; typeSize: "small"; color: MeoTheme.contentOnSurfaceVariant }
+                    MeoText { Layout.fillWidth: true; text: root.sourceName(); typeRole: "title"; typeSize: "small"; emphasized: true; color: MeoTheme.contentOnSurface; elide: Text.ElideRight }
                 }
             }
 
@@ -259,18 +262,8 @@ Flickable {
                 ColumnLayout {
                     width: parent.width
                     spacing: 3 * MeoTheme.globalScale
-                    MeoText {
-                        text: qsTr("Version")
-                        typeRole: "label"; typeSize: "small"
-                        color: MeoTheme.contentOnSurfaceVariant
-                    }
-                    MeoText {
-                        Layout.fillWidth: true
-                        text: root.versionText().length > 0 ? root.versionText() : qsTr("Unknown")
-                        typeRole: "title"; typeSize: "small"; emphasized: true
-                        color: MeoTheme.contentOnSurface
-                        elide: Text.ElideRight
-                    }
+                    MeoText { text: qsTr("Version"); typeRole: "label"; typeSize: "small"; color: MeoTheme.contentOnSurfaceVariant }
+                    MeoText { Layout.fillWidth: true; text: root.versionText().length > 0 ? root.versionText() : qsTr("Unknown"); typeRole: "title"; typeSize: "small"; emphasized: true; color: MeoTheme.contentOnSurface; elide: Text.ElideRight }
                 }
             }
 
@@ -283,18 +276,8 @@ Flickable {
                 ColumnLayout {
                     width: parent.width
                     spacing: 3 * MeoTheme.globalScale
-                    MeoText {
-                        text: qsTr("License")
-                        typeRole: "label"; typeSize: "small"
-                        color: MeoTheme.contentOnSurfaceVariant
-                    }
-                    MeoText {
-                        Layout.fillWidth: true
-                        text: String(root.app.license || "")
-                        typeRole: "title"; typeSize: "small"; emphasized: true
-                        color: MeoTheme.contentOnSurface
-                        elide: Text.ElideRight
-                    }
+                    MeoText { text: qsTr("License"); typeRole: "label"; typeSize: "small"; color: MeoTheme.contentOnSurfaceVariant }
+                    MeoText { Layout.fillWidth: true; text: String(root.app.license || ""); typeRole: "title"; typeSize: "small"; emphasized: true; color: MeoTheme.contentOnSurface; elide: Text.ElideRight }
                 }
             }
 
@@ -307,18 +290,8 @@ Flickable {
                 ColumnLayout {
                     width: parent.width
                     spacing: 3 * MeoTheme.globalScale
-                    MeoText {
-                        text: qsTr("Installed size")
-                        typeRole: "label"; typeSize: "small"
-                        color: MeoTheme.contentOnSurfaceVariant
-                    }
-                    MeoText {
-                        Layout.fillWidth: true
-                        text: root.sizeText()
-                        typeRole: "title"; typeSize: "small"; emphasized: true
-                        color: MeoTheme.contentOnSurface
-                        elide: Text.ElideRight
-                    }
+                    MeoText { text: qsTr("Installed size"); typeRole: "label"; typeSize: "small"; color: MeoTheme.contentOnSurfaceVariant }
+                    MeoText { Layout.fillWidth: true; text: root.sizeText(); typeRole: "title"; typeSize: "small"; emphasized: true; color: MeoTheme.contentOnSurface; elide: Text.ElideRight }
                 }
             }
         }
@@ -360,18 +333,8 @@ Flickable {
             ColumnLayout {
                 width: parent.width
                 spacing: 4 * MeoTheme.globalScale
-                MeoText {
-                    text: qsTr("Install location")
-                    typeRole: "label"; typeSize: "small"
-                    color: MeoTheme.contentOnSurfaceVariant
-                }
-                MeoText {
-                    Layout.fillWidth: true
-                    text: String(root.app.install_location || "")
-                    typeRole: "body"; typeSize: "small"
-                    color: MeoTheme.contentOnSurface
-                    wrapMode: Text.WrapAnywhere
-                }
+                MeoText { text: qsTr("Install location"); typeRole: "label"; typeSize: "small"; color: MeoTheme.contentOnSurfaceVariant }
+                MeoText { Layout.fillWidth: true; text: String(root.app.install_location || ""); typeRole: "body"; typeSize: "small"; color: MeoTheme.contentOnSurface; wrapMode: Text.WrapAnywhere }
             }
         }
 
@@ -389,21 +352,21 @@ Flickable {
         id: installDialog
         parent: Overlay.overlay
         title: qsTr("Install %1?").arg(root.appName())
-        message: qsTr("The existing OmniStore backend will install this app through %1. Authentication and package-manager safeguards remain unchanged.").arg(root.sourceName())
+        message: qsTr("OmniStore will hand this install to its background transaction service through %1. The task can continue after you close the store.").arg(root.sourceName())
         icon: "download"
         confirmText: qsTr("Install")
         cancelText: qsTr("Cancel")
-        onConfirmed: backend.installApp(root.appId(), root.sourceName(), root.installUrl())
+        onConfirmed: transactions.installApp(root.appId(), root.sourceName(), root.installUrl())
     }
 
     MeoDialog {
         id: removeDialog
         parent: Overlay.overlay
         title: qsTr("Remove %1?").arg(root.appName())
-        message: qsTr("The existing OmniStore backend will run the uninstall path for %1. Review Tasks for package-manager output and dependency warnings.").arg(root.sourceName())
+        message: qsTr("OmniStore will hand this uninstall to its background transaction service through %1. Package-manager safeguards remain unchanged.").arg(root.sourceName())
         icon: "delete"
         confirmText: qsTr("Remove")
         cancelText: qsTr("Cancel")
-        onConfirmed: backend.removeApp(root.appId(), root.sourceName())
+        onConfirmed: transactions.removeApp(root.appId(), root.sourceName())
     }
 }
