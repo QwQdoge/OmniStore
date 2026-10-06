@@ -7,7 +7,7 @@ After=default.target
 Type=simple
 RuntimeDirectory=omnistore
 RuntimeDirectoryMode=0700
-ExecStart=/opt/omnistore/backends/python_server --daemon --daemon-socket=%t/omnistore/daemon.sock
+ExecStart=/usr/bin/omnistore-daemon --daemon --daemon-socket=%t/omnistore/daemon.sock
 Restart=on-failure
 RestartSec=2s
 TimeoutStopSec=20s
