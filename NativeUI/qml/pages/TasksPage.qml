@@ -7,6 +7,28 @@ import MeoUI 1.0
 Item {
     id: root
 
+    function statusLabel() {
+        const value = String(transactions.status || "")
+        if (value === "queued") return qsTr("Queued")
+        if (value === "running") return qsTr("Running")
+        if (value === "succeeded") return qsTr("Completed")
+        if (value === "failed") return qsTr("Failed")
+        if (value === "cancelled") return qsTr("Cancelled")
+        return qsTr("No package task")
+    }
+
+    function statusIcon() {
+        const value = String(transactions.status || "")
+        if (value === "queued") return "schedule"
+        if (value === "running") return "sync"
+        if (value === "succeeded") return "check_circle"
+        if (value === "failed") return "error"
+        if (value === "cancelled") return "cancel"
+        return transactions.available ? "download_done" : "cloud_off"
+    }
+
+    Component.onCompleted: transactions.reconnect()
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 28 * MeoTheme.globalScale
@@ -15,8 +37,21 @@ Item {
         PageHeading {
             Layout.fillWidth: true
             title: qsTr("Tasks")
-            subtitle: qsTr("Live output from the existing OmniStore package backend. Long-running package actions can be cancelled here.")
+            subtitle: qsTr("Package transactions are owned by the OmniStore background service, so they can continue after this window closes.")
             icon: "download"
+        }
+
+        MeoBanner {
+            Layout.fillWidth: true
+            visible: !transactions.available
+            title: qsTr("Transaction service unavailable")
+            text: transactions.errorMessage.length > 0
+                  ? transactions.errorMessage
+                  : qsTr("Reconnect to restore package task state.")
+            icon: "cloud_off"
+            tone: "warning"
+            confirmText: qsTr("Reconnect")
+            onConfirmed: transactions.reconnect()
         }
 
         MeoCard {
@@ -35,88 +70,114 @@ Item {
                         Layout.preferredHeight: 48 * MeoTheme.globalScale
                         type: "squircle"
                         radius: 16 * MeoTheme.globalScale
-                        color: backend.busy ? MeoTheme.primaryContainer : MeoTheme.secondaryContainer
+                        color: transactions.busy ? MeoTheme.primaryContainer
+                                                 : MeoTheme.secondaryContainer
                         MeoIcon {
                             anchors.centerIn: parent
-                            icon: backend.busy ? "sync" : "check_circle"
+                            icon: root.statusIcon()
                             size: 25 * MeoTheme.globalScale
-                            color: backend.busy ? MeoTheme.contentOnPrimaryContainer
-                                                : MeoTheme.contentOnSecondaryContainer
+                            color: transactions.busy ? MeoTheme.contentOnPrimaryContainer
+                                                     : MeoTheme.contentOnSecondaryContainer
                         }
                     }
+
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2 * MeoTheme.globalScale
                         MeoText {
                             Layout.fillWidth: true
-                            text: backend.busy ? backend.busyAction : qsTr("No active task")
-                            typeRole: "title"; typeSize: "small"; emphasized: true
+                            text: transactions.actionName.length > 0
+                                  ? transactions.actionName
+                                  : root.statusLabel()
+                            typeRole: "title"
+                            typeSize: "small"
+                            emphasized: true
                             color: MeoTheme.contentOnSurface
                             elide: Text.ElideRight
                         }
                         MeoText {
                             Layout.fillWidth: true
-                            text: backend.taskStage.length > 0 ? backend.taskStage : backend.statusMessage
-                            typeRole: "body"; typeSize: "small"
+                            text: transactions.stage.length > 0
+                                  ? transactions.stage
+                                  : root.statusLabel()
+                            typeRole: "body"
+                            typeSize: "small"
                             color: MeoTheme.contentOnSurfaceVariant
                             elide: Text.ElideRight
                         }
                     }
+
                     MeoText {
-                        visible: backend.taskSpeed.length > 0
-                        text: backend.taskSpeed
-                        typeRole: "label"; typeSize: "medium"; emphasized: true
+                        visible: transactions.speed.length > 0
+                        text: transactions.speed
+                        typeRole: "label"
+                        typeSize: "medium"
+                        emphasized: true
                         color: MeoTheme.primary
                     }
                 }
 
                 MeoProgressBar {
                     Layout.fillWidth: true
-                    visible: backend.busy || backend.progress >= 0
-                    value: backend.progress >= 0 ? backend.progress : 0
-                    indeterminate: backend.busy && backend.progress < 0
+                    visible: transactions.busy || transactions.progress >= 0
+                    value: transactions.progress >= 0 ? transactions.progress : 0
+                    indeterminate: transactions.busy && transactions.progress < 0
                     linearStyle: "pill"
-                    wavy: backend.busy
-                }
-
-                MeoBanner {
-                    Layout.fillWidth: true
-                    visible: backend.errorMessage.length > 0
-                    title: qsTr("Task error")
-                    text: backend.errorMessage
-                    icon: "error"
-                    tone: "error"
+                    wavy: transactions.busy
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Item { Layout.fillWidth: true }
-                    MeoButton {
-                        text: qsTr("Clear log")
-                        type: "text"
-                        icon.name: "delete_sweep"
-                        enabled: backend.taskLog.length > 0 && !backend.busy
-                        onClicked: backend.clearTaskLog()
+                    MeoText {
+                        Layout.fillWidth: true
+                        text: transactions.taskId.length > 0
+                              ? qsTr("Task %1").arg(transactions.taskId.slice(0, 12))
+                              : qsTr("No remembered package transaction")
+                        typeRole: "label"
+                        typeSize: "small"
+                        color: MeoTheme.contentOnSurfaceVariant
+                        elide: Text.ElideRight
                     }
                     MeoButton {
-                        visible: backend.busy
-                        text: qsTr("Cancel")
-                        type: "outlined"
-                        icon.name: "stop"
-                        onClicked: backend.cancelOperation()
+                        text: qsTr("Refresh")
+                        type: "text"
+                        icon.name: "refresh"
+                        onClicked: transactions.reconnect()
                     }
                 }
             }
         }
 
+        MeoBanner {
+            Layout.fillWidth: true
+            visible: transactions.errorMessage.length > 0 && transactions.available
+            title: qsTr("Task error")
+            text: transactions.errorMessage
+            icon: "error"
+            tone: "error"
+            confirmText: qsTr("Dismiss")
+            onConfirmed: transactions.clearError()
+        }
+
         MeoTextArea {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            label: qsTr("Backend output")
-            text: backend.taskLog.length > 0 ? backend.taskLog : qsTr("Package operation logs will appear here.")
+            label: qsTr("Transaction output")
+            text: transactions.log.length > 0
+                  ? transactions.log
+                  : qsTr("Package transaction output will appear here. Reopening OmniStore restores the latest task from the background service.")
             readOnly: true
             type: "filled"
             selectByMouse: true
+        }
+
+        MeoText {
+            Layout.fillWidth: true
+            text: qsTr("Closing OmniStore is not cancellation. Explicit transaction cancellation is intentionally unavailable until each package backend can prove safe interruption semantics.")
+            typeRole: "body"
+            typeSize: "small"
+            color: MeoTheme.contentOnSurfaceVariant
+            wrapMode: Text.WordWrap
         }
     }
 }
