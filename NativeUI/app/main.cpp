@@ -1,6 +1,7 @@
 #include "backendbridge.h"
 #include "repositorybridge.h"
 #include "systembridge.h"
+#include "transactionclient.h"
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
     BackendBridge backend;
     RepositoryBridge repositoryBridge;
     SystemBridge systemBridge;
+    TransactionClient transactions;
     QQmlApplicationEngine engine;
 #ifdef OMNISTORE_MEOUI_BUILD_IMPORT_PATH
     engine.addImportPath(QString::fromUtf8(OMNISTORE_MEOUI_BUILD_IMPORT_PATH));
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("backend"), &backend);
     engine.rootContext()->setContextProperty(QStringLiteral("repoBridge"), &repositoryBridge);
     engine.rootContext()->setContextProperty(QStringLiteral("systemBridge"), &systemBridge);
+    engine.rootContext()->setContextProperty(QStringLiteral("transactions"), &transactions);
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
