@@ -5,9 +5,11 @@
 
 #include <QCoreApplication>
 #include <QGuiApplication>
+#include <QLocale>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QTranslator>
 
 #ifndef OMNISTORE_RELEASE_VERSION
 #define OMNISTORE_RELEASE_VERSION "development"
@@ -20,6 +22,15 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(QStringLiteral("OmniStore"));
     QCoreApplication::setApplicationVersion(QString::fromUtf8(OMNISTORE_RELEASE_VERSION));
     app.setDesktopFileName(QStringLiteral("org.meo.OmniStore"));
+
+    // Translation availability follows the compiled catalogs, while locale
+    // selection follows the running system. Missing catalogs fall back to the
+    // English source strings instead of forcing a product language.
+    QTranslator translator;
+    if (translator.load(QLocale::system(), QStringLiteral("omnistore"),
+                        QStringLiteral("_"), QStringLiteral(":/i18n"))) {
+        app.installTranslator(&translator);
+    }
 
     // MeoUI owns the visual language. Basic keeps Qt Controls used internally
     // by the design system from importing a competing Material theme.
