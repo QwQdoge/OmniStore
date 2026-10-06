@@ -21,12 +21,17 @@ on:
         required: true
         default: false
         type: boolean
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/native-release.yml'
 
 permissions:
   contents: write
 
 concurrency:
-  group: omnistore-native-release-${{ inputs.tag }}
+  group: omnistore-native-release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || 'workflow-dry-run' }}
   cancel-in-progress: false
 
 jobs:
@@ -34,12 +39,13 @@ jobs:
     name: Build and verify native Linux bundle
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || 'v0.0.0-development' }}
+      RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || '0.0.0-development' }}
+      MEOUI_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.meoui_ref || 'main' }}
 
     steps:
       - name: Validate release inputs
-        env:
-          RELEASE_TAG: ${{ inputs.tag }}
-          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           case "$RELEASE_TAG" in
@@ -58,7 +64,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: QwQdoge/MeoUI
-          ref: ${{ inputs.meoui_ref }}
+          ref: ${{ env.MEOUI_REF }}
           path: MeoUI
 
       - name: Install Qt
@@ -75,7 +81,7 @@ jobs:
 
       - name: Build native release bundle
         env:
-          OMNISTORE_VERSION: ${{ inputs.version }}
+          OMNISTORE_VERSION: ${{ env.RELEASE_VERSION }}
         run: |
           set -euo pipefail
           python3 NativeUI/build_linux_release.py \
@@ -98,9 +104,6 @@ jobs:
             "$bundle/data/systemd/user/omnistore-task.service"
 
       - name: Assemble immutable release asset
-        env:
-          RELEASE_TAG: ${{ inputs.tag }}
-          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           asset="$RUNNER_TEMP/omnistore-linux-x64.tar.gz"
@@ -124,7 +127,7 @@ jobs:
       - name: Upload validated release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: omnistore-native-${{ inputs.version }}
+          name: omnistore-native-${{ env.RELEASE_VERSION }}
           path: |
             ${{ runner.temp }}/omnistore-linux-x64.tar.gz
             ${{ runner.temp }}/release-metadata.json
@@ -132,11 +135,9 @@ jobs:
           retention-days: 14
 
       - name: Publish GitHub prerelease
-        if: ${{ inputs.publish }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag }}
-          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
