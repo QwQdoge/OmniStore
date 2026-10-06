@@ -34,6 +34,17 @@ Window {
 
     Component.onCompleted: syncDynamicColor()
 
+    // Temporary release fail-safe until mutating work is owned by the
+    // persistent OmniStore transaction service. BackendBridge currently owns
+    // its child process, so allowing the window to close while it is busy can
+    // terminate an install/update in its destructor.
+    onClosing: function(close) {
+        if (!backend.busy)
+            return
+        close.accepted = false
+        closeBlockedDialog.open()
+    }
+
     Connections {
         target: MaterialColors
         function onSchemeChanged() {
@@ -126,5 +137,15 @@ Window {
         visible: detailSheet.isOpen && root.width < 1050 * MeoTheme.globalScale
         color: Qt.rgba(0, 0, 0, 0.30)
         TapHandler { onTapped: detailSheet.isOpen = false }
+    }
+
+    MeoDialog {
+        id: closeBlockedDialog
+        parent: Overlay.overlay
+        title: qsTr("OmniStore is still working")
+        message: qsTr("Keep OmniStore open until the current operation finishes. Closing it now could interrupt the package backend.")
+        icon: "hourglass_top"
+        confirmText: qsTr("Keep open")
+        showRejectButton: false
     }
 }
