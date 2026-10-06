@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="zh_CN" sourcelanguage="en">
+  <context>
+    <name>Main</name>
+    <message><source>OmniStore</source><translation>OmniStore</translation></message>
+    <message><source>Home</source><translation>首页</translation></message>
+    <message><source>Explore</source><translation>探索</translation></message>
+    <message><source>Installed</source><translation>已安装</translation></message>
+    <message><source>Updates</source><translation>更新</translation></message>
+    <message><source>Settings</source><translation>设置</translation></message>
+    <message><source>Search</source><translation>搜索</translation></message>
+    <message><source>Tasks</source><translation>任务</translation></message>
+    <message><source>Active package task</source><translation>正在执行软件包任务</translation></message>
+    <message><source>App details</source><translation>应用详情</translation></message>
+    <message><source>Dynamic color unavailable</source><translation>动态颜色不可用</translation></message>
+    <message><source>OmniStore could not load the current Meo desktop color scheme. The interface is using the safe preview palette.</source><translation>OmniStore 无法加载当前 Meo 桌面配色，界面暂时使用安全预览色板。</translation></message>
+  </context>
+
+  <context>
+    <name>HomePage</name>
+    <message><source>OmniStore</source><translation>OmniStore</translation></message>
+    <message><source>Search apps and packages</source><translation>搜索应用和软件包</translation></message>
+    <message><source>Featured</source><translation>精选</translation></message>
+    <message><source>For you</source><translation>为你推荐</translation></message>
+    <message><source>Explore</source><translation>探索</translation></message>
+    <message><source>Refresh recommendations</source><translation>刷新推荐</translation></message>
+    <message><source>No recommendations yet</source><translation>暂时没有推荐</translation></message>
+    <message><source>Search for an app, or refresh after your enabled sources are available.</source><translation>可以搜索应用，或在软件源可用后刷新推荐。</translation></message>
+  </context>
+
+  <context>
+    <name>ExplorePage</name>
+    <message><source>Explore</source><translation>探索</translation></message>
+    <message><source>Browse software across the sources available on this system.</source><translation>浏览此系统当前可用软件源中的软件。</translation></message>
+    <message><source>Categories</source><translation>分类</translation></message>
+    <message><source>Development</source><translation>开发</translation></message>
+    <message><source>Games</source><translation>游戏</translation></message>
+    <message><source>Internet</source><translation>网络</translation></message>
+    <message><source>Media</source><translation>影音</translation></message>
+    <message><source>Office</source><translation>办公</translation></message>
+    <message><source>Graphics</source><translation>图形</translation></message>
+    <message><source>System</source><translation>系统</translation></message>
+    <message><source>Utilities</source><translation>工具</translation></message>
+    <message><source>Recommended</source><translation>推荐</translation></message>
+    <message><source>Refresh</source><translation>刷新</translation></message>
+    <message><source>Could not load software</source><translation>无法加载软件</translation></message>
+    <message><source>Nothing found in this category</source><translation>此分类中没有找到内容</translation></message>
+    <message><source>Nothing to explore yet</source><translation>暂时没有可浏览的内容</translation></message>
+    <message><source>Check your enabled software sources or try again after refreshing metadata.</source><translation>请检查已启用的软件源，或刷新元数据后重试。</translation></message>
+  </context>
+
+  <context>
+    <name>SearchPage</name>
+    <message><source>Search</source><translation>搜索</translation></message>
+    <message><source>Search all enabled OmniStore sources. Results keep their real source and variant metadata.</source><translation>搜索所有已启用的 OmniStore 软件源，结果会保留真实的软件源和版本信息。</translation></message>
+    <message><source>App or package name</source><translation>应用或软件包名称</translation></message>
+    <message><source>Search failed</source><translation>搜索失败</translation></message>
+    <message><source>No results</source><translation>没有结果</translation></message>
+    <message><source>Find an app</source><translation>查找应用</translation></message>
+    <message><source>Try another name, or check enabled sources in Settings.</source><translation>尝试其他名称，或在设置中检查已启用的软件源。</translation></message>
+    <message><source>Search Pacman, AUR, Flatpak and any other enabled OmniStore sources from one place.</source><translation>在一个地方搜索 Pacman、AUR、Flatpak 和其他已启用的 OmniStore 软件源。</translation></message>
+  </context>
+
+  <context>
+    <name>InstalledPage</name>
+    <message><source>Installed</source><translation>已安装</translation></message>
+    <message><source>Refresh</source><translation>刷新</translation></message>
+    <message><source>No installed apps found</source><translation>没有找到已安装应用</translation></message>
+  </context>
+
+  <context>
+    <name>UpdatesPage</name>
+    <message><source>Updates</source><translation>更新</translation></message>
+    <message><source>One review surface for updates reported by every enabled OmniStore source.</source><translation>统一查看所有已启用 OmniStore 软件源提供的更新。</translation></message>
+    <message><source>Check</source><translation>检查更新</translation></message>
+    <message><source>Update all</source><translation>全部更新</translation></message>
+    <message><source>%1 updates available</source><translation>有 %1 个可用更新</translation></message>
+    <message><source>Up to date</source><translation>已是最新</translation></message>
+    <message><source>Everything is up to date</source><translation>所有软件都是最新版本</translation></message>
+    <message><source>Run another check whenever you want to refresh all enabled sources.</source><translation>需要时可再次检查，以刷新所有已启用的软件源。</translation></message>
+    <message><source>Update all %1 items?</source><translation>更新全部 %1 项？</translation></message>
+    <message><source>Each update stays with its original package source. OmniStore's existing unified-update backend performs the actual work and reports progress on the Tasks page.</source><translation>每个更新都会继续使用原来的软件源。OmniStore 的统一更新后端负责实际操作，并在任务页面报告进度。</translation></message>
+  </context>
+
+  <context>
+    <name>TasksPage</name>
+    <message><source>Tasks</source><translation>任务</translation></message>
+    <message><source>Package transactions continue in the background even when the OmniStore window is closed.</source><translation>即使关闭 OmniStore 窗口，软件包事务也会继续在后台运行。</translation></message>
+    <message><source>No active task</source><translation>没有正在执行的任务</translation></message>
+    <message><source>Task error</source><translation>任务错误</translation></message>
+    <message><source>Package operation log</source><translation>软件包操作日志</translation></message>
+    <message><source>No package task output yet.</source><translation>暂时没有软件包任务输出。</translation></message>
+  </context>
+
+  <context>
+    <name>AppDetailsPane</name>
+    <message><source>App details</source><translation>应用详情</translation></message>
+    <message><source>Native</source><translation>原生</translation></message>
+    <message><source>Open</source><translation>打开</translation></message>
+    <message><source>Remove</source><translation>卸载</translation></message>
+    <message><source>Install</source><translation>安装</translation></message>
+    <message><source>Screenshots</source><translation>截图</translation></message>
+    <message><source>About</source><translation>关于</translation></message>
+    <message><source>No description is available for this package.</source><translation>此软件包暂无描述。</translation></message>
+    <message><source>Source</source><translation>软件源</translation></message>
+    <message><source>Version</source><translation>版本</translation></message>
+    <message><source>License</source><translation>许可证</translation></message>
+    <message><source>Installed size</source><translation>安装后大小</translation></message>
+    <message><source>Unknown</source><translation>未知</translation></message>
+    <message><source>Available variants</source><translation>可用版本</translation></message>
+    <message><source>Unknown version</source><translation>未知版本</translation></message>
+    <message><source>Install location</source><translation>安装位置</translation></message>
+    <message><source>Details unavailable</source><translation>无法获取详情</translation></message>
+    <message><source>Install %1?</source><translation>安装 %1？</translation></message>
+    <message><source>Remove %1?</source><translation>卸载 %1？</translation></message>
+    <message><source>Cancel</source><translation>取消</translation></message>
+  </context>
+
+  <context>
+    <name>AppRow</name>
+    <message><source>Unknown app</source><translation>未知应用</translation></message>
+    <message><source>Open</source><translation>打开</translation></message>
+    <message><source>Remove</source><translation>卸载</translation></message>
+    <message><source>Install</source><translation>安装</translation></message>
+    <message><source>App details</source><translation>应用详情</translation></message>
+    <message><source>Install %1?</source><translation>安装 %1？</translation></message>
+    <message><source>Remove %1?</source><translation>卸载 %1？</translation></message>
+    <message><source>Cancel</source><translation>取消</translation></message>
+  </context>
+
+  <context>
+    <name>StoreAppCard</name>
+    <message><source>Install</source><translation>安装</translation></message>
+    <message><source>Open</source><translation>打开</translation></message>
+    <message><source>App details</source><translation>应用详情</translation></message>
+  </context>
+
+  <context>
+    <name>UpdateRow</name>
+    <message><source>Unknown</source><translation>未知</translation></message>
+    <message><source>Update</source><translation>更新</translation></message>
+    <message><source>Update %1?</source><translation>更新 %1？</translation></message>
+    <message><source>Cancel</source><translation>取消</translation></message>
+  </context>
+
+  <context>
+    <name>SettingsPage</name>
+    <message><source>Settings</source><translation>设置</translation></message>
+    <message><source>Dark mode</source><translation>深色模式</translation></message>
+    <message><source>Software sources</source><translation>软件源</translation></message>
+    <message><source>Unavailable on this system</source><translation>此系统上不可用</translation></message>
+    <message><source>Trusted source</source><translation>受信任的软件源</translation></message>
+    <message><source>Requires review</source><translation>需要确认</translation></message>
+    <message><source>Available</source><translation>可用</translation></message>
+    <message><source>Source</source><translation>软件源</translation></message>
+    <message><source>No source registry available</source><translation>没有可用的软件源注册表</translation></message>
+    <message><source>Loading source plugins…</source><translation>正在加载软件源插件…</translation></message>
+    <message><source>The backend did not return any installed source plugins.</source><translation>后端没有返回已安装的软件源插件。</translation></message>
+    <message><source>Runtime</source><translation>运行环境</translation></message>
+    <message><source>Current state</source><translation>当前状态</translation></message>
+  </context>
+</TS>
