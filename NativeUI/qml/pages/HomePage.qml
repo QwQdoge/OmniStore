@@ -7,7 +7,20 @@ import MeoUI 1.0
 Item {
     id: root
     signal searchRequested(string query)
+    signal exploreRequested()
     signal detailsRequested(var app)
+
+    function featuredModel() {
+        if (backend.featuredApps.length > 0)
+            return backend.featuredApps.slice(0, 2)
+        return backend.trendingApps.slice(0, 2)
+    }
+
+    function popularModel() {
+        if (backend.trendingApps.length > 0)
+            return backend.trendingApps.slice(0, 6)
+        return backend.featuredApps.slice(0, 6)
+    }
 
     Component.onCompleted: {
         backend.loadRecommendations()
@@ -19,111 +32,46 @@ Item {
         anchors.fill: parent
         clip: true
         contentWidth: width
-        contentHeight: contentColumn.implicitHeight + 64 * MeoTheme.globalScale
+        contentHeight: contentColumn.implicitHeight + 72 * MeoTheme.globalScale
         boundsBehavior: Flickable.StopAtBounds
 
         ColumnLayout {
             id: contentColumn
             width: Math.min(parent.width - 48 * MeoTheme.globalScale,
-                            1120 * MeoTheme.globalScale)
+                            1180 * MeoTheme.globalScale)
             x: (parent.width - width) / 2
             y: 28 * MeoTheme.globalScale
-            spacing: 22 * MeoTheme.globalScale
+            spacing: 26 * MeoTheme.globalScale
 
-            PageHeading {
+            RowLayout {
                 Layout.fillWidth: true
-                title: qsTr("OmniStore")
-                subtitle: qsTr("Apps from your Linux sources, with one native MeoArch interface.")
-                icon: "storefront"
-            }
+                spacing: 18 * MeoTheme.globalScale
 
-            MeoSearchBar {
-                Layout.fillWidth: true
-                Layout.maximumWidth: 760 * MeoTheme.globalScale
-                placeholder: qsTr("Search apps and packages")
-                trailingIcon: ""
-                visualStyle: "pixel"
-                onAccepted: function(query) {
-                    if (query.trim().length > 0)
-                        root.searchRequested(query.trim())
-                }
-            }
-
-            GridLayout {
-                Layout.fillWidth: true
-                columns: width >= 760 * MeoTheme.globalScale ? 3 : 1
-                columnSpacing: 10 * MeoTheme.globalScale
-                rowSpacing: 10 * MeoTheme.globalScale
-
-                MeoCard {
+                ColumnLayout {
                     Layout.fillWidth: true
-                    Layout.minimumHeight: 112 * MeoTheme.globalScale
-                    type: "filled"
-                    padding: 16 * MeoTheme.globalScale
-                    ColumnLayout {
-                        width: parent.width
-                        spacing: 4 * MeoTheme.globalScale
-                        MeoIcon { icon: "system_update"; size: 26 * MeoTheme.globalScale; color: MeoTheme.primary }
-                        MeoText {
-                            text: qsTr("%1 updates").arg(backend.updates.length)
-                            typeRole: "title"; typeSize: "small"; emphasized: true
-                            color: MeoTheme.contentOnSurface
-                        }
-                        MeoText {
-                            text: qsTr("Across enabled package sources")
-                            typeRole: "body"; typeSize: "small"
-                            color: MeoTheme.contentOnSurfaceVariant
-                        }
+                    spacing: 5 * MeoTheme.globalScale
+                    MeoText {
+                        text: qsTr("Discover software")
+                        typeRole: "headline"
+                        typeSize: "medium"
+                        emphasized: true
+                        color: MeoTheme.contentOnSurface
+                    }
+                    MeoText {
+                        Layout.fillWidth: true
+                        text: qsTr("Apps and packages from the software sources available on this MeoArch system.")
+                        typeRole: "body"
+                        typeSize: "medium"
+                        color: MeoTheme.contentOnSurfaceVariant
+                        wrapMode: Text.WordWrap
                     }
                 }
 
-                MeoCard {
-                    Layout.fillWidth: true
-                    Layout.minimumHeight: 112 * MeoTheme.globalScale
-                    type: "filled"
-                    padding: 16 * MeoTheme.globalScale
-                    ColumnLayout {
-                        width: parent.width
-                        spacing: 4 * MeoTheme.globalScale
-                        MeoIcon { icon: "apps"; size: 26 * MeoTheme.globalScale; color: MeoTheme.primary }
-                        MeoText {
-                            text: qsTr("%1 installed").arg(backend.installedApps.length)
-                            typeRole: "title"; typeSize: "small"; emphasized: true
-                            color: MeoTheme.contentOnSurface
-                        }
-                        MeoText {
-                            text: qsTr("Managed apps currently detected")
-                            typeRole: "body"; typeSize: "small"
-                            color: MeoTheme.contentOnSurfaceVariant
-                        }
-                    }
-                }
-
-                MeoCard {
-                    Layout.fillWidth: true
-                    Layout.minimumHeight: 112 * MeoTheme.globalScale
-                    type: "filled"
-                    padding: 16 * MeoTheme.globalScale
-                    ColumnLayout {
-                        width: parent.width
-                        spacing: 4 * MeoTheme.globalScale
-                        MeoIcon {
-                            icon: backend.busy ? "sync" : "verified_user"
-                            size: 26 * MeoTheme.globalScale
-                            color: MeoTheme.primary
-                        }
-                        MeoText {
-                            text: backend.busy ? backend.busyAction : qsTr("Ready")
-                            typeRole: "title"; typeSize: "small"; emphasized: true
-                            color: MeoTheme.contentOnSurface
-                            elide: Text.ElideRight
-                        }
-                        MeoText {
-                            text: qsTr("Existing OmniStore backend and safety rules")
-                            typeRole: "body"; typeSize: "small"
-                            color: MeoTheme.contentOnSurfaceVariant
-                        }
-                    }
+                MeoButton {
+                    text: qsTr("Explore all")
+                    type: "tonal"
+                    icon.name: "explore"
+                    onClicked: root.exploreRequested()
                 }
             }
 
@@ -136,11 +84,104 @@ Item {
                 tone: "error"
             }
 
+            GridLayout {
+                Layout.fillWidth: true
+                columns: width >= 760 * MeoTheme.globalScale ? 3 : 1
+                columnSpacing: 10 * MeoTheme.globalScale
+                rowSpacing: 10 * MeoTheme.globalScale
+
+                MeoCard {
+                    Layout.fillWidth: true
+                    type: "filled"
+                    compact: true
+                    padding: 14 * MeoTheme.globalScale
+                    RowLayout {
+                        width: parent.width
+                        spacing: 10 * MeoTheme.globalScale
+                        MeoIcon { icon: "apps"; size: 24 * MeoTheme.globalScale; color: MeoTheme.primary }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1 * MeoTheme.globalScale
+                            MeoText {
+                                text: qsTr("%1 installed").arg(backend.installedApps.length)
+                                typeRole: "title"; typeSize: "small"; emphasized: true
+                                color: MeoTheme.contentOnSurface
+                            }
+                            MeoText {
+                                text: qsTr("Detected applications")
+                                typeRole: "label"; typeSize: "small"
+                                color: MeoTheme.contentOnSurfaceVariant
+                            }
+                        }
+                    }
+                }
+
+                MeoCard {
+                    Layout.fillWidth: true
+                    type: "filled"
+                    compact: true
+                    padding: 14 * MeoTheme.globalScale
+                    RowLayout {
+                        width: parent.width
+                        spacing: 10 * MeoTheme.globalScale
+                        MeoIcon { icon: "system_update"; size: 24 * MeoTheme.globalScale; color: MeoTheme.primary }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1 * MeoTheme.globalScale
+                            MeoText {
+                                text: qsTr("%1 updates").arg(backend.updates.length)
+                                typeRole: "title"; typeSize: "small"; emphasized: true
+                                color: MeoTheme.contentOnSurface
+                            }
+                            MeoText {
+                                text: qsTr("Across enabled sources")
+                                typeRole: "label"; typeSize: "small"
+                                color: MeoTheme.contentOnSurfaceVariant
+                            }
+                        }
+                    }
+                }
+
+                MeoCard {
+                    Layout.fillWidth: true
+                    type: "filled"
+                    compact: true
+                    padding: 14 * MeoTheme.globalScale
+                    RowLayout {
+                        width: parent.width
+                        spacing: 10 * MeoTheme.globalScale
+                        MeoIcon {
+                            icon: backend.busy ? "sync" : "verified_user"
+                            size: 24 * MeoTheme.globalScale
+                            color: MeoTheme.primary
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1 * MeoTheme.globalScale
+                            MeoText {
+                                Layout.fillWidth: true
+                                text: backend.busy ? backend.busyAction : qsTr("Ready")
+                                typeRole: "title"; typeSize: "small"; emphasized: true
+                                color: MeoTheme.contentOnSurface
+                                elide: Text.ElideRight
+                            }
+                            MeoText {
+                                text: qsTr("OmniStore package backend")
+                                typeRole: "label"; typeSize: "small"
+                                color: MeoTheme.contentOnSurfaceVariant
+                            }
+                        }
+                    }
+                }
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 MeoText {
                     text: qsTr("Featured")
-                    typeRole: "title"; typeSize: "medium"; emphasized: true
+                    typeRole: "title"
+                    typeSize: "medium"
+                    emphasized: true
                     color: MeoTheme.contentOnSurface
                 }
                 Item { Layout.fillWidth: true }
@@ -157,49 +198,96 @@ Item {
                 }
             }
 
-            ColumnLayout {
+            GridLayout {
                 Layout.fillWidth: true
-                spacing: 8 * MeoTheme.globalScale
+                columns: width >= 820 * MeoTheme.globalScale ? 2 : 1
+                columnSpacing: 14 * MeoTheme.globalScale
+                rowSpacing: 14 * MeoTheme.globalScale
 
                 Repeater {
-                    model: backend.featuredApps.length > 0 ? backend.featuredApps
-                                                         : backend.trendingApps
-                    delegate: AppRow {
+                    model: root.featuredModel()
+                    delegate: StoreAppCard {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        prominent: true
+                        app: modelData
+                        onDetailsRequested: function(app) { root.detailsRequested(app) }
+                    }
+                }
+            }
+
+            MeoEmptyState {
+                Layout.fillWidth: true
+                visible: root.featuredModel().length === 0 && !backend.busy
+                icon: "storefront"
+                title: qsTr("No featured apps yet")
+                description: qsTr("Refresh recommendations or check the software sources enabled in Settings.")
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                MeoText {
+                    text: qsTr("Popular")
+                    typeRole: "title"
+                    typeSize: "medium"
+                    emphasized: true
+                    color: MeoTheme.contentOnSurface
+                }
+                Item { Layout.fillWidth: true }
+                MeoButton {
+                    text: qsTr("Browse categories")
+                    type: "text"
+                    icon.name: "arrow_forward"
+                    onClicked: root.exploreRequested()
+                }
+            }
+
+            GridLayout {
+                Layout.fillWidth: true
+                columns: width >= 1040 * MeoTheme.globalScale ? 3
+                         : width >= 700 * MeoTheme.globalScale ? 2 : 1
+                columnSpacing: 12 * MeoTheme.globalScale
+                rowSpacing: 12 * MeoTheme.globalScale
+
+                Repeater {
+                    model: root.popularModel()
+                    delegate: StoreAppCard {
                         required property var modelData
                         Layout.fillWidth: true
                         app: modelData
                         onDetailsRequested: function(app) { root.detailsRequested(app) }
                     }
                 }
-
-                MeoEmptyState {
-                    Layout.fillWidth: true
-                    visible: backend.featuredApps.length === 0
-                             && backend.trendingApps.length === 0
-                             && !backend.busy
-                    icon: "explore"
-                    title: qsTr("No recommendations yet")
-                    description: qsTr("Search for an app, or refresh after your enabled sources are available.")
-                }
             }
 
-            MeoText {
-                visible: backend.forYouApps.length > 0
-                text: qsTr("For you")
-                typeRole: "title"; typeSize: "medium"; emphasized: true
-                color: MeoTheme.contentOnSurface
-            }
             ColumnLayout {
                 Layout.fillWidth: true
                 visible: backend.forYouApps.length > 0
-                spacing: 8 * MeoTheme.globalScale
-                Repeater {
-                    model: backend.forYouApps
-                    delegate: AppRow {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        app: modelData
-                        onDetailsRequested: function(app) { root.detailsRequested(app) }
+                spacing: 12 * MeoTheme.globalScale
+
+                MeoText {
+                    text: qsTr("For you")
+                    typeRole: "title"
+                    typeSize: "medium"
+                    emphasized: true
+                    color: MeoTheme.contentOnSurface
+                }
+
+                GridLayout {
+                    Layout.fillWidth: true
+                    columns: width >= 1040 * MeoTheme.globalScale ? 3
+                             : width >= 700 * MeoTheme.globalScale ? 2 : 1
+                    columnSpacing: 12 * MeoTheme.globalScale
+                    rowSpacing: 12 * MeoTheme.globalScale
+
+                    Repeater {
+                        model: backend.forYouApps.slice(0, 6)
+                        delegate: StoreAppCard {
+                            required property var modelData
+                            Layout.fillWidth: true
+                            app: modelData
+                            onDetailsRequested: function(app) { root.detailsRequested(app) }
+                        }
                     }
                 }
             }
