@@ -38,6 +38,7 @@ qt_add_qml_module(omnistore-native
         qml/Main.qml
         qml/components/AppDetailsPane.qml
         qml/components/AppRow.qml
+        qml/components/StoreAppCard.qml
         qml/components/RepositoryManager.qml
         qml/components/SystemStatusPanel.qml
         qml/components/UpdateRow.qml
