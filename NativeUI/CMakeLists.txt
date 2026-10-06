@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.21)
-project(OmniStoreNative VERSION 0.1.0 LANGUAGES CXX)
+project(OmniStoreNative LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(QT_QML_GENERATE_QMLLS_INI ON)
+
+# Release/package builds should pass the exact package version here. Development
+# builds deliberately report "development" rather than a stale product version.
+set(OMNISTORE_RELEASE_VERSION "development" CACHE STRING "OmniStore release version shown by the native client")
 
 find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 qt_standard_project_setup(REQUIRES 6.6)
@@ -56,6 +60,7 @@ target_link_libraries(omnistore-native PRIVATE
 
 target_compile_definitions(omnistore-native PRIVATE
     OMNISTORE_SOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+    OMNISTORE_RELEASE_VERSION="${OMNISTORE_RELEASE_VERSION}"
 )
 
 if(TARGET meoui_module)
