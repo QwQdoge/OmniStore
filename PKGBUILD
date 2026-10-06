@@ -1,15 +1,15 @@
 pkgname=omnistore-bin
 pkgver=0.1.2
-pkgrel=5
-pkgdesc="OmniStore unified software manager with a native MeoUI frontend and Flutter fallback"
+pkgrel=6
+pkgdesc="OmniStore software manager with the native MeoUI frontend"
 arch=('x86_64')
 options=('!strip' '!debug')
 url="https://github.com/QwQdoge/OmniStore"
 license=('GPL-3.0-only')
-depends=('gtk3' 'libdbusmenu-gtk3' 'libayatana-appindicator' 'ksshaskpass'
-         'pacman-contrib' 'python' 'pyalpm')
-optdepends=('meoui-qml: preferred native Qt/QML frontend on MeoArch'
-            'meo-release: shared MeoArch application catalog and channel integration'
+depends=('qt6-base' 'qt6-declarative' 'meoui-qml' 'meo-kde-runtime'
+         'ksshaskpass' 'libsecret' 'pacman-contrib' 'python' 'pyalpm')
+optdepends=('meo-release: shared MeoArch application catalog and channel integration'
+            'meo-account: use Meo Account'
             'flatpak: install applications from Flatpak remotes')
 makedepends=('python')
 provides=('omnistore')
@@ -25,7 +25,7 @@ sha256sums=('SKIP'
 
 _release_source_dir() {
   if [ -x "$srcdir/release_bundle/backends/python_server" ] \
-      && [ -x "$srcdir/release_bundle/frontend" ] \
+      && [ -x "$srcdir/release_bundle/omnistore-native" ] \
       && [ -d "$srcdir/release_bundle/data" ]; then
     printf '%s\n' "$srcdir/release_bundle"
   else
@@ -47,13 +47,19 @@ prepare() {
 
   local _src_dir
   _src_dir="$(_release_source_dir)" || {
-    error "Could not find the extracted OmniStore release bundle."
+    error "Could not find the native OmniStore release bundle."
     return 1
   }
 
-  # Do not ship a command which a stale release backend cannot implement.
-  # The verifier runs the bundled binary with an isolated XDG environment and
-  # requires the exact schema consumed by Meo Settings.
+  test ! -e "$_src_dir/frontend" || {
+    error "Native MeoArch release bundle must not contain the retired Flutter frontend."
+    return 1
+  }
+  test -f "$_src_dir/data/systemd/user/omnistore-task.service" || {
+    error "Native release bundle is missing the transaction service unit."
+    return 1
+  }
+
   python "$srcdir/verify_release_exporter_contract.py" \
     --backend "$_src_dir/backends/python_server"
 }
@@ -63,7 +69,7 @@ package() {
 
   local _src_dir
   _src_dir="$(_release_source_dir)" || {
-    error "Could not find the verified OmniStore release bundle."
+    error "Could not find the verified native OmniStore release bundle."
     return 1
   }
 
@@ -87,20 +93,21 @@ package() {
 #!/bin/sh
 set -eu
 cd /opt/omnistore
-# MeoArch installs the shared MeoUI QML module. New Linux release bundles add
-# omnistore-native; older bundles remain runnable through the Flutter frontend.
-if [ -x /opt/omnistore/omnistore-native ] \
-   && [ -f /usr/lib/qt6/qml/MeoUI/qmldir ]; then
-  exec /opt/omnistore/omnistore-native "$@"
-fi
-exec /opt/omnistore/frontend "$@"
+exec /opt/omnistore/omnistore-native "$@"
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore"
 
+  cat > "${pkgdir}/usr/bin/omnistore-daemon" <<'EOF'
+#!/bin/sh
+set -eu
+cd /opt/omnistore
+exec /opt/omnistore/backends/python_server "$@"
+EOF
+  chmod +x "${pkgdir}/usr/bin/omnistore-daemon"
+
   cat > "${pkgdir}/usr/bin/omnistore-apps-export" <<'EOF'
 #!/bin/sh
-# Stable, read-only ABI for Meo Settings.  It deliberately calls the bundled
-# Python backend instead of opening either graphical frontend or a daemon.
+# Stable, read-only ABI for Meo Settings.
 set -eu
 if [ "$#" -ne 0 ]; then
   echo "omnistore-apps-export takes no arguments" >&2
@@ -133,6 +140,7 @@ case "$command" in
 esac
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-apps"
+
   cat > "${pkgdir}/usr/bin/omnistore-cli" <<'EOF'
 #!/bin/sh
 set -eu
@@ -140,6 +148,7 @@ cd /opt/omnistore
 exec /opt/omnistore/backends/python_server "$@"
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-cli"
+
   cat > "${pkgdir}/usr/bin/meo-update" <<'EOF'
 #!/bin/sh
 set -eu
@@ -160,40 +169,60 @@ case "$command" in
 esac
 EOF
   chmod +x "${pkgdir}/usr/bin/meo-update"
+
   cat > "${pkgdir}/usr/bin/omnistore-cleanup-systemd" <<'EOF'
 #!/bin/sh
 set -eu
 systemctl --user disable --now omnistore-update.timer >/dev/null 2>&1 || true
 systemctl --user stop omnistore-update.service >/dev/null 2>&1 || true
+systemctl --user stop omnistore-task.service >/dev/null 2>&1 || true
 rm -f "$HOME/.config/systemd/user/omnistore-update.timer"
 rm -f "$HOME/.config/systemd/user/omnistore-update.service"
 rm -f "$HOME/.config/systemd/user/omnistore-update.timer.d/interval.conf"
 rmdir "$HOME/.config/systemd/user/omnistore-update.timer.d" >/dev/null 2>&1 || true
 systemctl --user daemon-reload >/dev/null 2>&1 || true
-echo "OmniStore user systemd units removed."
+echo "OmniStore user systemd overrides removed and services stopped."
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore-cleanup-systemd"
 
+  install -Dm644 "$_src_dir/data/systemd/user/omnistore-task.service" \
+    "${pkgdir}/usr/lib/systemd/user/omnistore-task.service"
   install -Dm644 "$_src_dir/data/systemd/user/omnistore-update.service" \
     "${pkgdir}/usr/lib/systemd/user/omnistore-update.service"
   install -Dm644 "$_src_dir/data/systemd/user/omnistore-update.timer" \
     "${pkgdir}/usr/lib/systemd/user/omnistore-update.timer"
-  install -Dm644 "$_src_dir/data/docs/UNIFIED_UPDATES.md" \
-    "${pkgdir}/usr/share/doc/omnistore/UNIFIED_UPDATES.md"
+
+  for doc in UNIFIED_UPDATES.md NATIVE_MEOUI_FRONTEND.md TRANSACTION_RELEASE_CONTRACT.md; do
+    if [ -f "$_src_dir/data/docs/$doc" ]; then
+      install -Dm644 "$_src_dir/data/docs/$doc" \
+        "${pkgdir}/usr/share/doc/omnistore/$doc"
+    fi
+  done
   install -Dm644 "$_src_dir/LICENSE" \
     "${pkgdir}/usr/share/licenses/$pkgname/LICENSE"
 
-  install -Dm644 "$_src_dir/omnistore.svg" "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"
+  install -Dm644 "$_src_dir/omnistore.svg" \
+    "${pkgdir}/usr/share/icons/hicolor/scalable/apps/org.meo.OmniStore.svg"
+  install -Dm644 "$_src_dir/omnistore.svg" \
+    "${pkgdir}/usr/share/icons/hicolor/scalable/apps/omnistore.svg"
 
   install -d "${pkgdir}/usr/share/applications"
-  cat > "${pkgdir}/usr/share/applications/omnistore.desktop" <<EOF
+  cat > "${pkgdir}/usr/share/applications/org.meo.OmniStore.desktop" <<'EOF'
 [Desktop Entry]
+Version=1.0
 Name=OmniStore
-Comment=A unified software repository search and management tool
-Exec=/usr/bin/omnistore
-Icon=omnistore
+GenericName=App Store
+GenericName[zh_CN]=应用商店
+Comment=Unified software store for MeoArch
+Comment[zh_CN]=MeoArch 的统一软件商店
+Keywords=apps;software;packages;updates;MeoArch;
+Keywords[zh_CN]=应用;软件;软件包;更新;MeoArch;
+Exec=/usr/bin/omnistore %u
+Icon=org.meo.OmniStore
 Terminal=false
 Type=Application
-Categories=Utility;
+Categories=Utility;PackageManager;
+MimeType=x-scheme-handler/omnistore;
+StartupNotify=true
 EOF
 }
