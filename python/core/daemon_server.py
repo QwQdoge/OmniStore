@@ -7,6 +7,8 @@ import os
 from typing import Any
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from core.backend import OmnistoreBackend, captured_output_var
+from core.transaction_manager import TransactionManager
+
 
 class PydanticEncoder(json.JSONEncoder):
     """Murphy-proof: JSON encoder that handles Pydantic models automatically."""
@@ -14,6 +16,7 @@ class PydanticEncoder(json.JSONEncoder):
         if isinstance(obj, BaseModel):
             return obj.model_dump(exclude_none=True)
         return super().default(obj)
+
 
 class DaemonRequest(BaseModel):
     action: str = Field(..., min_length=1, max_length=100)
@@ -25,7 +28,6 @@ class DaemonRequest(BaseModel):
     def validate_args(cls, v):
         if not isinstance(v, list):
             raise ValueError("args must be a list")
-        # Murphy-proof: Payload size limit for args
         if len(str(v)) > 50000:
             raise ValueError("args payload too large (max 50,000 characters)")
         return v
@@ -35,7 +37,6 @@ class DaemonRequest(BaseModel):
     def validate_kwargs(cls, v):
         if not isinstance(v, dict):
             raise ValueError("kwargs must be a dict")
-        # Murphy-proof: Payload size limit for kwargs
         if len(str(v)) > 100000:
             raise ValueError("kwargs payload too large (max 100,000 characters)")
         return v
@@ -52,19 +53,43 @@ class DaemonRequest(BaseModel):
             "run_set_plugin_enabled", "run_remove_plugin",
             "run_get_storage_info", "run_clean_system", "run_get_essentials",
             "run_import_packages", "run_export_packages",
-            "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env", "ping", "shutdown"
+            "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env",
+            "task.submit", "task.get", "task.list",
+            "ping", "shutdown"
         }
         if v not in ALLOWED_ACTIONS:
             raise ValueError(f"Forbidden Action: {v}")
         return v
 
+
+def _transaction_manager_for(backend: OmnistoreBackend) -> TransactionManager:
+    manager = getattr(backend, "_omnistore_transaction_manager", None)
+    if manager is None:
+        manager = TransactionManager(backend)
+        setattr(backend, "_omnistore_transaction_manager", manager)
+    return manager
+
+
+def _task_id_from_request(cmd_data: DaemonRequest) -> str:
+    if "task_id" in cmd_data.kwargs:
+        return str(cmd_data.kwargs.get("task_id") or "").strip()
+    if cmd_data.args:
+        return str(cmd_data.args[0] or "").strip()
+    return ""
+
+
 async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, stop_event: asyncio.Event):
     """
     Murphy-proof daemon client handler.
     Ensures per-client isolation, payload limits, and robust error recovery.
+
+    Package mutations should use task.submit/task.get/task.list. Those actions
+    hand ownership to TransactionManager before returning, so a disconnected UI
+    does not implicitly cancel the package transaction.
     """
     client_addr = writer.get_extra_info('peername')
     logging.debug(f"New daemon client connected: {client_addr}")
+    transaction_manager = _transaction_manager_for(backend)
 
     try:
         while True:
@@ -94,7 +119,8 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                 try:
                     writer.write(json.dumps({"status": "error", "error": "Payload size limit exceeded (max 512KB)"}).encode('utf-8') + b'\n')
                     await writer.drain()
-                except Exception: pass
+                except Exception:
+                    pass
                 break
             except asyncio.TimeoutError:
                 logging.debug(f"Daemon client {client_addr} connection timed out")
@@ -104,7 +130,8 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                 try:
                     writer.write(json.dumps({"status": "error", "error": f"Protocol Violation: {str(ex)}"}).encode('utf-8') + b'\n')
                     await writer.drain()
-                except Exception: pass
+                except Exception:
+                    pass
                 break
 
             captured_stdout = io.StringIO()
@@ -116,13 +143,39 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                     if action == "ping":
                         return {
                             "status": "success",
-                            "response": {"protocol": 1, "pid": os.getpid()},
+                            "response": {"protocol": 2, "pid": os.getpid(), "transactions": True},
                         }
                     if action == "shutdown":
                         stop_event.set()
                         return {"status": "success", "response": True}
 
-                    # Murphy-proof: Protect backend initialization
+                    if action == "task.submit":
+                        if cmd_data.args:
+                            return {"status": "error", "error": "task.submit accepts keyword arguments only"}
+                        try:
+                            task = transaction_manager.submit(**cmd_data.kwargs)
+                        except (TypeError, ValueError) as exc:
+                            return {"status": "error", "error": str(exc)}
+                        return {"status": "success", "response": task}
+
+                    if action == "task.get":
+                        task_id = _task_id_from_request(cmd_data)
+                        if not task_id:
+                            return {"status": "error", "error": "missing_task_id"}
+                        try:
+                            task = transaction_manager.get(task_id)
+                        except KeyError:
+                            return {"status": "error", "error": "transaction_not_found"}
+                        return {"status": "success", "response": task}
+
+                    if action == "task.list":
+                        if cmd_data.args or cmd_data.kwargs:
+                            return {"status": "error", "error": "task.list accepts no arguments"}
+                        return {"status": "success", "response": transaction_manager.list()}
+
+                    # Protect normal backend calls with the established backend
+                    # reference-counted context. The daemon's outer context keeps
+                    # shared resources alive for persistent transaction tasks.
                     try:
                         async with backend:
                             args = cmd_data.args
@@ -134,7 +187,8 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                                     obj = getattr(obj, part, None)
                                 except Exception as ge:
                                     return {"status": "error", "error": f"Attribute access error on '{part}': {str(ge)}"}
-                                if obj is None: break
+                                if obj is None:
+                                    break
 
                             if obj is not None:
                                 if callable(obj):
@@ -156,15 +210,12 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                                     return result
                                 return {"status": "success", "response": res,
                                         "stdout": captured_stdout.getvalue()}
-                            else:
-                                return {"status": "error", "error": f"Method or attribute not found: {action}"}
+                            return {"status": "error", "error": f"Method or attribute not found: {action}"}
                     except Exception as ae:
                         return {"status": "error", "error": f"Backend context error: {str(ae)}"}
 
                 try:
-                    # Murphy-proof: Server-side watchdog to prevent hanging actions
                     result = await asyncio.wait_for(execute_action(), timeout=120)
-                    # Murphy-proof: Use custom encoder to handle nested models
                     writer.write(json.dumps(result, ensure_ascii=False, cls=PydanticEncoder).encode('utf-8') + b'\n')
                 except asyncio.TimeoutError:
                     writer.write(json.dumps({
@@ -183,7 +234,6 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                         "traceback": err_trace if backend.config.get("logging.level") == "DEBUG" else None
                     }).encode('utf-8') + b'\n')
             finally:
-                # Murphy-proof: Guarantee contextvar reset even on task cancellation or timeout
                 captured_output_var.reset(token)
 
             try:
@@ -198,14 +248,16 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
         try:
             writer.close()
             await writer.wait_closed()
-        except Exception: pass
+        except Exception:
+            pass
+
 
 async def daemon_watchdog(stop_event: asyncio.Event):
     """Murphy-proof watchdog that monitors the parent process."""
     import os
-    import time
     parent_pid = os.getppid()
-    if parent_pid == 1: return
+    if parent_pid == 1:
+        return
 
     while not stop_event.is_set():
         try:
