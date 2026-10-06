@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(QStringLiteral("MeoArch"));
     QCoreApplication::setApplicationName(QStringLiteral("OmniStore"));
     QCoreApplication::setApplicationVersion(QString::fromUtf8(OMNISTORE_RELEASE_VERSION));
+    app.setDesktopFileName(QStringLiteral("org.meo.OmniStore"));
 
     // MeoUI owns the visual language. Basic keeps Qt Controls used internally
     // by the design system from importing a competing Material theme.
