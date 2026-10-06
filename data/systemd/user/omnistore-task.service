@@ -1,0 +1,20 @@
+[Unit]
+Description=OmniStore package transaction service
+Documentation=https://github.com/QwQdoge/OmniStore
+After=default.target
+
+[Service]
+Type=simple
+RuntimeDirectory=omnistore
+RuntimeDirectoryMode=0700
+ExecStart=/opt/omnistore/backends/python_server --daemon --daemon-socket=%t/omnistore/daemon.sock
+Restart=on-failure
+RestartSec=2s
+TimeoutStopSec=20s
+
+# Package transactions run with the logged-in user's authority. Narrow root
+# elevation, when required, remains owned by the existing package helper/policy.
+NoNewPrivileges=no
+
+[Install]
+WantedBy=default.target
