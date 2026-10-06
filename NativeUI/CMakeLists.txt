@@ -10,7 +10,7 @@ set(QT_QML_GENERATE_QMLLS_INI ON)
 # builds deliberately report "development" rather than a stale product version.
 set(OMNISTORE_RELEASE_VERSION "development" CACHE STRING "OmniStore release version shown by the native client")
 
-find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui Network Qml Quick QuickControls2)
+find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui LinguistTools Network Qml Quick QuickControls2)
 qt_standard_project_setup(REQUIRES 6.6)
 
 # Development builds can point at a MeoUI checkout. Production MeoArch builds
@@ -52,6 +52,15 @@ qt_add_qml_module(omnistore-native
         qml/pages/InstalledPage.qml
         qml/pages/TasksPage.qml
         qml/pages/SettingsPage.qml
+)
+
+# Translation catalogs are compiled into the binary under :/i18n. Runtime
+# selection is locale-driven in main.cpp; an unavailable locale falls back to
+# the English source strings naturally.
+qt_add_translations(omnistore-native
+    TS_FILES
+        i18n/omnistore_zh_CN.ts
+    RESOURCE_PREFIX "/i18n"
 )
 
 target_link_libraries(omnistore-native PRIVATE
