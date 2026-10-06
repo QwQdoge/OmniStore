@@ -8,12 +8,16 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 
+#ifndef OMNISTORE_RELEASE_VERSION
+#define OMNISTORE_RELEASE_VERSION "development"
+#endif
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     QCoreApplication::setOrganizationName(QStringLiteral("MeoArch"));
     QCoreApplication::setApplicationName(QStringLiteral("OmniStore"));
-    QCoreApplication::setApplicationVersion(QStringLiteral("0.1.0-native"));
+    QCoreApplication::setApplicationVersion(QString::fromUtf8(OMNISTORE_RELEASE_VERSION));
 
     // MeoUI owns the visual language. Basic keeps Qt Controls used internally
     // by the design system from importing a competing Material theme.
