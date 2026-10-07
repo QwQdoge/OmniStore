@@ -7,9 +7,11 @@ import 'package:frontend/models/source_plugin_info.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
+
 import "add_source_dialog.dart";
 import '../pages/github_integration_page.dart';
 import '../controllers/settings_controller.dart';
+
 import 'package:frontend/core/utils/toast.dart';
 
 class SourcesConfigCard extends StatefulWidget {
@@ -252,9 +254,15 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                             ? const SizedBox.square(
                                 key: ValueKey('loading'),
                                 dimension: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
-                            : const Icon(Icons.radar_rounded, size: 18, key: ValueKey('idle')),
+                            : const Icon(
+                                Icons.radar_rounded,
+                                size: 18,
+                                key: ValueKey('idle'),
+                              ),
                       ),
                       label: Text(l10n.autoDetect),
                     ),
@@ -269,6 +277,7 @@ class _SourcesConfigCardState extends State<SourcesConfigCard> {
                         sourcesMap[src] ?? (src == 'github' || src == 'bitu');
                     return FilterChip(
                       label: Text(_displayName(src)),
+                      tooltip: l10n.sourceFilterSemantics(_displayName(src)),
                       selected: isEnabled,
                       onSelected: _updatingSources.contains(src)
                           ? null
