@@ -14,6 +14,9 @@ Flickable {
                                             && selectedIdentity === fallbackIdentity
     readonly property var app: selectedMatches ? backend.selectedApp : fallbackApp
     readonly property var screenshots: app.screenshots || []
+    readonly property var currentPlan: transactions.installPlan || ({})
+    readonly property var currentPlanRequest: currentPlan.request || ({})
+    readonly property bool planMatches: String(currentPlanRequest.name || "") === root.appId()
 
     clip: true
     contentWidth: width
@@ -147,12 +150,23 @@ Flickable {
             MeoButton {
                 visible: !root.app.installed
                 Layout.fillWidth: true
-                text: qsTr("Install")
+                text: transactions.planning ? qsTr("Preparing…") : qsTr("Install")
                 type: "filled"
-                icon.name: "download"
-                enabled: !backend.busy && !transactions.busy && transactions.available
-                onClicked: installDialog.open()
+                icon.name: transactions.planning ? "hourglass_top" : "download"
+                enabled: !backend.busy && !transactions.busy
+                         && !transactions.planning && transactions.available
+                onClicked: transactions.planInstall(root.appId(), root.sourceName(), root.installUrl())
             }
+        }
+
+        InstallPlanReview {
+            Layout.fillWidth: true
+            visible: !root.app.installed && (transactions.planning || root.planMatches)
+            plan: root.planMatches ? transactions.installPlan : ({})
+            planning: transactions.planning
+            errorMessage: transactions.errorMessage
+            onConfirmRequested: transactions.applyInstallPlan()
+            onCancelRequested: transactions.clearInstallPlan()
         }
 
         MeoBanner {
@@ -164,6 +178,16 @@ Flickable {
                   : qsTr("Install, remove and update actions require the OmniStore background transaction service.")
             icon: "cloud_off"
             tone: "warning"
+        }
+
+        MeoBanner {
+            Layout.fillWidth: true
+            visible: transactions.available && transactions.errorMessage.length > 0
+                     && !transactions.busy && !transactions.planning
+            title: qsTr("Package action unavailable")
+            text: transactions.errorMessage
+            icon: "error"
+            tone: "error"
         }
 
         MeoProgressBar {
@@ -346,17 +370,6 @@ Flickable {
             icon: "error"
             tone: "error"
         }
-    }
-
-    MeoDialog {
-        id: installDialog
-        parent: Overlay.overlay
-        title: qsTr("Install %1?").arg(root.appName())
-        message: qsTr("OmniStore will hand this install to its background transaction service through %1. The task can continue after you close the store.").arg(root.sourceName())
-        icon: "download"
-        confirmText: qsTr("Install")
-        cancelText: qsTr("Cancel")
-        onConfirmed: transactions.installApp(root.appId(), root.sourceName(), root.installUrl())
     }
 
     MeoDialog {
