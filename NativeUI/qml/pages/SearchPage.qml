@@ -62,23 +62,30 @@ Item {
             tone: "error"
         }
 
-        ListView {
+        GridView {
             id: results
             Layout.fillWidth: true
             Layout.fillHeight: true
+            visible: backend.searchResults.length > 0
             clip: true
-            spacing: 8 * MeoTheme.globalScale
             model: backend.searchResults
             boundsBehavior: Flickable.StopAtBounds
+            cellWidth: width >= 680 * MeoTheme.globalScale ? width / 2 : width
+            cellHeight: 238 * MeoTheme.globalScale
 
-            delegate: AppRow {
+            delegate: Item {
                 required property var modelData
-                width: ListView.view.width
-                app: modelData
-                onDetailsRequested: function(app) { root.detailsRequested(app) }
-            }
+                width: results.cellWidth
+                height: results.cellHeight
 
-            footer: Item { width: 1; height: 20 * MeoTheme.globalScale }
+                StoreAppCard {
+                    anchors.fill: parent
+                    anchors.rightMargin: 10 * MeoTheme.globalScale
+                    anchors.bottomMargin: 10 * MeoTheme.globalScale
+                    app: parent.modelData
+                    onDetailsRequested: function(app) { root.detailsRequested(app) }
+                }
+            }
         }
 
         MeoEmptyState {
