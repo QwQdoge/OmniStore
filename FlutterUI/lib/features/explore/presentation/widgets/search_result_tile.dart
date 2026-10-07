@@ -54,9 +54,8 @@ class SearchResultTile extends StatelessWidget {
       child: AppCard(
         borderRadius: 16,
         color: isSelected && isDesktop
-            ? Theme.of(
-                context,
-              ).colorScheme.primaryContainer.withValues(alpha: 0.3)
+            ? Theme.of(context).colorScheme.primaryContainer
+                  .withValues(alpha: 0.3)
             : null,
         onTap: onTap,
         child: Padding(
@@ -135,13 +134,24 @@ class SearchResultTile extends StatelessWidget {
                 ? Selector<TaskController, String>(
                     selector: (context, c) => c.speed,
                     builder: (context, speed, child) {
-                      if (speed.trim().isEmpty) return const SizedBox.shrink();
-                      return Text(
-                        speed,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
+                      Widget content;
+                      if (speed.trim().isEmpty) {
+                        content = const SizedBox.shrink(
+                          key: ValueKey('speed_empty'),
+                        );
+                      } else {
+                        content = Text(
+                          speed,
+                          key: const ValueKey('speed_text'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                        );
+                      }
+                      return SmoothSizeSwitcher(
+                        alignment: Alignment.centerRight,
+                        child: content,
                       );
                     },
                   )
