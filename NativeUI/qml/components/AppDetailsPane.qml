@@ -17,7 +17,7 @@ Flickable {
     readonly property var screenshots: app.screenshots || []
     readonly property var currentPlan: transactions.installPlan || ({})
     readonly property var currentPlanRequest: currentPlan.request || ({})
-    readonly property bool planMatches: String(currentPlanRequest.name || "") === root.appId()
+    readonly property bool planMatches: String(currentPlanRequest.name || "") === root.packageIdentity()
                                         && String(currentPlanRequest.source || "") === root.sourceName()
 
     clip: true
@@ -37,6 +37,10 @@ Flickable {
                 return variants[index]
         }
         return ({})
+    }
+    function packageIdentity() {
+        const variant = selectedVariant()
+        return String(variant.id || variant.name || app.id || app.name || "")
     }
     function versionText() {
         const variant = selectedVariant()
@@ -164,7 +168,7 @@ Flickable {
                 type: "filled"
                 icon.name: "open_in_new"
                 enabled: !backend.busy
-                onClicked: backend.launchApp(root.appId(), root.sourceName())
+                onClicked: backend.launchApp(root.packageIdentity(), root.sourceName())
             }
             MeoButton {
                 visible: !!root.app.installed
@@ -183,7 +187,7 @@ Flickable {
                 icon.name: transactions.planning ? "hourglass_top" : "download"
                 enabled: !backend.busy && !transactions.busy
                          && !transactions.planning && transactions.available
-                onClicked: transactions.planInstall(root.appId(), root.sourceName(), root.installUrl())
+                onClicked: transactions.planInstall(root.packageIdentity(), root.sourceName(), root.installUrl())
             }
         }
 
@@ -363,7 +367,7 @@ Flickable {
             MeoText {
                 Layout.fillWidth: true
                 visible: (root.app.variants || []).length > 1
-                text: qsTr("The selected source is used for the installation plan. Trust, availability and permissions are checked again before you can install.")
+                text: qsTr("The selected package and source are used for the installation plan. Trust, availability and permissions are checked again before you can install.")
                 typeRole: "body"
                 typeSize: "small"
                 color: MeoTheme.contentOnSurfaceVariant
@@ -376,10 +380,12 @@ Flickable {
                     required property var modelData
                     Layout.fillWidth: true
                     headline: String(modelData.source || qsTr("Source"))
+                    overline: String(modelData.id || modelData.name || "")
                     supportingText: String(modelData.version || qsTr("Unknown version"))
                                    + (modelData.installed_size ? " · " + String(modelData.installed_size) : "")
                     leadingIcon: modelData.installed ? "check_circle" : "package_2"
                     interactive: true
+                    enabled: !transactions.planning && !transactions.busy
                     isSegmented: true
                     vibrant: true
                     selected: String(modelData.source || "") === root.sourceName()
@@ -420,6 +426,6 @@ Flickable {
         icon: "delete"
         confirmText: qsTr("Remove")
         cancelText: qsTr("Cancel")
-        onConfirmed: transactions.removeApp(root.appId(), root.sourceName())
+        onConfirmed: transactions.removeApp(root.packageIdentity(), root.sourceName())
     }
 }
