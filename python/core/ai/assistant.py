@@ -102,11 +102,18 @@ class AIAssistant:
         return text
 
     def _get_language(self) -> str:
-        lang = str(self.cm.get("ui.language", "zh-CN"))
-        if "zh" in lang:
-            return "繁体中文" if ("TW" in lang or "Hant" in lang) else "简体中文"
-        if "ja" in lang: return "日本語"
-        if "es" in lang: return "Español"
+        lang = str(self.cm.get("ui.language", "zh-CN")).strip()
+        if lang.lower() == "system":
+            lang = next((os.environ[key].strip() for key in
+                         ("LC_ALL", "LC_MESSAGES", "LANG")
+                         if os.environ.get(key, "").strip()), "en_US")
+        parts = re.split(r"[-_.@]", lang.lower())
+        if parts[0] == "zh":
+            return "繁体中文" if {"tw", "hk", "mo", "hant"}.intersection(parts) else "简体中文"
+        if parts[0] == "ja":
+            return "日本語"
+        if parts[0] == "es":
+            return "Español"
         return "English"
 
     def _is_circuit_open(self) -> bool:
