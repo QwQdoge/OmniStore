@@ -3,6 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show Localizations;
+
+import '../core/app_navigator.dart';
+
 import 'package:collection/collection.dart';
 
 import '../data/repositories/config_repository.dart';
@@ -867,10 +871,17 @@ class BackendService {
     final rawAi = config['ai'];
     if (rawAi is! Map) return null;
     final ai = Map<String, dynamic>.from(rawAi);
-    final language = OmniStoreAiPrompts.language(
+    final context = omnistoreNavigatorKey.currentContext;
+    final systemLocale =
+        (context == null || !context.mounted
+            ? null
+            : Localizations.maybeLocaleOf(context)) ??
+        PlatformDispatcher.instance.locale;
+    final language = OmniStoreAiPrompts.languageForPreference(
       config['ui'] is Map
           ? '${(config['ui'] as Map)['language'] ?? 'zh-CN'}'
           : 'zh-CN',
+      systemLocale.toLanguageTag(),
     );
     return (ai: ai, language: language);
   }

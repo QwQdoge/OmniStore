@@ -25,9 +25,8 @@ void main() {
   });
 
   test('account consent is bound to credential, provider, and destination', () {
-    final source = File(
-      'lib/features/ai/account_ai_service.dart',
-    ).readAsStringSync();
+    final source = File('lib/features/ai/account_ai_service.dart')
+        .readAsStringSync();
 
     expect(source, contains("consent['credentialId'] != credential.id"));
     expect(source, contains("consent['provider'] != credential.provider"));
@@ -60,6 +59,75 @@ void main() {
       expect(prompt.userPrompt, isNotEmpty);
     }
   });
+
+  test('AI language uses desktop locale only for the system preference', () {
+    expect(
+      OmniStoreAiPrompts.languageForPreference(' system ', 'zh-Hant-TW'),
+      'Traditional Chinese',
+    );
+    expect(
+      OmniStoreAiPrompts.languageForPreference('SYSTEM', 'es-MX'),
+      'Spanish',
+    );
+    expect(
+      OmniStoreAiPrompts.languageForPreference('ja-JP', 'en-US'),
+      'Japanese',
+    );
+    expect(OmniStoreAiPrompts.language('ZH_hant'), 'Traditional Chinese');
+    expect(OmniStoreAiPrompts.language('zh_HK.UTF-8'), 'Traditional Chinese');
+    expect(OmniStoreAiPrompts.language('zh-CN'), 'Simplified Chinese');
+    expect(OmniStoreAiPrompts.language('not-zh-TW'), 'English');
+  });
+
+  test(
+    'consent purpose translations retain identical request data and safety',
+    () {
+      List<OmniStoreAiPrompt> prompts(String language) => [
+        OmniStoreAiPrompts.explain('App', 'Description', language),
+        OmniStoreAiPrompts.summarizeUpdate('App', '1', '2', language),
+        OmniStoreAiPrompts.cli('App', 'Flatpak', language),
+        OmniStoreAiPrompts.conflicts('App', language),
+        OmniStoreAiPrompts.pick(language),
+        OmniStoreAiPrompts.correction('query', language),
+        OmniStoreAiPrompts.compare('App', language),
+        OmniStoreAiPrompts.health(const {'os': 'MeoArch'}, language),
+        OmniStoreAiPrompts.analyzeError('sample log', language),
+        OmniStoreAiPrompts.recommend('drawing app', language),
+        OmniStoreAiPrompts.installationDecision('App', const [
+          {'source': 'Flatpak'},
+        ], language),
+      ];
+      final english = prompts('English');
+      for (final language in [
+        'Simplified Chinese',
+        'Traditional Chinese',
+        'Japanese',
+        'Spanish',
+      ]) {
+        final translated = prompts(language);
+        for (var i = 0; i < english.length; i++) {
+          expect(translated[i].purpose, isNot(english[i].purpose));
+          expect(translated[i].userPrompt, english[i].userPrompt);
+          expect(translated[i].dataCategories, english[i].dataCategories);
+          expect(translated[i].maxOutputTokens, english[i].maxOutputTokens);
+          expect(translated[i].systemPrompt, contains('Respond in $language.'));
+          expect(translated[i].systemPrompt, contains('untrusted data'));
+          expect(
+            translated[i].systemPrompt,
+            contains('Do not claim that you executed'),
+          );
+        }
+      }
+      expect(
+        english.first.purpose,
+        "Explain an application's purpose and value",
+      );
+      expect(
+        english[2].systemPrompt,
+        contains('must never be executed automatically'),
+      );
+    },
+  );
 
   test('installation decision prompt sends only supplied variants', () {
     final prompt = OmniStoreAiPrompts.installationDecision('Example', const [

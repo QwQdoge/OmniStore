@@ -197,3 +197,23 @@ async def test_installation_decision_rejects_invalid_ai_json(monkeypatch):
     monkeypatch.setattr(assistant, "_post_request", invalid_response)
     decision = await assistant.installation_decision("Example", [{"source": "Flatpak"}])
     assert decision.recommendedVariant == "Flatpak"
+
+
+@pytest.mark.parametrize("preference,environment,expected", [
+    ("system", {"LC_ALL": "ja_JP.UTF-8", "LC_MESSAGES": "es_ES", "LANG": "zh_TW"}, "日本語"),
+    ("system", {"LC_MESSAGES": "zh_Hant_TW.UTF-8", "LANG": "en_US"}, "繁体中文"),
+    ("system", {"LANG": "es_MX.UTF-8"}, "Español"),
+    (" SYSTEM ", {}, "English"),
+    ("system", {"LC_ALL": "", "LC_MESSAGES": " ", "LANG": "zh_CN.UTF-8"}, "简体中文"),
+    ("en-US", {"LANG": "zh_TW"}, "English"),
+    ("ZH_hant", {"LANG": "en_US"}, "繁体中文"),
+    ("not-zh-TW", {}, "English"),
+    ("system", {"LANG": "C.UTF-8"}, "English"),
+])
+def test_ai_language_preference_and_posix_precedence(monkeypatch, preference, environment, expected):
+    for key in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        monkeypatch.delenv(key, raising=False)
+    for key, value in environment.items():
+        monkeypatch.setenv(key, value)
+    assistant = AIAssistant(DummyConfig({"ui": {"language": preference}}))
+    assert assistant._get_language() == expected
