@@ -1,4 +1,5 @@
 #include "backendbridge.h"
+#include "externalinstallrequest.h"
 #include "repositorybridge.h"
 #include "systembridge.h"
 #include "transactionclient.h"
@@ -10,6 +11,8 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QTranslator>
+#include <QVariantMap>
+#include <cstdio>
 
 #ifndef OMNISTORE_RELEASE_VERSION
 #define OMNISTORE_RELEASE_VERSION "development"
@@ -18,6 +21,11 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    const auto request = ExternalInstallRequest::parse(app.arguments().mid(1));
+    if (request.status == ExternalInstallRequest::Status::Rejected) {
+        std::fprintf(stderr, "%s\n", qPrintable(request.error));
+        return 2;
+    }
     QCoreApplication::setOrganizationName(QStringLiteral("MeoArch"));
     QCoreApplication::setApplicationName(QStringLiteral("OmniStore"));
     QCoreApplication::setApplicationVersion(QString::fromUtf8(OMNISTORE_RELEASE_VERSION));
@@ -45,6 +53,14 @@ int main(int argc, char *argv[])
     engine.addImportPath(QString::fromUtf8(OMNISTORE_MEOUI_BUILD_IMPORT_PATH));
 #endif
     engine.addImportPath(QStringLiteral("/usr/lib/qt6/qml"));
+    QVariantMap pendingInstallRequest;
+    if (request.status == ExternalInstallRequest::Status::Accepted) {
+        pendingInstallRequest.insert(QStringLiteral("id"), request.packageId);
+        pendingInstallRequest.insert(QStringLiteral("name"), request.packageId);
+        pendingInstallRequest.insert(QStringLiteral("primary_source"), request.source);
+        pendingInstallRequest.insert(QStringLiteral("external_install_request"), true);
+    }
+    engine.rootContext()->setContextProperty(QStringLiteral("pendingInstallRequest"), pendingInstallRequest);
     engine.rootContext()->setContextProperty(QStringLiteral("backend"), &backend);
     engine.rootContext()->setContextProperty(QStringLiteral("repoBridge"), &repositoryBridge);
     engine.rootContext()->setContextProperty(QStringLiteral("systemBridge"), &systemBridge);

@@ -51,6 +51,10 @@ Window {
     Component.onCompleted: {
         syncDynamicColor()
         transactions.reconnect()
+        // An external request only opens the current details/review flow.
+        // Planning and applying still require separate user actions.
+        if (pendingInstallRequest.id)
+            Qt.callLater(function() { root.showDetails(pendingInstallRequest) })
     }
 
     // Package mutations are owned by omnistore-task.service rather than this
