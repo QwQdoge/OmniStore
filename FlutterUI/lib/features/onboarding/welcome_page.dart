@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+
+import 'source_setup_profile.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -25,6 +28,7 @@ class _WelcomePageState extends State<WelcomePage> {
 
   // Software sources configuration
   bool _enableAur = false;
+  SourceSetupProfile _sourceProfile = const SourceSetupProfile();
 
   // AI assistant configuration
   bool _enableAI = false;
@@ -97,13 +101,18 @@ class _WelcomePageState extends State<WelcomePage> {
       setState(() {
         _envData = env;
         _isCheckingEnv = false;
-        final level = _evaluateEnvLevel(env);
-        _enableAur = level == 'ok';
+        _sourceProfile = SourceSetupProfile.fromEnvironment(env);
+        _enableAur =
+            _sourceProfile.supportsAur &&
+            env['aur_helper'] is Map &&
+            env['aur_helper']['status'] == 'ok';
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _envData = null;
+        _sourceProfile = const SourceSetupProfile();
+        _enableAur = false;
         _isCheckingEnv = false;
       });
     }
@@ -124,33 +133,35 @@ class _WelcomePageState extends State<WelcomePage> {
     return 'ok';
   }
 
-  void _startBootstrap() {
+  void _startBootstrap({bool includeAur = false}) {
     if (_isBootstrapping) return;
     setState(() {
       _isBootstrapping = true;
       _bootstrapLogs = 'Initializing system configuration bootstrap...\n';
     });
 
-    _bootstrapSub = BackendService.instance.bootstrap().listen(
-      (data) {
-        _parseBootstrapLine(data);
-      },
-      onError: (err) {
-        if (!mounted) return;
-        setState(() {
-          _bootstrapLogs += '\n[ERROR] Bootstrap failed: $err\n';
-          _isBootstrapping = false;
-        });
-      },
-      onDone: () {
-        if (!mounted) return;
-        setState(() {
-          _bootstrapLogs += '\n[INFO] Configuration sequence completed.\n';
-          _isBootstrapping = false;
-        });
-        _checkEnvironment();
-      },
-    );
+    _bootstrapSub = BackendService.instance
+        .bootstrap(includeAur: includeAur)
+        .listen(
+          (data) {
+            _parseBootstrapLine(data);
+          },
+          onError: (err) {
+            if (!mounted) return;
+            setState(() {
+              _bootstrapLogs += '\n[ERROR] Bootstrap failed: $err\n';
+              _isBootstrapping = false;
+            });
+          },
+          onDone: () {
+            if (!mounted) return;
+            setState(() {
+              _bootstrapLogs += '\n[INFO] Configuration sequence completed.\n';
+              _isBootstrapping = false;
+            });
+            _checkEnvironment();
+          },
+        );
   }
 
   void _parseBootstrapLine(String line) {
@@ -283,9 +294,22 @@ class _WelcomePageState extends State<WelcomePage> {
 
     config['first_run'] = false;
 
-    config['search'] = config['search'] ?? {};
-    config['search']['sources'] = config['search']['sources'] ?? {};
-    config['search']['sources']['aur'] = _enableAur;
+    config['search'] = Map<String, dynamic>.from(
+      config['search'] as Map? ?? {},
+    );
+    final sources = Map<String, dynamic>.from(
+      config['search']['sources'] as Map? ?? {},
+    );
+    config['search']['sources'] = sources;
+    config['plugins'] = Map<String, dynamic>.from(
+      config['plugins'] as Map? ?? {},
+    );
+    final enabledPlugins = Map<String, dynamic>.from(
+      config['plugins']['enabled'] as Map? ?? {},
+    );
+    config['plugins']['enabled'] = enabledPlugins;
+    _sourceProfile.apply(sources, enabledPlugins, enableAur: _enableAur);
+    if (!_sourceProfile.detected) sources['aur'] = false;
 
     config['ai'] = config['ai'] ?? {};
     config['ai']['enabled'] = _enableAI;
@@ -334,11 +358,15 @@ class _WelcomePageState extends State<WelcomePage> {
                       onCheckEnvironment: _checkEnvironment,
                       isBootstrapping: _isBootstrapping,
                       bootstrapLogs: _bootstrapLogs,
-                      onStartBootstrap: _startBootstrap,
+                      onStartBootstrap: () => _startBootstrap(),
                       terminalScrollController: _terminalScrollController,
                     ),
                     WelcomeSourcesPage(
                       enableAur: _enableAur,
+                      recommendedSources: _sourceProfile.sources,
+                      supportsAur: _sourceProfile.supportsAur,
+                      isBootstrapping: _isBootstrapping,
+                      onBootstrapAur: () => _startBootstrap(includeAur: true),
                       onAurChanged: (val) {
                         setState(() {
                           _enableAur = val;

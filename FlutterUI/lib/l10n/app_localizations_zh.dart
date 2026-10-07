@@ -1407,6 +1407,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get channelBeta => 'Beta 版';
+
+  @override
+  String get installAurHelper => '安装 AUR 助手';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2811,4 +2814,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get channelBeta => 'Beta 版';
+
+  @override
+  String get installAurHelper => '安裝 AUR 助手';
 }

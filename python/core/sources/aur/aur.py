@@ -4,6 +4,7 @@ import aiohttp
 import subprocess
 import os
 import re
+import shutil
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
 from core.sources.utils import PrivilegeManager
@@ -80,6 +81,11 @@ class AurSource(UnifiedSource):
             return []
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         callback = self._async_callback(callback)
+        name = package.get("name")
+        if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9+._-]{0,199}", name):
+            if callback:
+                await callback("[ERROR] AUR package name is invalid.")
+            return False
         try:
             if not await self.privilege.ensure_privileged(callback):
                 return False
@@ -90,13 +96,13 @@ class AurSource(UnifiedSource):
                 if callback: await callback("[ERROR] AUR package name missing.")
                 return False
 
-            helper = "yay" if os.path.exists("/usr/bin/yay") else "makepkg"
+            helper = next((command for command in ("yay", "paru") if shutil.which(command)), "")
 
-            if helper == "yay":
+            if helper:
                 if callback:
-                    await callback(f"[INFO] Running: yay -S --noconfirm {name}")
+                    await callback(f"[INFO] Running: {helper} -S --noconfirm {name}")
                 async with safe_subprocess(
-                    "yay", "--sudoflags", "-A", "-S", "--noconfirm", name,
+                    helper, "--sudoflags", "-A", "-S", "--noconfirm", name,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT,
                     env=privilege_env,
@@ -139,6 +145,11 @@ class AurSource(UnifiedSource):
 
     async def uninstall(self, package: Dict[str, Any], callback=None) -> bool:
         callback = self._async_callback(callback)
+        name = package.get("name")
+        if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9+._-]{0,199}", name):
+            if callback:
+                await callback("[ERROR] AUR package name is invalid.")
+            return False
         try:
             if not await self.privilege.ensure_privileged(callback):
                 return False

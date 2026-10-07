@@ -2718,6 +2718,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Beta'**
   String get channelBeta;
+
+  /// No description provided for @installAurHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Install AUR helper'**
+  String get installAurHelper;
 }
 
 class _AppLocalizationsDelegate

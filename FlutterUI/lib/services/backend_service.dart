@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:collection/collection.dart';
 
@@ -1112,13 +1113,16 @@ class BackendService {
     return data is Map<String, dynamic> ? data : const {"status": "error"};
   }
 
-  Stream<String> bootstrap() {
+  Stream<String> bootstrap({bool includeAur = false}) {
     if (kIsWeb || _isTestEnv) {
       return Stream.value(
         "[CALLBACK] {\"log\": \"[INFO] Environment is ready!\"}",
       );
     }
-    return _safeStream(["--bootstrap", "--json"]);
+    return _safeStream([
+      includeAur ? "--bootstrap-aur" : "--bootstrap",
+      "--json",
+    ]);
   }
 
   Future<Map<String, List<AppPackage>>> getRecommendations() async {

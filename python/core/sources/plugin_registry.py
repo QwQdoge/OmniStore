@@ -210,6 +210,9 @@ class PluginRegistry:
             ApkSource, ChocolateySource, FdroidSource,
         )
 
+        from core.sources.linux_native import (
+            PrivilegedAptSource, PrivilegedDnfSource, PrivilegedZypperSource, PrivilegedApkSource,
+        )
         factories: Dict[str, Callable[[], UnifiedSource]] = {
             "builtin.github": lambda: GitHubSource(self.session, self.cm),
             "builtin.bitu": lambda: BituSource(self.session, self.cm),
@@ -220,10 +223,10 @@ class PluginRegistry:
             "builtin.winget": WingetSource,
             "builtin.scoop": ScoopSource,
             "builtin.brew": BrewSource,
-            "builtin.apt": AptSource,
-            "builtin.dnf": DnfSource,
-            "builtin.zypper": ZypperSource,
-            "builtin.apk": ApkSource,
+            "builtin.apt": PrivilegedAptSource,
+            "builtin.dnf": PrivilegedDnfSource,
+            "builtin.zypper": PrivilegedZypperSource,
+            "builtin.apk": PrivilegedApkSource,
             "builtin.chocolatey": ChocolateySource,
             "builtin.fdroid": FdroidSource,
         }

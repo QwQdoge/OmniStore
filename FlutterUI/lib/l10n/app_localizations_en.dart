@@ -1517,4 +1517,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get channelBeta => 'Beta';
+
+  @override
+  String get installAurHelper => 'Install AUR helper';
 }

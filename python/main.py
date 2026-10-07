@@ -50,6 +50,7 @@ async def main():
     cmd.add_argument("--set-config")
     cmd.add_argument("--check-env", action="store_true")
     cmd.add_argument("--bootstrap", action="store_true")
+    cmd.add_argument("--bootstrap-aur", action="store_true")
     cmd.add_argument("--list-custom-repos", action="store_true")
     cmd.add_argument("--list-plugins", action="store_true")
     cmd.add_argument("--set-plugin-enabled")

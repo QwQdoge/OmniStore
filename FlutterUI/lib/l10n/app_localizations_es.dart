@@ -1522,4 +1522,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get channelBeta => 'Beta';
+
+  @override
+  String get installAurHelper => 'Instalar asistente de AUR';
 }
