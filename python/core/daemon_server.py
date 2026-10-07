@@ -45,9 +45,9 @@ class DaemonRequest(BaseModel):
     @classmethod
     def validate_action(cls, v):
         # Package mutation entry points are intentionally absent here. A daemon
-        # client must use task.submit so ownership transfers to TransactionManager
-        # before the client receives a response. The standalone CLI can still
-        # call run_install/run_uninstall/run_update directly when explicitly used.
+        # client must use transaction.plan + task.submit so ownership transfers
+        # to TransactionManager before the client receives a response. The
+        # standalone CLI can still call backend mutation commands explicitly.
         ALLOWED_ACTIONS = {
             "run_search", "run_check_updates", "run_recommendations", "run_app_details",
             "run_list_installed", "run_list_custom_repos", "run_add_custom_repo",
@@ -57,7 +57,7 @@ class DaemonRequest(BaseModel):
             "run_get_storage_info", "run_clean_system", "run_get_essentials",
             "run_import_packages", "run_export_packages",
             "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env",
-            "task.submit", "task.get", "task.list",
+            "transaction.plan", "task.submit", "task.get", "task.list",
             "ping", "shutdown"
         }
         if v not in ALLOWED_ACTIONS:
@@ -86,9 +86,10 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
     Murphy-proof daemon client handler.
     Ensures per-client isolation, payload limits, and robust error recovery.
 
-    Package mutations use task.submit/task.get/task.list. Those actions hand
-    ownership to TransactionManager before returning, so a disconnected UI does
-    not implicitly cancel the package transaction.
+    Package installs use transaction.plan followed by task.submit(plan_hash).
+    Remove/update actions still use task.submit directly. Transaction ownership
+    always transfers to TransactionManager before returning, so a disconnected
+    UI does not implicitly cancel package work.
     """
     client_addr = writer.get_extra_info('peername')
     logging.debug(f"New daemon client connected: {client_addr}")
@@ -146,17 +147,44 @@ async def handle_daemon_client(backend: OmnistoreBackend, reader: asyncio.Stream
                     if action == "ping":
                         return {
                             "status": "success",
-                            "response": {"protocol": 2, "pid": os.getpid(), "transactions": True},
+                            "response": {
+                                "protocol": 3,
+                                "pid": os.getpid(),
+                                "transactions": True,
+                                "plans": True,
+                            },
                         }
                     if action == "shutdown":
                         stop_event.set()
                         return {"status": "success", "response": True}
 
+                    if action == "transaction.plan":
+                        if cmd_data.args:
+                            return {"status": "error", "error": "transaction.plan accepts keyword arguments only"}
+                        kwargs = dict(cmd_data.kwargs)
+                        kind = str(kwargs.pop("kind", "install") or "install").strip().lower()
+                        if kind != "install":
+                            return {"status": "error", "error": "unsupported_plan_kind"}
+                        try:
+                            plan = await transaction_manager.plan_install(**kwargs)
+                        except (TypeError, ValueError) as exc:
+                            return {"status": "error", "error": str(exc)}
+                        return {"status": "success", "response": plan}
+
                     if action == "task.submit":
                         if cmd_data.args:
                             return {"status": "error", "error": "task.submit accepts keyword arguments only"}
+                        kwargs = dict(cmd_data.kwargs)
+                        plan_hash = str(kwargs.pop("plan_hash", "") or "").strip()
                         try:
-                            task = transaction_manager.submit(**cmd_data.kwargs)
+                            if plan_hash:
+                                if kwargs:
+                                    return {"status": "error", "error": "planned task.submit accepts only plan_hash"}
+                                task = transaction_manager.submit_planned(plan_hash)
+                            else:
+                                if str(kwargs.get("kind") or "").strip().lower() == "install":
+                                    return {"status": "error", "error": "install_requires_reviewed_plan"}
+                                task = transaction_manager.submit(**kwargs)
                         except (TypeError, ValueError) as exc:
                             return {"status": "error", "error": str(exc)}
                         return {"status": "success", "response": task}
