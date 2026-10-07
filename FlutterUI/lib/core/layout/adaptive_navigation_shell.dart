@@ -11,6 +11,8 @@ import 'widgets/download_action.dart';
 import 'widgets/desktop_top_bar.dart';
 import 'widgets/hamburger_button.dart';
 import 'widgets/rail_bottom_actions.dart';
+import 'widgets/route_sidebar.dart';
+
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class NavDestination {
@@ -191,52 +193,96 @@ class AdaptiveNavigationShell extends StatelessWidget {
                         top: false,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: NavigationRail(
-                            extended: isExpanded,
-                            minWidth: 88,
-                            minExtendedWidth: 216,
-                            groupAlignment: -0.9,
-                            useIndicator: true,
-                            selectedIndex: _railIndex(
-                              railDestinations,
-                              selectedIndex,
-                            ),
-                            onDestinationSelected: (i) => context
-                                .read<NavigationController>()
-                                .setIndex(railDestinations[i].index),
-                            labelType: isExpanded
-                                ? NavigationRailLabelType.none
-                                : NavigationRailLabelType.all,
-                            leading: HamburgerButton(
-                              isExpanded: isExpanded,
-                              onToggle: () => context
-                                  .read<SettingsController>()
-                                  .setRailExpanded(!isExpanded),
-                            ),
-                            destinations: [
-                              for (final d in railDestinations)
-                                NavigationRailDestination(
-                                  icon: Tooltip(
-                                    message: d.label,
-                                    child: Icon(d.icon),
+                          child: isExpanded
+                              ? Column(
+                                  children: [
+                                    HamburgerButton(
+                                      isExpanded: true,
+                                      onToggle: () => context
+                                          .read<SettingsController>()
+                                          .setRailExpanded(false),
+                                    ),
+                                    Expanded(
+                                      child: RouteSidebar(
+                                        routes: [
+                                          for (final destination
+                                              in railDestinations)
+                                            SidebarRoute(
+                                              id: '${destination.index}',
+                                              title: destination.label,
+                                              icon:
+                                                  selectedIndex ==
+                                                      destination.index
+                                                  ? destination.selectedIcon
+                                                  : destination.icon,
+                                            ),
+                                        ],
+                                        selectedRoute: '$selectedIndex',
+                                        searchLabel: l10n.search,
+                                        emptyLabel: l10n.noResults,
+                                        onSelected: (id) {
+                                          final destination = railDestinations
+                                              .firstWhere(
+                                                (item) => '${item.index}' == id,
+                                              );
+                                          context
+                                              .read<NavigationController>()
+                                              .setIndex(destination.index);
+                                        },
+                                        footer: RailBottomActions(
+                                          isExpanded: true,
+                                          settingsIndex: settingsIndex,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : NavigationRail(
+                                  extended: false,
+                                  minWidth: 88,
+                                  minExtendedWidth: 216,
+                                  groupAlignment: -0.9,
+                                  useIndicator: true,
+                                  selectedIndex: _railIndex(
+                                    railDestinations,
+                                    selectedIndex,
                                   ),
-                                  selectedIcon: Tooltip(
-                                    message: d.label,
-                                    child: Icon(d.selectedIcon),
+                                  onDestinationSelected: (i) => context
+                                      .read<NavigationController>()
+                                      .setIndex(railDestinations[i].index),
+                                  labelType: isExpanded
+                                      ? NavigationRailLabelType.none
+                                      : NavigationRailLabelType.all,
+                                  leading: HamburgerButton(
+                                    isExpanded: isExpanded,
+                                    onToggle: () => context
+                                        .read<SettingsController>()
+                                        .setRailExpanded(!isExpanded),
                                   ),
-                                  label: Text(
-                                    d.label,
-                                    overflow: TextOverflow.ellipsis,
+                                  destinations: [
+                                    for (final d in railDestinations)
+                                      NavigationRailDestination(
+                                        icon: Tooltip(
+                                          message: d.label,
+                                          child: Icon(d.icon),
+                                        ),
+                                        selectedIcon: Tooltip(
+                                          message: d.label,
+                                          child: Icon(d.selectedIcon),
+                                        ),
+                                        label: Text(
+                                          d.label,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                  ],
+                                  trailing: Expanded(
+                                    child: RailBottomActions(
+                                      isExpanded: isExpanded,
+                                      settingsIndex: settingsIndex,
+                                    ),
                                   ),
                                 ),
-                            ],
-                            trailing: Expanded(
-                              child: RailBottomActions(
-                                isExpanded: isExpanded,
-                                settingsIndex: settingsIndex,
-                              ),
-                            ),
-                          ),
                         ),
                       ),
                     ),
