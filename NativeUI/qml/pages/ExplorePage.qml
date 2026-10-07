@@ -17,9 +17,7 @@ Item {
         backend.search("category:" + category)
     }
 
-    Component.onCompleted: {
-        backend.loadRecommendations()
-    }
+    Component.onCompleted: backend.loadRecommendations()
 
     Flickable {
         anchors.fill: parent
@@ -57,70 +55,14 @@ Item {
                 columnSpacing: 10 * MeoTheme.globalScale
                 rowSpacing: 10 * MeoTheme.globalScale
 
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Development")
-                    type: root.activeCategory === qsTr("Development") ? "filled" : "tonal"
-                    icon.name: "code"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("Development", qsTr("Development"))
-                }
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Games")
-                    type: root.activeCategory === qsTr("Games") ? "filled" : "tonal"
-                    icon.name: "sports_esports"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("Game", qsTr("Games"))
-                }
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Internet")
-                    type: root.activeCategory === qsTr("Internet") ? "filled" : "tonal"
-                    icon.name: "language"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("Network", qsTr("Internet"))
-                }
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Media")
-                    type: root.activeCategory === qsTr("Media") ? "filled" : "tonal"
-                    icon.name: "play_circle"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("AudioVideo", qsTr("Media"))
-                }
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Office")
-                    type: root.activeCategory === qsTr("Office") ? "filled" : "tonal"
-                    icon.name: "description"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("Office", qsTr("Office"))
-                }
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Graphics")
-                    type: root.activeCategory === qsTr("Graphics") ? "filled" : "tonal"
-                    icon.name: "palette"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("Graphics", qsTr("Graphics"))
-                }
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("System")
-                    type: root.activeCategory === qsTr("System") ? "filled" : "tonal"
-                    icon.name: "settings_applications"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("System", qsTr("System"))
-                }
-                MeoButton {
-                    Layout.fillWidth: true
-                    text: qsTr("Utilities")
-                    type: root.activeCategory === qsTr("Utilities") ? "filled" : "tonal"
-                    icon.name: "build"
-                    enabled: !backend.busy
-                    onClicked: root.browseCategory("Utility", qsTr("Utilities"))
-                }
+                MeoButton { Layout.fillWidth: true; text: qsTr("Development"); type: root.activeCategory === qsTr("Development") ? "filled" : "tonal"; icon.name: "code"; enabled: !backend.busy; onClicked: root.browseCategory("Development", qsTr("Development")) }
+                MeoButton { Layout.fillWidth: true; text: qsTr("Games"); type: root.activeCategory === qsTr("Games") ? "filled" : "tonal"; icon.name: "sports_esports"; enabled: !backend.busy; onClicked: root.browseCategory("Game", qsTr("Games")) }
+                MeoButton { Layout.fillWidth: true; text: qsTr("Internet"); type: root.activeCategory === qsTr("Internet") ? "filled" : "tonal"; icon.name: "language"; enabled: !backend.busy; onClicked: root.browseCategory("Network", qsTr("Internet")) }
+                MeoButton { Layout.fillWidth: true; text: qsTr("Media"); type: root.activeCategory === qsTr("Media") ? "filled" : "tonal"; icon.name: "play_circle"; enabled: !backend.busy; onClicked: root.browseCategory("AudioVideo", qsTr("Media")) }
+                MeoButton { Layout.fillWidth: true; text: qsTr("Office"); type: root.activeCategory === qsTr("Office") ? "filled" : "tonal"; icon.name: "description"; enabled: !backend.busy; onClicked: root.browseCategory("Office", qsTr("Office")) }
+                MeoButton { Layout.fillWidth: true; text: qsTr("Graphics"); type: root.activeCategory === qsTr("Graphics") ? "filled" : "tonal"; icon.name: "palette"; enabled: !backend.busy; onClicked: root.browseCategory("Graphics", qsTr("Graphics")) }
+                MeoButton { Layout.fillWidth: true; text: qsTr("System"); type: root.activeCategory === qsTr("System") ? "filled" : "tonal"; icon.name: "settings_applications"; enabled: !backend.busy; onClicked: root.browseCategory("System", qsTr("System")) }
+                MeoButton { Layout.fillWidth: true; text: qsTr("Utilities"); type: root.activeCategory === qsTr("Utilities") ? "filled" : "tonal"; icon.name: "build"; enabled: !backend.busy; onClicked: root.browseCategory("Utility", qsTr("Utilities")) }
             }
 
             MeoProgressBar {
@@ -162,9 +104,12 @@ Item {
                 }
             }
 
-            ColumnLayout {
+            GridLayout {
                 Layout.fillWidth: true
-                spacing: 8 * MeoTheme.globalScale
+                columns: width >= 980 * MeoTheme.globalScale ? 3
+                         : width >= 620 * MeoTheme.globalScale ? 2 : 1
+                columnSpacing: 12 * MeoTheme.globalScale
+                rowSpacing: 12 * MeoTheme.globalScale
 
                 Repeater {
                     model: root.activeCategory.length > 0
@@ -172,27 +117,28 @@ Item {
                            : (backend.trendingApps.length > 0
                               ? backend.trendingApps
                               : backend.featuredApps)
-                    delegate: AppRow {
+                    delegate: StoreAppCard {
                         required property var modelData
                         Layout.fillWidth: true
+                        Layout.preferredHeight: implicitHeight
                         app: modelData
                         onDetailsRequested: function(app) { root.detailsRequested(app) }
                     }
                 }
+            }
 
-                MeoEmptyState {
-                    Layout.fillWidth: true
-                    visible: !backend.busy
-                             && (root.activeCategory.length > 0
-                                 ? backend.searchResults.length === 0
-                                 : backend.trendingApps.length === 0
-                                   && backend.featuredApps.length === 0)
-                    icon: "explore"
-                    title: root.activeCategory.length > 0
-                           ? qsTr("Nothing found in this category")
-                           : qsTr("Nothing to explore yet")
-                    description: qsTr("Check your enabled software sources or try again after refreshing metadata.")
-                }
+            MeoEmptyState {
+                Layout.fillWidth: true
+                visible: !backend.busy
+                         && (root.activeCategory.length > 0
+                             ? backend.searchResults.length === 0
+                             : backend.trendingApps.length === 0
+                               && backend.featuredApps.length === 0)
+                icon: "explore"
+                title: root.activeCategory.length > 0
+                       ? qsTr("Nothing found in this category")
+                       : qsTr("Nothing to explore yet")
+                description: qsTr("Check your enabled software sources or try again after refreshing metadata.")
             }
         }
     }
