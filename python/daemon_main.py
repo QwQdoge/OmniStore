@@ -213,6 +213,10 @@ def parse_json_output(raw: str):
 
 async def run_auto_updates(updates):
     """Murphy-proof: Auto-update sequence with individual task isolation."""
+    if not isinstance(updates, list) or any(not isinstance(item, dict) for item in updates):
+        logging.warning("Invalid auto-update payload; skipping all automatic operations.")
+        return
+
     logging.info("Auto-update is enabled. Starting updates...")
     
     has_flatpaks = any(u.get("source") == "Flatpak" for u in updates)

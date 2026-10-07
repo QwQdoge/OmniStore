@@ -344,14 +344,15 @@ class GitHubSource(UnifiedSource):
             installed_set = super()._get_installed_set(self._managed_base_dir())
             featured = []
             for repo in repos[:20]:
+                is_inst = self._is_installed(repo["full_name"], installed_set)
                 featured.append({
                     "name": repo["name"],
                     "id": repo["full_name"],
                     "description": repo.get("description", ""),
                     "source": "GitHub",
                     "icon": repo.get("owner", {}).get("avatar_url"),
-                    "installed": self._is_installed(repo["full_name"], installed_set),
-                    "variants": [{"source": "GitHub", "id": repo["full_name"]}]
+                    "installed": is_inst,
+                    "variants": [{"source": "GitHub", "id": repo["full_name"], "installed": is_inst}]
                 })
             return {"featured": featured, "trending": [], "for_you": []}
         except Exception:
