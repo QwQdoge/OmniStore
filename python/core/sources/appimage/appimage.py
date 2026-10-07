@@ -83,19 +83,22 @@ class AppImageSource(UnifiedSource):
         if not apps_dir.exists(): return False
         return any(app_name.lower() in f.name.lower() for f in apps_dir.glob("*.AppImage"))
 
+    @staticmethod
+    def _get_installed_appimages() -> set[str]:
+        apps_dir = Path.home() / "Applications"
+        try:
+            return {item.name.lower() for item in apps_dir.glob("*.AppImage")}
+        except OSError:
+            return set()
+
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         feed_items = await self._fetch_feed()
         query_lower = query.lower()
         results = []
 
-        # ⚡ Optimization: Pre-scan the Applications directory once per search call to avoid O(N) synchronous glob scans.
-        apps_dir = Path.home() / "Applications"
-        installed_filenames = []
-        if apps_dir.exists():
-            try:
-                installed_filenames = [f.name.lower() for f in apps_dir.glob("*.AppImage")]
-            except Exception:
-                pass
+        # Scan once per search away from the event loop; a slow home directory
+        # must not stall daemon IPC or other source searches.
+        installed_filenames = await asyncio.to_thread(self._get_installed_appimages)
 
         for item in feed_items:
             name = item.get("name", "")
