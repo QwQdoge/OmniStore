@@ -23,6 +23,7 @@ from core.config_loader import ConfigManager
 from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
+from core.async_cleanup import finish_cleanup
 from core.friendly_messages import get_friendly_message
 from core.security_validator import SecurityValidator
 from core.utils.win_utils import scan_windows_unmanaged_installed, format_bytes, get_directory_size
@@ -119,6 +120,9 @@ class ResourceCoordinator:
 
     async def cleanup(self):
         """Absolute reaping of all tracked resources with multi-stage verification and fail-safe recovery."""
+        await finish_cleanup(self._cleanup_resources(asyncio.current_task()))
+
+    async def _cleanup_resources(self, origin_task):
         async with self._lock:
             # 1. Task Cancellation: Kill pending async operations immediately
             if self._tasks:
@@ -128,7 +132,7 @@ class ResourceCoordinator:
                 current_task = asyncio.current_task()
                 tasks_to_reap = [
                     task for task in self._tasks
-                    if task is not current_task
+                    if task is not current_task and task is not origin_task
                 ]
                 logging.debug(
                     "ResourceCoordinator: Cancelling %s tracked background tasks.",
@@ -222,26 +226,24 @@ def safe_command(func):
                         # Reset if timeout passed
                         _circuit_breaker_stats[component] = (0, 0)
 
-            # 2. State Locking: Reject concurrent duplicate high-frequency or stateful commands
+            # Check and registration share one critical section. Never hold the
+            # lifecycle lock across a command: __aenter__/__aexit__ also need it.
             is_action = func.__name__ in ("run_install", "run_uninstall", "run_update", "run_clean_system")
-            if is_action:
-                for active_id, active_task in list(self._active_commands.items()):
-                    if active_id.startswith(func.__name__) and not active_task.done():
-                        error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
-                        logging.warning(error_msg)
-                        if json_mode and is_top_level:
-                            self._output_command_response(CommandResponse(status="error", error="StateConflict", message=error_msg))
-                        return False
-
-            # 3. Timeout Calculation
             is_long_running = is_action or func.__name__ in ("run_bootstrap", "run_import_packages", "run_export_packages")
             timeout = kwargs.pop("_timeout", 3600 if is_long_running else 120)
-
-            # 4. Execution & Panic Recovery
-            command_id = f"{func.__name__}_{time.time()}"
             current_task = asyncio.current_task()
-            if current_task:
-                self._active_commands[command_id] = current_task
+            command_id = f"{func.__name__}_{id(current_task)}"
+            async with self._command_lock:
+                if is_action:
+                    for active_id, active_task in self._active_commands.items():
+                        if active_id.startswith(func.__name__ + "_") and not active_task.done():
+                            error_msg = f"State Lock: A duplicate task '{func.__name__}' is already running."
+                            logging.warning(error_msg)
+                            if json_mode and is_top_level:
+                                self._output_command_response(CommandResponse(status="error", error="StateConflict", message=error_msg))
+                            return False
+                if current_task:
+                    self._active_commands[command_id] = current_task
 
             try:
                 # Murphy-proof: Strict and context-aware parameter validation using inspect.signature
@@ -314,6 +316,8 @@ def safe_command(func):
                     self._output_command_response(resp)
                 raise
             except BaseException as e:
+                if not isinstance(e, Exception):
+                    raise
                 import traceback
                 err_trace = traceback.format_exc()
                 error_msg = f"Panic Recovery Triggered in {func.__name__}: {str(e)}"
@@ -347,6 +351,7 @@ def safe_command(func):
                     raise
                 return resp.model_dump(exclude_none=True) if (json_mode and is_top_level) else False
             finally:
+                # Synchronous removal cannot be interrupted by cancellation.
                 self._active_commands.pop(command_id, None)
         finally:
             in_safe_command_var.reset(token)
@@ -375,6 +380,7 @@ class OmnistoreBackend:
         self._ref_count = 0
         self._lock = asyncio.Lock()
         self._active_commands: Dict[str, asyncio.Task] = {}
+        self._command_lock = asyncio.Lock()
 
     def create_task(self, coro) -> asyncio.Task:
         task = asyncio.create_task(coro)

@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 from core.subprocess_utils import safe_subprocess
+from core.async_cleanup import finish_cleanup
 from core.security_validator import SecurityValidator
 
 # Murphy-proof: Event for graceful shutdown signaling
@@ -37,12 +38,15 @@ def create_daemon_task(coro):
 
 async def cleanup_daemon_resources():
     """Murphy-proof: Clean up all tracked daemon tasks and subprocesses safely."""
+    await finish_cleanup(_cleanup_daemon_resources(asyncio.current_task()))
+
+async def _cleanup_daemon_resources(origin_task):
     async with _shutdown_lock:
         logging.info("Cleaning up daemon resources...")
 
         # 1. Cancel tasks
         current = asyncio.current_task()
-        tasks_to_cancel = [t for t in _active_tasks if t is not current and not t.done()]
+        tasks_to_cancel = [t for t in _active_tasks if t is not current and t is not origin_task and not t.done()]
         if tasks_to_cancel:
             logging.info(f"Cancelling {len(tasks_to_cancel)} active daemon background tasks...")
             for t in tasks_to_cancel:
@@ -50,9 +54,8 @@ async def cleanup_daemon_resources():
             try:
                 gather_fut = asyncio.gather(*tasks_to_cancel, return_exceptions=True)
                 await asyncio.wait_for(asyncio.shield(gather_fut), timeout=5.0)
-            except BaseException as e:
-                if isinstance(e, Exception):
-                    logging.error(f"Error gathering cancelled tasks: {e}")
+            except Exception as e:
+                logging.error(f"Error gathering cancelled tasks: {e}")
             _active_tasks.clear()
 
         # 2. Terminate subprocesses
