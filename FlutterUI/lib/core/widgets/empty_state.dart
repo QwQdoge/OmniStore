@@ -25,6 +25,7 @@ class EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Semantics(
+              header: true,
               label: subtitle != null ? '$title\n$subtitle' : title,
               excludeSemantics: true,
               child: Column(
@@ -35,7 +36,9 @@ class EmptyState extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surfaceContainerHigh,
                       shape: BoxShape.circle,
-                      border: Border.all(color: theme.colorScheme.outlineVariant),
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
                     ),
                     child: Icon(
                       icon,
