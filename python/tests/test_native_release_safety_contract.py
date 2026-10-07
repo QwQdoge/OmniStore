@@ -45,4 +45,5 @@ def test_source_settings_use_runtime_availability_and_trust_metadata():
     ):
         assert token in settings
     assert 'qsTr("Unavailable on this system")' in settings
-    assert 'title: qsTr("Software sources")' in settings
+    for section in ("System source", "App sources", "Community sources", "Advanced sources"):
+        assert f'title: qsTr("{section}")' in settings
