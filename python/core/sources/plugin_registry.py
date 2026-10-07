@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
+from core.platform_profile import detect_system_profile, source_is_relevant
 from core.sources.base import UnifiedSource
 
 
@@ -87,6 +88,7 @@ class PluginRegistry:
     def __init__(self, config_manager: Any, session: Any = None):
         self.cm = config_manager
         self.session = session
+        self.profile = detect_system_profile()
         self.root = self._find_project_root()
         self.package_dir = self.root / "plugins" / "sources"
         self.legacy_dir = self.root / "plugins"
@@ -330,7 +332,11 @@ class PluginRegistry:
         return implemented
 
     def _is_platform_available(self, info: PluginInfo) -> bool:
-        return not info.platforms or _platform_key() in info.platforms
+        if info.platforms and _platform_key() not in info.platforms:
+            return False
+        if info.builtin and info.kind == "source":
+            return source_is_relevant(info.id, self.profile)
+        return True
 
     def _is_enabled(self, info: PluginInfo) -> bool:
         enabled_map = self._enabled_map()
