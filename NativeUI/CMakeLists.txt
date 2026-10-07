@@ -23,6 +23,7 @@ endif()
 
 qt_add_executable(omnistore-native
     app/main.cpp
+    app/externalinstallrequest.cpp app/externalinstallrequest.h
     app/backendbridge.cpp
     app/backendbridge.h
     app/repositorybridge.cpp
@@ -102,6 +103,14 @@ if(BUILD_TESTING)
     )
     target_include_directories(backend-usage-test PRIVATE app)
     target_link_libraries(backend-usage-test PRIVATE Qt6::Core Qt6::Test)
+    qt_add_executable(external-install-request-test
+        tests/external_install_request_test.cpp
+        app/externalinstallrequest.cpp app/externalinstallrequest.h
+    )
+    target_include_directories(external-install-request-test PRIVATE app)
+    target_link_libraries(external-install-request-test PRIVATE Qt6::Core Qt6::Test)
+    add_test(NAME external-install-request COMMAND external-install-request-test)
+    set_tests_properties(external-install-request PROPERTIES TIMEOUT 10)
     add_test(NAME backend-installed-usage COMMAND backend-usage-test)
     set_tests_properties(backend-installed-usage PROPERTIES TIMEOUT 45)
 endif()

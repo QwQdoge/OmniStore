@@ -157,6 +157,15 @@ Flickable {
             }
         }
 
+        MeoBanner {
+            Layout.fillWidth: true
+            visible: root.fallbackApp.external_install_request === true
+            title: qsTr("External installation request")
+            text: qsTr("Another application requested this package. Review its source and installation plan before confirming. Nothing has been installed.")
+            icon: "info"
+            tone: "info"
+        }
+
         RowLayout {
             Layout.fillWidth: true
             spacing: 8 * MeoTheme.globalScale
