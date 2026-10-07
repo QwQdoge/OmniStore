@@ -8,6 +8,7 @@ import MeoUI 1.0
 Flickable {
     id: root
     property var fallbackApp: ({})
+    property string selectedSource: ""
     readonly property string fallbackIdentity: String(fallbackApp.id || fallbackApp.name || "")
     readonly property string selectedIdentity: String(backend.selectedApp.id || backend.selectedApp.name || "")
     readonly property bool selectedMatches: fallbackIdentity.length > 0
@@ -17,6 +18,7 @@ Flickable {
     readonly property var currentPlan: transactions.installPlan || ({})
     readonly property var currentPlanRequest: currentPlan.request || ({})
     readonly property bool planMatches: String(currentPlanRequest.name || "") === root.appId()
+                                        && String(currentPlanRequest.source || "") === root.sourceName()
 
     clip: true
     contentWidth: width
@@ -25,16 +27,25 @@ Flickable {
 
     function appName() { return String(app.name || app.id || qsTr("App details")) }
     function appId() { return String(app.id || app.name || "") }
-    function sourceName() { return String(app.primary_source || app.source || qsTr("Native")) }
-    function versionText() { return String(app.version || "") }
+    function primarySourceName() { return String(app.primary_source || app.source || qsTr("Native")) }
+    function sourceName() { return selectedSource.length > 0 ? selectedSource : primarySourceName() }
+    function selectedVariant() {
+        const variants = app.variants || []
+        const source = sourceName()
+        for (let index = 0; index < variants.length; ++index) {
+            if (String(variants[index].source || "") === source)
+                return variants[index]
+        }
+        return ({})
+    }
+    function versionText() {
+        const variant = selectedVariant()
+        return String(variant.version || app.version || "")
+    }
     function iconSource() { return String(app.icon || "") }
     function installUrl() {
-        const variants = app.variants || []
-        for (let index = 0; index < variants.length; ++index) {
-            if (String(variants[index].source || "") === sourceName() && variants[index].url)
-                return String(variants[index].url)
-        }
-        return String(app.url || "")
+        const variant = selectedVariant()
+        return String(variant.url || app.url || "")
     }
     function formatBytes(value) {
         const bytes = Number(value)
@@ -50,9 +61,26 @@ Flickable {
         return (index === 0 ? Math.round(amount) : amount.toFixed(amount >= 10 ? 1 : 2)) + " " + units[index]
     }
     function sizeText() {
+        const variant = selectedVariant()
+        if (String(variant.installed_size || "").length > 0)
+            return String(variant.installed_size)
+        if (variant.disk_size)
+            return formatBytes(variant.disk_size)
         if (String(app.installed_size || "").length > 0)
             return String(app.installed_size)
         return formatBytes(app.disk_size)
+    }
+    function chooseSource(source) {
+        const next = String(source || "").trim()
+        if (next.length === 0 || next === root.sourceName())
+            return
+        transactions.clearInstallPlan()
+        selectedSource = next
+    }
+
+    onFallbackIdentityChanged: {
+        selectedSource = ""
+        transactions.clearInstallPlan()
     }
 
     ColumnLayout {
@@ -326,11 +354,20 @@ Flickable {
             spacing: 8 * MeoTheme.globalScale
 
             MeoText {
-                text: qsTr("Available variants")
+                text: qsTr("Choose source")
                 typeRole: "title"
                 typeSize: "small"
                 emphasized: true
                 color: MeoTheme.contentOnSurface
+            }
+            MeoText {
+                Layout.fillWidth: true
+                visible: (root.app.variants || []).length > 1
+                text: qsTr("The selected source is used for the installation plan. Trust, availability and permissions are checked again before you can install.")
+                typeRole: "body"
+                typeSize: "small"
+                color: MeoTheme.contentOnSurfaceVariant
+                wrapMode: Text.WordWrap
             }
 
             Repeater {
@@ -342,8 +379,11 @@ Flickable {
                     supportingText: String(modelData.version || qsTr("Unknown version"))
                                    + (modelData.installed_size ? " · " + String(modelData.installed_size) : "")
                     leadingIcon: modelData.installed ? "check_circle" : "package_2"
-                    interactive: false
+                    interactive: true
                     isSegmented: true
+                    vibrant: true
+                    selected: String(modelData.source || "") === root.sourceName()
+                    onClicked: root.chooseSource(String(modelData.source || ""))
                 }
             }
         }
