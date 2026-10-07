@@ -67,6 +67,12 @@
     <message><source>Installed</source><translation>已安装</translation></message>
     <message><source>Refresh</source><translation>刷新</translation></message>
     <message><source>No installed apps found</source><translation>没有找到已安装应用</translation></message>
+
+    <message><source>Installed app usage</source><translation>已安装应用容量</translation></message>
+    <message><source>%1 installed apps · %2 known size · %3 sources</source><translation>%1 个已安装应用 · %2 已知容量 · %3 个来源</translation></message>
+    <message><source>Loading installed app usage…</source><translation>正在加载已安装应用容量…</translation></message>
+    <message><source>Usage information is unavailable</source><translation>容量信息暂不可用</translation></message>
+    <message><source>Source-reported app sizes; %1 apps have no size metadata.</source><translation>软件来源报告的应用容量；%1 个应用没有容量信息。</translation></message>
   </context>
 
   <context>
@@ -159,5 +165,11 @@
     <message><source>The backend did not return any installed source plugins.</source><translation>后端没有返回已安装的软件源插件。</translation></message>
     <message><source>Runtime</source><translation>运行环境</translation></message>
     <message><source>Current state</source><translation>当前状态</translation></message>
+  </context>
+  <context>
+    <name>BackendBridge</name>
+    <message><source>installed app usage</source><translation>已安装应用容量</translation></message>
+    <message><source>The installed usage information was not in the expected format.</source><translation>已安装应用容量信息的格式不正确。</translation></message>
+    <message><source>Installed app usage took too long to load.</source><translation>加载已安装应用容量信息超时。</translation></message>
   </context>
 </TS>

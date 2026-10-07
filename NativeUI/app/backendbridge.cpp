@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QProcessEnvironment>
 #include <QTimer>
+#include <cmath>
 
 namespace {
 constexpr qsizetype MaxTaskLog = 256 * 1024;
@@ -17,6 +18,16 @@ QString sourceOrNative(const QString &source)
 {
     const QString normalized = source.trimmed();
     return normalized.isEmpty() ? QStringLiteral("Native") : normalized;
+}
+
+bool boundedWholeNumber(const QVariant &value, double maximum)
+{
+    const auto type = value.metaType().id();
+    if (type != QMetaType::Double && type != QMetaType::LongLong &&
+        type != QMetaType::ULongLong && type != QMetaType::Int && type != QMetaType::UInt)
+        return false;
+    const double number = value.toDouble();
+    return std::isfinite(number) && number >= 0 && number <= maximum && std::floor(number) == number;
 }
 }
 
@@ -145,12 +156,25 @@ void BackendBridge::startRequest(const Request &request)
         appendTaskLog(m_errorMessage);
         emit stateChanged();
         emit taskChanged();
+        finishProcess(1, QProcess::CrashExit);
     });
     connect(process, &QProcess::finished, this, &BackendBridge::finishProcess);
 
     QStringList arguments = m_backendPrefixArguments;
     arguments.append(request.arguments);
     process->start(m_backendProgram, arguments);
+    if (request.operation == Operation::InstalledUsage) {
+        QTimer::singleShot(30000, process, [this, process] {
+            if (m_process != process)
+                return;
+            m_errorMessage = tr("Installed app usage took too long to load.");
+            process->terminate();
+            QTimer::singleShot(800, process, [process] {
+                if (process->state() != QProcess::NotRunning)
+                    process->kill();
+            });
+        });
+    }
     emit stateChanged();
 }
 
@@ -330,8 +354,11 @@ void BackendBridge::applyResponse(Operation operation)
 {
     bool ok = false;
     const QVariant payload = payloadFromDocument(&ok);
-    if (!ok)
+    if (!ok) {
+        if (operation == Operation::InstalledUsage)
+            m_errorMessage = tr("The installed usage information was not in the expected format.");
         return;
+    }
 
     switch (operation) {
     case Operation::Recommendations: {
@@ -347,6 +374,24 @@ void BackendBridge::applyResponse(Operation operation)
     case Operation::Installed:
         m_installedApps = asList(payload);
         break;
+    case Operation::InstalledUsage: {
+        const QVariantMap snapshot = asMap(payload);
+        if (snapshot.value(QStringLiteral("schema")).toString() != QStringLiteral("org.meo.omnistore.installed-usage") ||
+            !boundedWholeNumber(snapshot.value(QStringLiteral("version")), 1) ||
+            snapshot.value(QStringLiteral("version")).toInt() != 1 ||
+            snapshot.value(QStringLiteral("status")).toString() != QStringLiteral("success") ||
+            !boundedWholeNumber(snapshot.value(QStringLiteral("applicationCount")), 1000000) ||
+            !boundedWholeNumber(snapshot.value(QStringLiteral("knownSizeBytes")), 9007199254740991.0) ||
+            !boundedWholeNumber(snapshot.value(QStringLiteral("unknownSizeCount")), 1000000) ||
+            snapshot.value(QStringLiteral("unknownSizeCount")).toLongLong() > snapshot.value(QStringLiteral("applicationCount")).toLongLong() ||
+            snapshot.value(QStringLiteral("sources")).metaType().id() != QMetaType::QVariantList) {
+            m_installedUsage.clear();
+            m_errorMessage = tr("The installed usage information was not in the expected format.");
+        } else {
+            m_installedUsage = snapshot;
+        }
+        break;
+    }
     case Operation::Updates:
         m_updates = asList(payload);
         break;
@@ -440,6 +485,7 @@ QString BackendBridge::operationName(Operation operation)
     case Operation::Recommendations: return QStringLiteral("recommendations");
     case Operation::Search: return QStringLiteral("search");
     case Operation::Installed: return QStringLiteral("installed");
+    case Operation::InstalledUsage: return QStringLiteral("installed-usage");
     case Operation::Updates: return QStringLiteral("updates");
     case Operation::Plugins: return QStringLiteral("plugins");
     case Operation::Config: return QStringLiteral("config");
@@ -479,6 +525,15 @@ void BackendBridge::loadInstalled(bool forceRefresh)
     if (forceRefresh)
         arguments.insert(1, QStringLiteral("--force-refresh"));
     enqueueRead(Operation::Installed, tr("installed apps"), arguments);
+    loadInstalledUsage();
+}
+
+void BackendBridge::loadInstalledUsage()
+{
+    m_installedUsage.clear();
+    emit dataChanged();
+    enqueueRead(Operation::InstalledUsage, tr("installed app usage"),
+                {QStringLiteral("--export-installed-usage")});
 }
 
 void BackendBridge::loadUpdates()
