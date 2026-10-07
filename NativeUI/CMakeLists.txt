@@ -92,3 +92,16 @@ set_target_properties(omnistore-native PROPERTIES
 )
 
 install(TARGETS omnistore-native RUNTIME DESTINATION bin)
+
+include(CTest)
+if(BUILD_TESTING)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+    qt_add_executable(backend-usage-test
+        tests/backend_usage_test.cpp
+        app/backendbridge.cpp app/backendbridge.h
+    )
+    target_include_directories(backend-usage-test PRIVATE app)
+    target_link_libraries(backend-usage-test PRIVATE Qt6::Core Qt6::Test)
+    add_test(NAME backend-installed-usage COMMAND backend-usage-test)
+    set_tests_properties(backend-installed-usage PROPERTIES TIMEOUT 45)
+endif()

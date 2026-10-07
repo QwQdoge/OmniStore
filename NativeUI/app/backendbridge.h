@@ -27,6 +27,7 @@ class BackendBridge final : public QObject
     Q_PROPERTY(QVariantList trendingApps READ trendingApps NOTIFY dataChanged)
     Q_PROPERTY(QVariantList forYouApps READ forYouApps NOTIFY dataChanged)
     Q_PROPERTY(QVariantList installedApps READ installedApps NOTIFY dataChanged)
+    Q_PROPERTY(QVariantMap installedUsage READ installedUsage NOTIFY dataChanged)
     Q_PROPERTY(QVariantList updates READ updates NOTIFY dataChanged)
     Q_PROPERTY(QVariantList plugins READ plugins NOTIFY dataChanged)
     Q_PROPERTY(QVariantMap config READ config NOTIFY dataChanged)
@@ -53,6 +54,7 @@ public:
     QVariantList trendingApps() const { return m_trendingApps; }
     QVariantList forYouApps() const { return m_forYouApps; }
     QVariantList installedApps() const { return m_installedApps; }
+    QVariantMap installedUsage() const { return m_installedUsage; }
     QVariantList updates() const { return m_updates; }
     QVariantList plugins() const { return m_plugins; }
     QVariantMap config() const { return m_config; }
@@ -62,6 +64,7 @@ public:
     Q_INVOKABLE void loadRecommendations();
     Q_INVOKABLE void search(const QString &query);
     Q_INVOKABLE void loadInstalled(bool forceRefresh = false);
+    Q_INVOKABLE void loadInstalledUsage();
     Q_INVOKABLE void loadUpdates();
     Q_INVOKABLE void loadPlugins();
     Q_INVOKABLE void loadConfig();
@@ -91,6 +94,7 @@ private:
         Recommendations,
         Search,
         Installed,
+        InstalledUsage,
         Updates,
         Plugins,
         Config,
@@ -154,6 +158,7 @@ private:
     QVariantList m_trendingApps;
     QVariantList m_forYouApps;
     QVariantList m_installedApps;
+    QVariantMap m_installedUsage;
     QVariantList m_updates;
     QVariantList m_plugins;
     QVariantMap m_config;

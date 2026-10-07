@@ -54,3 +54,9 @@ jobs:
 
       - name: Build NativeUI
         run: cmake --build build/native-ui --target omnistore-native --parallel 2
+
+      - name: Test asynchronous installed usage
+        run: |
+          cmake -S NativeUI -B build/backend-tests -DBUILD_TESTING=ON
+          cmake --build build/backend-tests --target backend-usage-test --parallel 2
+          ctest --test-dir build/backend-tests --output-on-failure
