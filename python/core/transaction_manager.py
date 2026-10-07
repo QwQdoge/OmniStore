@@ -4,14 +4,17 @@ import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import json
+import time
 from typing import Any
 from uuid import uuid4
 
 from core.backend import captured_output_var
+from core.transaction_plan import PLAN_TTL_SECONDS, build_install_plan
 
 
 _MAX_LOG_CHARS = 256 * 1024
 _MAX_COMPLETED_TASKS = 64
+_MAX_PLANS = 64
 _ALLOWED_KINDS = {"install", "remove", "update", "update_all"}
 
 
@@ -38,6 +41,7 @@ class TransactionRecord:
     name: str
     source: str
     url: str | None = None
+    plan_hash: str | None = None
     status: str = "queued"
     created_at: str = field(default_factory=_utc_now)
     updated_at: str = field(default_factory=_utc_now)
@@ -63,6 +67,8 @@ class TransactionRecord:
             "speed": self.speed,
             "log": self.log,
         }
+        if self.plan_hash:
+            data["planHash"] = self.plan_hash
         if self.progress is not None:
             data["progress"] = self.progress
         if self.error:
@@ -141,7 +147,59 @@ class TransactionManager:
         self._backend = backend
         self._records: dict[str, TransactionRecord] = {}
         self._tasks: dict[str, asyncio.Task] = {}
+        self._plans: dict[str, tuple[float, dict[str, Any]]] = {}
         self._mutation_lock = asyncio.Lock()
+
+    async def plan_install(
+        self,
+        *,
+        name: str,
+        source: str = "Native",
+        url: str | None = None,
+    ) -> dict[str, Any]:
+        plan = await build_install_plan(
+            self._backend,
+            name=name,
+            source=source,
+            url=url,
+        )
+        plan_hash = str(plan.get("planHash") or "")
+        if not plan_hash:
+            raise ValueError("invalid_transaction_plan")
+        self._plans[plan_hash] = (time.monotonic(), plan)
+        self._trim_plans()
+        return plan
+
+    def submit_planned(self, plan_hash: str) -> dict[str, Any]:
+        self._trim_plans()
+        normalized_hash = str(plan_hash or "").strip()
+        stored = self._plans.get(normalized_hash)
+        if stored is None:
+            raise ValueError("plan_not_found_or_expired")
+
+        _, plan = stored
+        if plan.get("action") != "install":
+            raise ValueError("unsupported_transaction_plan")
+        if not plan.get("canApply", False):
+            raise ValueError("plan_not_applicable")
+
+        request = plan.get("request") or {}
+        name = str(request.get("name") or "").strip()
+        source = str(request.get("source") or "Native").strip() or "Native"
+        url = request.get("url")
+        if not name:
+            raise ValueError("invalid_transaction_plan")
+
+        # Plans are one-shot. A retry requires a fresh review so source policy,
+        # sizes and package metadata are not silently reused after failure.
+        self._plans.pop(normalized_hash, None)
+        return self.submit(
+            kind="install",
+            name=name,
+            source=source,
+            url=str(url) if url else None,
+            plan_hash=normalized_hash,
+        )
 
     def submit(
         self,
@@ -150,6 +208,7 @@ class TransactionManager:
         name: str = "",
         source: str = "Native",
         url: str | None = None,
+        plan_hash: str | None = None,
     ) -> dict[str, Any]:
         normalized_kind = str(kind or "").strip().lower()
         if normalized_kind not in _ALLOWED_KINDS:
@@ -170,6 +229,7 @@ class TransactionManager:
             name=normalized_name[:512],
             source=normalized_source[:128],
             url=(str(url).strip()[:4096] if url else None),
+            plan_hash=(str(plan_hash).strip() if plan_hash else None),
         )
         self._records[task_id] = record
         task = asyncio.create_task(self._run(record), name=f"omnistore-transaction-{task_id}")
@@ -246,3 +306,18 @@ class TransactionManager:
         completed.sort(key=lambda item: item.updated_at)
         for record in completed[: len(completed) - _MAX_COMPLETED_TASKS]:
             self._records.pop(record.task_id, None)
+
+    def _trim_plans(self) -> None:
+        now = time.monotonic()
+        expired = [
+            plan_hash for plan_hash, (created, _) in self._plans.items()
+            if now - created > PLAN_TTL_SECONDS
+        ]
+        for plan_hash in expired:
+            self._plans.pop(plan_hash, None)
+
+        if len(self._plans) <= _MAX_PLANS:
+            return
+        oldest = sorted(self._plans.items(), key=lambda item: item[1][0])
+        for plan_hash, _ in oldest[: len(self._plans) - _MAX_PLANS]:
+            self._plans.pop(plan_hash, None)
