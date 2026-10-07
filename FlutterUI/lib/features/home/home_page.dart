@@ -212,10 +212,13 @@ class _HomePageState extends State<HomePage> {
               child: Selector<SettingsController, bool>(
                 selector: (context, settings) => settings.isAIEnabled,
                 builder: (context, isAIEnabled, _) {
-                  if (!isAIEnabled) return const SizedBox.shrink();
-                  return SmoothSizeSwitcher(
-                    alignment: Alignment.topCenter,
-                    child: _isAILoading
+                  Widget content;
+                  if (!isAIEnabled) {
+                    content = const SizedBox.shrink(
+                      key: ValueKey('ai_disabled'),
+                    );
+                  } else {
+                    content = _isAILoading
                         ? const Column(
                             key: ValueKey('ai_skeleton_wrapper'),
                             children: [SizedBox(height: 32), AIPickSkeleton()],
@@ -231,7 +234,12 @@ class _HomePageState extends State<HomePage> {
                                 onRefresh: _fetchAIPick,
                               ),
                             ],
-                          ),
+                          );
+                  }
+
+                  return SmoothSizeSwitcher(
+                    alignment: Alignment.topCenter,
+                    child: content,
                   );
                 },
               ),
@@ -338,9 +346,8 @@ class _DynamicSectionEmpty extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
     child: Text(
       message,
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: Theme.of(context).textTheme.bodySmall
+          ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
     ),
   );
 }

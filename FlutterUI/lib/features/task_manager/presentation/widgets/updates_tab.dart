@@ -8,8 +8,10 @@ import 'package:frontend/features/settings/presentation/controllers/settings_con
 import 'package:frontend/features/task_manager/presentation/controllers/task_controller.dart';
 import 'package:frontend/features/ai/widgets/ai_mark.dart';
 import 'package:frontend/core/widgets/app_source_tag.dart';
+
 import 'ai_update_summary_dialog.dart';
 import 'updates_tab_skeleton.dart';
+
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
@@ -56,9 +58,8 @@ class UpdatesTab extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      AppLocalizations.of(
-                        context,
-                      )!.foundUpdates(updates.length),
+                      AppLocalizations.of(context)!
+                          .foundUpdates(updates.length),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     FilledButton.icon(
@@ -138,11 +139,13 @@ class UpdatesTab extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Text(
                                       "${update['current_version']} → ${update['new_version']}",
-                                      style: Theme.of(context).textTheme.bodySmall
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
                                           ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
                                           ),
                                     ),
                                   ],
@@ -155,23 +158,32 @@ class UpdatesTab extends StatelessWidget {
                                     selector: (context, settings) =>
                                         settings.isAIEnabled,
                                     builder: (context, isAIEnabled, _) {
-                                      if (!isAIEnabled) {
-                                        return const SizedBox.shrink();
-                                      }
-                                      return IconButton(
-                                        icon: const AiMark(size: 20),
-                                        tooltip: AppLocalizations.of(
-                                          context,
-                                        )!.aiExplainUpdate,
-                                        onPressed: () => showDialog(
-                                          context: context,
-                                          builder: (_) => AIUpdateSummaryDialog(
-                                            name: update['name'],
-                                            currentVersion:
-                                                update['current_version'],
-                                            nextVersion: update['new_version'],
-                                          ),
-                                        ),
+                                      return SmoothSizeSwitcher(
+                                        alignment: Alignment.center,
+                                        child: !isAIEnabled
+                                            ? const SizedBox.shrink(
+                                                key: ValueKey('ai_disabled'),
+                                              )
+                                            : IconButton(
+                                                key: const ValueKey(
+                                                  'ai_enabled',
+                                                ),
+                                                icon: const AiMark(size: 20),
+                                                tooltip: AppLocalizations.of(
+                                                  context,
+                                                )!.aiExplainUpdate,
+                                                onPressed: () => showDialog(
+                                                  context: context,
+                                                  builder: (_) =>
+                                                      AIUpdateSummaryDialog(
+                                                        name: update['name'],
+                                                        currentVersion:
+                                                            update['current_version'],
+                                                        nextVersion:
+                                                            update['new_version'],
+                                                      ),
+                                                ),
+                                              ),
                                       );
                                     },
                                   ),
@@ -179,9 +191,14 @@ class UpdatesTab extends StatelessWidget {
                                     onPressed: () async {
                                       final taskController = context
                                           .read<TaskController>();
-                                      final l10n = AppLocalizations.of(context)!;
+                                      final l10n = AppLocalizations.of(
+                                        context,
+                                      )!;
                                       if (taskController.isBusy) {
-                                        Toast.show(context, l10n.taskInProgress);
+                                        Toast.show(
+                                          context,
+                                          l10n.taskInProgress,
+                                        );
                                         return;
                                       }
                                       onUpdateStarted();
