@@ -1,5 +1,7 @@
 import "package:frontend/data/repositories/package_repository.dart";
+
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -109,6 +111,7 @@ class _AIAppResolverState extends State<AIAppResolver> {
                         padding: const EdgeInsets.only(right: 8.0),
                         child: ActionChip(
                           label: Text(_resolvedApps[index].name),
+                          tooltip: _resolvedApps[index].name,
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(

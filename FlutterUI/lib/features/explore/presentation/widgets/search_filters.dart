@@ -41,62 +41,69 @@ class SearchFilters extends StatelessWidget {
 
     if (enabledSources.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      height: 66,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: Scrollbar(
-        controller: scrollController,
-        thumbVisibility: true,
-        child: ListView(
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: AppLocalizations.of(context)!.source,
+      child: Container(
+        height: 66,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+        child: Scrollbar(
           controller: scrollController,
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.only(bottom: 8),
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: FilterChip(
-                label: Text(AppLocalizations.of(context)!.all),
-                tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(
-                  AppLocalizations.of(context)!.all,
-                ),
-                selected: selectedSources.isEmpty,
-                onSelected: (selected) {
-                  if (selected) {
-                    onSelectedSourcesChanged([]);
-                  }
-                },
-              ),
-            ),
-            ...enabledSources.map((src) {
-              final name = _displayName(src);
-              final srcKey = src.toLowerCase();
-              final displayNameKey = name.toLowerCase();
-              final isSelected =
-                  selectedSources.contains(displayNameKey) ||
-                  selectedSources.contains(srcKey);
-              return Padding(
+          thumbVisibility: true,
+          child: ListView(
+            controller: scrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(bottom: 8),
+            children: [
+              Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: FilterChip(
-                  label: Text(name),
-                  tooltip: AppLocalizations.of(context)!.sourceFilterSemantics(name),
-                  selected: isSelected,
+                  label: Text(AppLocalizations.of(context)!.all),
+                  tooltip: AppLocalizations.of(context)!
+                      .sourceFilterSemantics(AppLocalizations.of(context)!.all),
+                  selected: selectedSources.isEmpty,
                   onSelected: (selected) {
-                    final newSources = List<String>.from(selectedSources);
                     if (selected) {
-                      if (!newSources.contains(srcKey)) newSources.add(srcKey);
-                      if (!newSources.contains(displayNameKey)) {
-                        newSources.add(displayNameKey);
-                      }
-                    } else {
-                      newSources.remove(srcKey);
-                      newSources.remove(displayNameKey);
+                      onSelectedSourcesChanged([]);
                     }
-                    onSelectedSourcesChanged(newSources);
                   },
                 ),
-              );
-            }),
-          ],
+              ),
+              ...enabledSources.map((src) {
+                final name = _displayName(src);
+                final srcKey = src.toLowerCase();
+                final displayNameKey = name.toLowerCase();
+                final isSelected =
+                    selectedSources.contains(displayNameKey) ||
+                    selectedSources.contains(srcKey);
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: FilterChip(
+                    label: Text(name),
+                    tooltip: AppLocalizations.of(context)!
+                        .sourceFilterSemantics(name),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      final newSources = List<String>.from(selectedSources);
+                      if (selected) {
+                        if (!newSources.contains(srcKey)) {
+                          newSources.add(srcKey);
+                        }
+                        if (!newSources.contains(displayNameKey)) {
+                          newSources.add(displayNameKey);
+                        }
+                      } else {
+                        newSources.remove(srcKey);
+                        newSources.remove(displayNameKey);
+                      }
+                      onSelectedSourcesChanged(newSources);
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );

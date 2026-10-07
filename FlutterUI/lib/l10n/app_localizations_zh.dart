@@ -360,7 +360,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get systemCleaningDesc => '移除孤立软件包并清空 Pacman 缓存（需要管理员授权）';
 
   @override
-  String get systemCleaningSubtitle => '清理孤立软件包与 pacman 缓存';
+  String get systemCleaningSubtitle => '清理孤立软件包与 Pacman 缓存';
 
   @override
   String get systemCleaningStarted => '系统清理任务已启动';
@@ -1315,7 +1315,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get configurePat => 'GitHub 访问令牌（可选）';
 
   @override
-  String get patHelperText => '请提供 GitHub Classic PAT 或 Fine-grained 令牌。';
+  String get patHelperText =>
+      '请提供 GitHub Personal Access Token (Classic) 或细粒度 (Fine-grained) 令牌。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 维护，离线时也始终可见';
@@ -1441,7 +1442,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings => '設定';
 
   @override
-  String get downloads => '工作與更新';
+  String get downloads => '任務與更新';
 
   @override
   String get help => '幫助';
@@ -1516,7 +1517,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get appImage => 'AppImage';
 
   @override
-  String get sourcePriority => '軟體源優先級（拖曳排序）';
+  String get sourcePriority => '軟體源優先順序（拖曳排序）';
 
   @override
   String get maxResults => '最大結果數';
@@ -1767,7 +1768,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get systemCleaningDesc => '移除孤立套件並清空 Pacman 快取（需要管理員授權）';
 
   @override
-  String get systemCleaningSubtitle => '清理孤立套件與 pacman 快取';
+  String get systemCleaningSubtitle => '清理孤立套件與 Pacman 快取';
 
   @override
   String get systemCleaningStarted => '系統清理任務已啟動';
@@ -2722,7 +2723,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get configurePat => 'GitHub 存取權杖（選用）';
 
   @override
-  String get patHelperText => '請提供 GitHub Classic PAT 或 Fine-grained 權杖。';
+  String get patHelperText =>
+      '請提供 GitHub Personal Access Token (Classic) 或細粒度 (Fine-grained) 權杖。';
 
   @override
   String get featuredSubtitle => '由 OmniStore 維護，離線時也始終可見';

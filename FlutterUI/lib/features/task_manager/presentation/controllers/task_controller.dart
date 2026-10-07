@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/data/repositories/task_repository.dart';
 import 'package:frontend/data/repositories/package_repository.dart';
@@ -48,6 +49,7 @@ class TaskController with ChangeNotifier {
   // ⚡ Bolt: Monotonically increasing version counter to enable O(1) change detection
   // in log-watching UI widgets (e.g. TerminalDialog) without O(N) list equality iteration.
   int _logVersion = 0;
+  int _completedTasksVersion = 0;
   final List<TaskLogEntry> _logEntries = [];
   final List<TaskState> _completedTasks = [];
 
@@ -76,6 +78,8 @@ class TaskController with ChangeNotifier {
   /// Monotonically increasing version tracking log mutations for O(1) UI equality checks.
   int get logVersion => _logVersion;
 
+  int get completedTasksVersion => _completedTasksVersion;
+
   List<TaskState> get completedTasks => _completedTasksView;
 
   void clearLogs() {
@@ -86,6 +90,7 @@ class TaskController with ChangeNotifier {
 
   void clearHistory() {
     _completedTasks.clear();
+    _completedTasksVersion++;
     notifyListeners();
   }
 
@@ -201,6 +206,7 @@ class TaskController with ChangeNotifier {
         message: !hasError ? l10n.taskSuccessMsg : _status,
       ),
     );
+    _completedTasksVersion++;
     notifyListeners();
 
     if (!hasError) {
@@ -259,6 +265,7 @@ class TaskController with ChangeNotifier {
         message: !hasError ? l10n.taskSuccessMsg : _status,
       ),
     );
+    _completedTasksVersion++;
     notifyListeners();
   }
 
@@ -432,9 +439,8 @@ class TaskController with ChangeNotifier {
   }
 
   String _localizeBackendMessage(String message, AppLocalizations l10n) {
-    final updating = RegExp(
-      r'^Updating (.+) packages\.\.\.$',
-    ).firstMatch(message);
+    final updating = RegExp(r'^Updating (.+) packages\.\.\.$')
+        .firstMatch(message);
     if (updating != null) {
       return l10n.updatingSourcePackages(updating.group(1)!);
     }
