@@ -20,14 +20,6 @@ MeoCard {
     function appId() { return String(app.id || app.name || "") }
     function sourceName() { return String(app.primary_source || app.source || "Native") }
     function versionText() { return String(app.version || "") }
-    function installUrl() {
-        const variants = app.variants || []
-        for (let index = 0; index < variants.length; ++index) {
-            if (String(variants[index].source || "") === sourceName() && variants[index].url)
-                return String(variants[index].url)
-        }
-        return String(app.url || "")
-    }
 
     RowLayout {
         width: parent.width
@@ -101,14 +93,6 @@ MeoCard {
                 enabled: !backend.busy && !transactions.busy
                 onClicked: removeDialog.open()
             }
-            MeoButton {
-                visible: !(root.app.installed || root.installedContext)
-                text: qsTr("Install")
-                type: "filled"
-                icon.name: "download"
-                enabled: !backend.busy && !transactions.busy && transactions.available
-                onClicked: installDialog.open()
-            }
             MeoIconButton {
                 icon.name: "chevron_right"
                 type: "standard"
@@ -116,17 +100,6 @@ MeoCard {
                 onClicked: root.detailsRequested(root.app)
             }
         }
-    }
-
-    MeoDialog {
-        id: installDialog
-        parent: Overlay.overlay
-        title: qsTr("Install %1?").arg(root.appName())
-        message: qsTr("OmniStore will hand this install to its background transaction service using %1. You can close the store after the task starts.").arg(root.sourceName())
-        icon: "download"
-        confirmText: qsTr("Install")
-        cancelText: qsTr("Cancel")
-        onConfirmed: transactions.installApp(root.appId(), root.sourceName(), root.installUrl())
     }
 
     MeoDialog {
