@@ -156,6 +156,7 @@ void BackendBridge::startRequest(const Request &request)
         appendTaskLog(m_errorMessage);
         emit stateChanged();
         emit taskChanged();
+        finishProcess(1, QProcess::CrashExit);
     });
     connect(process, &QProcess::finished, this, &BackendBridge::finishProcess);
 

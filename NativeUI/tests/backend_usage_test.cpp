@@ -105,6 +105,18 @@ private slots:
         QVERIFY(bridge.installedUsage().isEmpty());
         QVERIFY(!bridge.errorMessage().isEmpty());
     }
+
+    void missingBackendDoesNotHoldTheQueue()
+    {
+        qputenv("OMNISTORE_BACKEND", directory.filePath("missing-backend").toUtf8());
+        BackendBridge bridge;
+        QSignalSpy finished(&bridge, &BackendBridge::operationFinished);
+        bridge.loadInstalledUsage();
+        QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 3000);
+        QCOMPARE(finished.first().at(1).toBool(), false);
+        QVERIFY(!bridge.busy());
+        QVERIFY(!bridge.errorMessage().isEmpty());
+    }
 };
 
 QTEST_GUILESS_MAIN(BackendUsageTest)

@@ -67,7 +67,7 @@
     <message><source>Installed</source><translation>已安装</translation></message>
     <message><source>Refresh</source><translation>刷新</translation></message>
     <message><source>No installed apps found</source><translation>没有找到已安装应用</translation></message>
-  
+
     <message><source>Installed app usage</source><translation>已安装应用容量</translation></message>
     <message><source>%1 installed apps · %2 known size · %3 sources</source><translation>%1 个已安装应用 · %2 已知容量 · %3 个来源</translation></message>
     <message><source>Loading installed app usage…</source><translation>正在加载已安装应用容量…</translation></message>
