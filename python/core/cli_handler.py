@@ -26,6 +26,7 @@ class CLIArguments(BaseModel):
     set_config: Optional[str] = None
     check_env: bool = False
     bootstrap: bool = False
+    bootstrap_aur: bool = False
     list_custom_repos: bool = False
     list_plugins: bool = False
     set_plugin_enabled: Optional[str] = None
@@ -225,9 +226,12 @@ async def handle_cli(backend: OmnistoreBackend, args):
         env_res = await backend.env.check_env()
         sys.stdout.write(json.dumps(env_res, ensure_ascii=False) + "\n")
 
-    async def _handle_bootstrap():
-        await backend.env.bootstrap(callback=lambda m: backend._flutter_callback(m, validated_args.json_mode))
-        if validated_args.json_mode: sys.stdout.write(json.dumps({"status": "success"}) + "\n")
+    async def _handle_bootstrap(aur=False):
+        operation = backend.env.bootstrap_aur if aur else backend.env.bootstrap
+        success = await operation(callback=lambda m: backend._flutter_callback(m, validated_args.json_mode))
+        if validated_args.json_mode:
+            sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
+        return success
 
     async def _handle_ai_changelog(p):
         parts = p.split(',')
@@ -356,6 +360,7 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "ai_summary": lambda: backend.run_ai_summary(validated_args.json_mode),
         "check_env": _handle_check_env,
         "bootstrap": _handle_bootstrap,
+        "bootstrap_aur": lambda: _handle_bootstrap(aur=True),
         "list_custom_repos": lambda: backend.run_list_custom_repos(),
         "list_plugins": lambda: backend.run_list_plugins(validated_args.json_mode),
         "set_plugin_enabled": lambda: _handle_set_plugin_enabled(validated_args.set_plugin_enabled),

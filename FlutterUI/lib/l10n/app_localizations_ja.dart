@@ -1418,4 +1418,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get channelBeta => 'Beta';
+
+  @override
+  String get installAurHelper => 'AUR ヘルパーをインストール';
 }

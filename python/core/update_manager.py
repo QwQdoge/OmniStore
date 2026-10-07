@@ -9,6 +9,7 @@ import platform
 from pathlib import Path
 from typing import Awaitable, Callable, List, Dict, Optional
 
+from core.platform_profile import detect_system_profile
 from core.sources.utils import PrivilegeManager
 from core.update_state import build_state, normalize_candidate, write_state
 
@@ -16,6 +17,7 @@ class UpdateManager:
     def __init__(self, config=None):
         self.config = config
         self.privilege = PrivilegeManager()
+        self.profile = detect_system_profile()
 
     async def apply_all_updates(
         self,
@@ -46,7 +48,10 @@ class UpdateManager:
     ) -> bool:
         commands = []
         privilege_env = None
-        if shutil.which("pacman"):
+        native = self.profile.native_manager
+        if self.profile.immutable:
+            native = ""
+        if native == "pacman" and self._source_enabled("pacman") and shutil.which("pacman"):
             try:
                 # Do not run a separate sudo -v probe here. The real Pacman
                 # command is the authorization boundary, so GUI users see one
@@ -56,13 +61,28 @@ class UpdateManager:
                 await self._emit(callback, f"[ERROR] {exc}")
                 return False
             commands.append(("Pacman", ["sudo", "-A", "pacman", "-Syu", "--noconfirm"], privilege_env))
-        if shutil.which("flatpak"):
+        elif native in {"apt", "dnf", "zypper", "apk"} and self._source_enabled(native):
+            command = {
+                "apt": ["apt-get", "upgrade", "-y"],
+                "dnf": ["dnf", "upgrade", "-y"],
+                "zypper": ["zypper", "--non-interactive", "update"],
+                "apk": ["apk", "upgrade"],
+            }[native]
+            if shutil.which(command[0]):
+                try:
+                    privilege_env = await self.privilege.subprocess_environment()
+                except RuntimeError as exc:
+                    await self._emit(callback, f"[ERROR] {exc}")
+                    return False
+                commands.append((native.upper(), ["sudo", "-A", *command], privilege_env))
+        if self._source_enabled("flatpak") and shutil.which("flatpak"):
             commands.append(("Flatpak", ["flatpak", "update", "--user", "-y"], None))
         include_aur = bool(
             self.config
             and self.config.get("updates.include_aur_in_update_all", False)
         )
-        if include_aur and shutil.which("yay"):
+        aur_helper = next((helper for helper in ("yay", "paru") if shutil.which(helper)), "")
+        if native == "pacman" and include_aur and self._source_enabled("aur") and aur_helper:
             if privilege_env is None:
                 try:
                     privilege_env = await self.privilege.subprocess_environment()
@@ -72,7 +92,7 @@ class UpdateManager:
             # Pacman already handled repository packages above. -Sua limits
             # this phase to AUR packages and avoids a duplicate system upgrade
             # plus its extra authorization requests.
-            commands.append(("AUR", ["yay", "--sudoflags", "-A", "-Sua", "--noconfirm"], privilege_env))
+            commands.append(("AUR", [aur_helper, "--sudoflags", "-A", "-Sua", "--noconfirm"], privilege_env))
 
         if not commands:
             await self._emit(callback, "[ERROR] No supported update manager is available.")
@@ -157,27 +177,189 @@ class UpdateManager:
         if self.config:
             include_aur = self.config.get("updates.include_aur_in_update_all", False)
 
-        if shutil.which("pacman"):
-            tasks.append(self.check_pacman_updates())
-        if shutil.which("yay") and include_aur:
+        native = "" if self.profile.immutable else self.profile.native_manager
+        probes = {"pacman": self.check_pacman_updates, "apt": self.check_apt_updates,
+                  "dnf": self.check_dnf_updates, "zypper": self.check_zypper_updates,
+                  "apk": self.check_apk_updates}
+        if native in probes and self._source_enabled(native) and shutil.which(native):
+            tasks.append(probes[native]())
+        aur_helper = next((helper for helper in ("yay", "paru") if shutil.which(helper)), "")
+        if native == "pacman" and include_aur and self._source_enabled("aur") and aur_helper:
             tasks.append(self.check_aur_updates())
-        if shutil.which("flatpak"):
+        if self._source_enabled("flatpak") and shutil.which("flatpak"):
             tasks.append(self.check_flatpak_updates())
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         combined = []
+        failed = False
         for res in results:
             if isinstance(res, list):
                 combined.extend(normalize_candidate(item) for item in res)
+            elif isinstance(res, asyncio.CancelledError):
+                raise res
             elif isinstance(res, Exception):
-                print(f"[UpdateManager] Error checking updates: {res}")
+                failed = True
+                print("[UpdateManager] A package-source update probe failed.")
+        if failed:
+            # Preserve the last checked state rather than recording a failed
+            # probe as a fresh, empty, up-to-date result.
+            raise RuntimeError("Update check incomplete; last known state retained")
 
         try:
             write_state(build_state(combined))
         except (OSError, ValueError) as exc:
             print(f"[UpdateManager] Could not write shared update state: {exc}")
         return combined
+
+    def _source_enabled(self, source_id, default=True):
+        return bool(self.config.get(f"search.sources.{source_id}", default)) if self.config else default
+
+    async def _capture(self, cmd: List[str], timeout: int = 45) -> tuple[int, str]:
+        try:
+            async with safe_subprocess(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+                env={**os.environ, "LC_ALL": "C"},
+            ) as proc:
+                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+                return proc.returncode or 0, (stdout or b"").decode("utf-8", errors="replace")
+        except asyncio.TimeoutError:
+            return 124, ""
+        except Exception:
+            return 127, ""
+
+    async def check_apt_updates(self) -> List[Dict]:
+        """Parse `apt list --upgradable` without changing package state."""
+        code, output = await self._capture(["apt", "list", "--upgradable"], timeout=60)
+        if code != 0:
+            raise RuntimeError("Native update probe failed")
+
+        updates: List[Dict] = []
+        pattern = re.compile(
+            r"^(?P<name>[^/\s]+)/\S+\s+(?P<new>\S+)\s+\S+\s+\[upgradable from: (?P<old>[^\]]+)\]"
+        )
+        for raw in output.splitlines():
+            line = raw.strip()
+            if not line or line.lower().startswith("listing"):
+                continue
+            match = pattern.match(line)
+            if not match:
+                continue
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9+._:-]{0,199}", match.group("name")):
+                continue
+            updates.append({
+                "name": match.group("name"),
+                "source": "APT",
+                "current_version": match.group("old"),
+                "new_version": match.group("new"),
+                "description": "Update available from APT",
+            })
+        return updates
+
+    async def check_dnf_updates(self) -> List[Dict]:
+        """Check Fedora/RHEL updates; DNF returns 100 when updates exist."""
+        code, output = await self._capture(["dnf", "check-upgrade", "--quiet"], timeout=90)
+        if code not in (0, 100):
+            raise RuntimeError("Native update probe failed")
+
+        installed_versions = {}
+        if shutil.which("rpm"):
+            installed_code, installed_output = await self._capture(
+                ["rpm", "-qa", "--qf", "%{NAME}.%{ARCH}\t%{VERSION}-%{RELEASE}\n"], timeout=15
+            )
+            if installed_code == 0:
+                for row in installed_output.splitlines():
+                    if "\t" in row:
+                        package, version = row.split("\t", 1)
+                        installed_versions[package] = version
+        updates: List[Dict] = []
+        for raw in output.splitlines():
+            line = raw.strip()
+            if not line or line.startswith(("Last metadata", "Obsoleting", "Security:")):
+                continue
+            parts = line.split()
+            if len(parts) < 2 or "." not in parts[0]:
+                continue
+            name_arch, new_version = parts[0], parts[1]
+            name = name_arch.rsplit(".", 1)[0]
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9+._:-]{0,199}", name):
+                continue
+            current_version = installed_versions.get(name_arch)
+            updates.append({
+                "id": name_arch,
+                "name": name,
+                "source": "DNF",
+                "current_version": current_version,
+                "new_version": new_version,
+                "description": "Update available from DNF",
+            })
+        return updates
+
+    async def check_zypper_updates(self) -> List[Dict]:
+        code, output = await self._capture(
+            ["zypper", "--non-interactive", "list-updates"], timeout=90
+        )
+        if code != 0:
+            raise RuntimeError("Native update probe failed")
+
+        updates: List[Dict] = []
+        for raw in output.splitlines():
+            line = raw.strip()
+            if "|" not in line or line.startswith(("S |", "--+", "Loading", "Reading")):
+                continue
+            columns = [part.strip() for part in line.split("|")]
+            # Typical columns: v | Repository | Name | Current Version | Available Version | Arch
+            if len(columns) < 5:
+                continue
+            if columns[3].lower() == "current version":
+                continue
+            name = columns[2]
+            current_version = columns[3]
+            new_version = columns[4]
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9+._:-]{0,199}", name) or not new_version:
+                continue
+            updates.append({
+                "name": name,
+                "source": "Zypper",
+                "current_version": current_version or None,
+                "new_version": new_version,
+                "description": "Update available from Zypper",
+            })
+        return updates
+
+    async def check_apk_updates(self) -> List[Dict]:
+        """Check Alpine updates using apk's comparison output."""
+        code, output = await self._capture(["apk", "version", "-l", "<"], timeout=45)
+        if code != 0:
+            raise RuntimeError("Native update probe failed")
+
+        installed_code, installed_output = await self._capture(["apk", "info"], timeout=20)
+        installed_names = [line.strip() for line in installed_output.splitlines()] if installed_code == 0 else []
+        updates: List[Dict] = []
+        # Example: package-1.0-r0 < 1.1-r0
+        pattern = re.compile(r"^(?P<installed>.+)\s+<\s+(?P<new>\S+)$")
+        for raw in output.splitlines():
+            match = pattern.match(raw.strip())
+            if not match:
+                continue
+            installed = match.group("installed")
+            # Alpine package names may contain hyphens, so resolve the package
+            # name from `apk info -e` candidates when possible. Falling back to
+            # the installed token is still preferable to dropping the update.
+            matches = [name for name in installed_names if name and installed.startswith(name + "-")]
+            name = max(matches, key=len) if matches else installed.rsplit("-", 2)[0]
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9+._:-]{0,199}", name):
+                continue
+            updates.append({
+                "name": name,
+                "source": "APK",
+                "current_version": installed[len(name) + 1 :] if installed.startswith(f"{name}-") else None,
+                "new_version": match.group("new"),
+                "description": "Update available from APK",
+            })
+        return updates
 
     async def check_pacman_updates(self) -> List[Dict]:
         """Check for native package updates using checkupdates (pacman-contrib)"""
@@ -190,9 +372,10 @@ class UpdateManager:
 
     async def check_aur_updates(self) -> List[Dict]:
         """Check for AUR updates using yay -Qua"""
-        if not shutil.which("yay"):
+        helper = next((command for command in ("yay", "paru") if shutil.which(command)), "")
+        if not helper:
             return []
-        return await self._run_qu_command(["yay", "-Qua"], "AUR")
+        return await self._run_qu_command([helper, "-Qua"], "AUR")
 
     async def _run_qu_command(self, cmd: List[str], source: str) -> List[Dict]:
         try:

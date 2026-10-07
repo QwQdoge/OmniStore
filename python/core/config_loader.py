@@ -2,6 +2,9 @@ import yaml
 from pathlib import Path
 from typing import Any, Dict, Optional
 import os
+import tempfile
+import threading
+import logging
 from copy import deepcopy
 from pydantic import BaseModel, Field
 
@@ -174,6 +177,9 @@ class ConfigManager:
                 }
             }
         }
+        # Serialize reload/read-modify-write within this process.
+        self._lock = threading.RLock()
+        self._signature = None
         # 初始化加载
         self.current_config = self.load()
         self.backend = None
@@ -181,7 +187,18 @@ class ConfigManager:
     @property
     def data(self) -> Dict:
         """提供给 Backend 获取全量配置"""
-        return self.current_config
+        with self._lock:
+            self._reload_if_changed()
+            return self.current_config
+
+    def _reload_if_changed(self):
+        try:
+            stat = self.config_path.stat()
+            signature = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+        except OSError:
+            return
+        if signature != self._signature:
+            self.current_config = self.load()
 
     def _deep_update(self, base: dict, overrides: dict) -> dict:
         """
@@ -197,90 +214,81 @@ class ConfigManager:
         return base
 
     def load(self) -> dict:
-        """加载逻辑：确保目录存在，并合并默认值"""
-        if not self.config_path.exists():
-            self.config_dir.mkdir(parents=True, exist_ok=True)
-            self.save(self.default_config)
-            return self.default_config
-
-        try:
-            with open(self.config_path, "r", encoding="utf-8") as f:
-                user_cfg = yaml.safe_load(f) or {}
-                # 递归合并，保证用户缺少的配置项由默认值补齐
-                merged = self._deep_update(deepcopy(self.default_config), user_cfg)
-                try:
-                    validated = ConfigModel(**merged).model_dump()
-                    return validated
-                except Exception as ve:
-                    print(f"[Config] Validation Warning: {ve}")
-                    return merged
-        except Exception as e:
-            print(f"[Config] Load Error (falling back to default): {e}")
-            return self.default_config
+        with self._lock:
+            if not self.config_path.exists():
+                if not hasattr(self, "current_config"):
+                    self.save(deepcopy(self.default_config))
+                return deepcopy(getattr(self, "current_config", self.default_config))
+            try:
+                with self.config_path.open("r", encoding="utf-8") as stream:
+                    user_config = yaml.safe_load(stream) or {}
+                    stat = os.fstat(stream.fileno())
+                if not isinstance(user_config, dict):
+                    raise ValueError("Configuration must be a mapping")
+                merged = self._deep_update(deepcopy(self.default_config), user_config)
+                validated = ConfigModel(**merged).model_dump()
+                # Bind the signature to the descriptor actually read, so a
+                # replacement during this read is observed on the next access.
+                self._signature = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+                return validated
+            except Exception:
+                logging.getLogger("omnistore").warning(
+                    "Invalid configuration; keeping the last valid settings"
+                )
+                return deepcopy(getattr(self, "current_config", self.default_config))
 
     def save(self, new_config: Optional[dict] = None) -> bool:
-        """
-        Murphy-proof configuration save logic.
-        Ensures strict schema validation, directory existence, and atomic file replacement
-        to prevent configuration corruption during mid-write crashes or power failures.
-        """
-        cfg = new_config if new_config is not None else self.current_config
-        try:
-            # 1. Rigorous Schema Validation
+        with self._lock:
+            temporary = None
             try:
-                cfg = ConfigModel(**cfg).model_dump()
-            except Exception as ve:
-                print(f"[Config] Save Validation Error: {ve}")
-                # Fault Isolation: Refuse to save invalid config to protect system stability
-                return False
-            
-            # 2. Preparation: Ensure directory exists
-            self.config_dir.mkdir(parents=True, exist_ok=True)
-
-            # 3. Atomic Write Pattern: Write to temporary file first
-            temp_file = self.config_path.with_suffix(".tmp")
-            try:
-                with open(temp_file, "w", encoding="utf-8") as f:
-                    yaml.dump(cfg, f, allow_unicode=True,
-                              sort_keys=False, default_flow_style=False)
-
-                # Force sync to disk if supported to ensure data integrity
-                if hasattr(os, "fdatasync"):
-                    with open(temp_file, "a") as f:
-                        os.fdatasync(f.fileno())
-
-                # 4. Atomic Swap: Atomic replace ensures the original file is either
-                # unchanged or completely updated, never in a partial state.
-                temp_file.replace(self.config_path)
+                cfg = ConfigModel(**(new_config if new_config is not None
+                                     else self.current_config)).model_dump()
+                self.config_dir.mkdir(parents=True, exist_ok=True)
+                # Exclusive, private, distinct files prevent concurrent saves
+                # from truncating or replacing each other's temporary output.
+                with tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", dir=self.config_dir,
+                    prefix=".omnistore-config-", suffix=".tmp", delete=False,
+                ) as stream:
+                    temporary = Path(stream.name)
+                    yaml.safe_dump(cfg, stream, allow_unicode=True, sort_keys=False)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                    stat = os.fstat(stream.fileno())
+                os.replace(temporary, self.config_path)
+                self._signature = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
                 self.current_config = cfg
                 return True
-            except Exception as write_e:
-                print(f"[Config] File Write Error: {write_e}")
-                if temp_file.exists():
-                    try: temp_file.unlink()
-                    except Exception: pass
+            except Exception:
+                logging.getLogger("omnistore").warning("Configuration save failed")
                 return False
-
-        except Exception as e:
-            print(f"[Config] Save Fatal Error: {e}")
-            return False
+            finally:
+                if temporary is not None:
+                    temporary.unlink(missing_ok=True)
 
     def get(self, key_path: str, default: Any = None) -> Any:
         """支持 'ui.appearance' 路径式获取"""
-        keys = key_path.split('.')
-        value = self.current_config
-        try:
-            for k in keys:
-                value = value[k]
-            return value
-        except (KeyError, TypeError):
-            return default
+        with self._lock:
+            self._reload_if_changed()
+            value = self.current_config
+            try:
+                keys = key_path.split('.')
+                for index, key in enumerate(keys):
+                    remainder = '.'.join(keys[index:])
+                    if isinstance(value, dict) and remainder in value:
+                        return value[remainder]
+                    value = value[key]
+                return value
+            except (KeyError, TypeError):
+                return default
 
     def set(self, key_path: str, value: Any):
-        """支持 'search.sources.aur' 路径式修改"""
-        keys = key_path.split('.')
-        target = self.current_config
-        for k in keys[:-1]:
-            target = target.setdefault(k, {})
-        target[keys[-1]] = value
-        self.save()
+        with self._lock:
+            self._reload_if_changed()
+            updated = deepcopy(self.current_config)
+            keys = key_path.split('.')
+            target = updated
+            for key in keys[:-1]:
+                target = target.setdefault(key, {})
+            target[keys[-1]] = value
+            return self.save(updated)

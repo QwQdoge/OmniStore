@@ -1,109 +1,139 @@
-import pytest
-import os
 import asyncio
-from unittest.mock import patch, mock_open, MagicMock, AsyncMock
+import sys
+from unittest.mock import AsyncMock
 
+import pytest
 from core.env_manager import EnvManager
+from core.platform_profile import SystemProfile
 
-@pytest.fixture
-def mock_safe_subprocess():
-    with patch("core.env_manager.safe_subprocess") as m:
-        yield m
 
-def test_check_arch_true():
-    with patch("os.path.exists", return_value=True), \
-         patch("builtins.open", mock_open(read_data="name=arch linux")):
-        manager = EnvManager()
-        assert manager.is_arch is True
+def manager_for(monkeypatch, profile, commands=()):
+    monkeypatch.setattr('core.env_manager.detect_system_profile', lambda: profile)
+    manager = EnvManager()
+    monkeypatch.setattr(manager, '_has_cmd', lambda command: command in commands)
+    return manager
 
-def test_check_arch_false():
-    with patch("os.path.exists", return_value=True), \
-         patch("builtins.open", mock_open(read_data="name=ubuntu")):
-        manager = EnvManager()
-        assert manager.is_arch is False
-
-def test_check_arch_not_exists():
-    with patch("os.path.exists", return_value=False):
-        manager = EnvManager()
-        assert manager.is_arch is False
 
 @pytest.mark.asyncio
-async def test_has_cmd_true(mock_safe_subprocess):
-    proc_mock = AsyncMock()
-    proc_mock.returncode = 0
-    mock_safe_subprocess.return_value.__aenter__.return_value = proc_mock
+async def test_non_arch_supported_host_is_not_fatal(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', 'ubuntu', native_manager='apt'), ('apt-get',))
+    result = await manager.check_env()
+    assert all(item['status'] != 'fatal' for item in result.values())
+    assert result['system']['native_manager'] == 'apt'
+    assert result['system']['recommended_sources'] == ['apt', 'flatpak', 'appimage']
+    assert 'aur_helper' not in result
 
-    manager = EnvManager()
-    assert await manager._has_cmd("git") is True
-
-@pytest.mark.asyncio
-async def test_has_cmd_false(mock_safe_subprocess):
-    proc_mock = AsyncMock()
-    proc_mock.returncode = 1
-    mock_safe_subprocess.return_value.__aenter__.return_value = proc_mock
-
-    manager = EnvManager()
-    assert await manager._has_cmd("git") is False
 
 @pytest.mark.asyncio
-async def test_has_pkg_true():
-    manager = EnvManager()
-    with patch.object(manager, "_has_cmd", return_value=True), \
-         patch("core.env_manager.safe_subprocess") as mock_sp:
+@pytest.mark.parametrize('platform', ['macos', 'windows'])
+async def test_desktop_platform_does_not_mutate_linux_host(monkeypatch, platform):
+    manager = manager_for(monkeypatch, SystemProfile(platform))
+    command = AsyncMock()
+    monkeypatch.setattr(manager, '_run_host_command', command)
+    assert await manager.bootstrap()
+    command.assert_not_called()
 
-        proc_mock = AsyncMock()
-        proc_mock.returncode = 0
-        mock_sp.return_value.__aenter__.return_value = proc_mock
-
-        assert await manager._has_pkg("base-devel") is True
 
 @pytest.mark.asyncio
-async def test_check_env():
-    manager = EnvManager()
-    manager.is_arch = True
-    with patch.object(manager, "_has_cmd", side_effect=lambda x: x == "git"), \
-         patch.object(manager, "_has_pkg", side_effect=lambda x: x == "base-devel"):
+async def test_immutable_host_never_mutated_through_dnf(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', 'fedora', immutable=True), ('dnf',))
+    command = AsyncMock()
+    monkeypatch.setattr(manager, '_run_host_command', command)
+    assert not await manager.bootstrap()
+    command.assert_not_called()
+    monkeypatch.setattr(manager, '_has_cmd', lambda command: command in ('flatpak', 'dnf'))
+    remote = AsyncMock(return_value=True)
+    monkeypatch.setattr(manager, '_ensure_flathub', remote)
+    assert await manager.bootstrap()
+    remote.assert_awaited_once()
+    command.assert_not_called()
 
-        status = await manager.check_env()
-        assert status["is_arch"]["status"] == "ok"
-        assert status["git"]["status"] == "ok"
-        assert status["yay"]["status"] == "warning"
-        assert status["base-devel"]["status"] == "ok"
-        assert status["libdbusmenu-gtk3"]["status"] == "warning"
-        assert status["libappindicator-gtk3"]["status"] == "warning"
-
-@pytest.mark.asyncio
-async def test_bootstrap_non_arch():
-    manager = EnvManager()
-    manager.is_arch = False
-    cb = AsyncMock()
-    assert await manager.bootstrap(cb) is False
-    cb.assert_called_with("[ERROR] Cannot bootstrap on non-Arch system.")
 
 @pytest.mark.asyncio
-async def test_bootstrap_success():
-    manager = EnvManager()
-    manager.is_arch = True
+@pytest.mark.parametrize('name,expected', [
+    ('pacman', ['pacman', '-S', '--noconfirm', '--needed', 'flatpak']),
+    ('apt', ['apt-get', 'install', '-y', 'flatpak']),
+    ('dnf', ['dnf', 'install', '-y', 'flatpak']),
+    ('zypper', ['zypper', '--non-interactive', 'install', 'flatpak']),
+    ('apk', ['apk', 'add', 'flatpak']),
+])
+async def test_native_bootstrap_routes_static_packages(monkeypatch, name, expected):
+    manager = manager_for(monkeypatch, SystemProfile('linux', native_manager=name))
+    command = AsyncMock(return_value=True)
+    monkeypatch.setattr(manager, '_run_host_command', command)
+    assert await manager._install_native_packages(['flatpak'])
+    assert command.call_args.args[0] == expected
+    if name == 'apt':
+        assert command.call_args_list[0].args[0] == ['apt-get', 'update']
+        assert await manager._install_native_packages(['flatpak'])
+        assert sum(call.args[0] == ['apt-get', 'update'] for call in command.call_args_list) == 1
 
-    async def mock_has_cmd(cmd):
-        return cmd == "pacman"
 
-    async def mock_has_pkg(pkg):
-        return False
+@pytest.mark.asyncio
+async def test_failed_metadata_update_prevents_install(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', native_manager='apt'))
+    command = AsyncMock(return_value=False)
+    monkeypatch.setattr(manager, '_run_host_command', command)
+    assert not await manager._install_native_packages(['flatpak'])
+    command.assert_awaited_once()
+    assert not manager._apt_updated
 
-    with patch.object(manager, "_has_cmd", side_effect=mock_has_cmd), \
-         patch.object(manager, "_has_pkg", side_effect=mock_has_pkg), \
-         patch.object(manager, "_run_pacman", return_value=True) as mock_rp, \
-         patch.object(manager, "_install_yay", return_value=True) as mock_iy:
 
-        cb = AsyncMock()
-        assert await manager.bootstrap(cb) is True
+@pytest.mark.asyncio
+async def test_real_operation_uses_askpass_not_cached_sudo(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', native_manager='apt'), ('sudo',))
+    monkeypatch.setattr('core.env_manager.os.geteuid', lambda: 1000)
+    manager.privilege.subprocess_environment = AsyncMock(return_value={'SUDO_ASKPASS': '/test/helper'})
+    command = AsyncMock(return_value=True)
+    monkeypatch.setattr(manager, '_run_command', command)
+    assert await manager._run_host_command(['apt-get', 'install', '-y', 'flatpak'])
+    assert command.call_args.args[0] == ['sudo', '-A', 'apt-get', 'install', '-y', 'flatpak']
+    assert command.call_args.kwargs['env']['SUDO_ASKPASS'] == '/test/helper'
 
-        mock_rp.assert_called_once()
-        args = mock_rp.call_args[0][0]
-        assert "git" in args
-        assert "base-devel" in args
-        assert "libdbusmenu-gtk3" in args
-        assert "libayatana-appindicator" in args
 
-        mock_iy.assert_called_once()
+@pytest.mark.asyncio
+async def test_silent_process_cannot_evade_streaming_deadline(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux'))
+    callback = AsyncMock()
+    started = asyncio.get_running_loop().time()
+    assert not await manager._run_command([sys.executable, '-c', 'import time; time.sleep(30)'], callback, timeout=.1)
+    assert asyncio.get_running_loop().time() - started < 5
+    callback.assert_awaited_with('[ERROR] System command timed out.')
+
+
+@pytest.mark.asyncio
+async def test_aur_build_is_not_started_as_root(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', native_manager='pacman'))
+    monkeypatch.setattr('core.env_manager.os.geteuid', lambda: 0)
+    command = AsyncMock()
+    monkeypatch.setattr(manager, '_run_command', command)
+    assert not await manager._install_yay()
+    command.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_standard_bootstrap_never_builds_community_helper_without_opt_in(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', 'arch', native_manager='pacman'), ('pacman', 'flatpak'))
+    monkeypatch.setattr(manager, '_ensure_flathub', AsyncMock(return_value=True))
+    helper = AsyncMock()
+    monkeypatch.setattr(manager, '_install_yay', helper)
+    assert await manager.bootstrap()
+    helper.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_explicit_aur_setup_preserves_existing_paru(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', 'arch', native_manager='pacman'), ('pacman', 'paru'))
+    helper = AsyncMock()
+    monkeypatch.setattr(manager, '_install_yay', helper)
+    assert await manager.bootstrap_aur()
+    helper.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_explicit_aur_setup_does_not_mutate_other_distribution(monkeypatch):
+    manager = manager_for(monkeypatch, SystemProfile('linux', 'ubuntu', native_manager='apt'), ('apt-get',))
+    packages = AsyncMock()
+    monkeypatch.setattr(manager, '_install_native_packages', packages)
+    assert not await manager.bootstrap_aur()
+    packages.assert_not_called()

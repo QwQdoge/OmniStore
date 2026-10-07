@@ -204,6 +204,8 @@ def test_privilege_manager_never_reads_or_pipes_the_sudo_password():
 
 
 def test_update_all_uses_real_manager_commands_instead_of_a_fake_package(monkeypatch):
+    from core.platform_profile import SystemProfile
+    monkeypatch.setattr("core.update_manager.detect_system_profile", lambda: SystemProfile("linux", "arch", native_manager="pacman"))
     async def run_update_all():
         manager = UpdateManager(config=ConfigManager())
         manager.privilege.ensure_privileged = AsyncMock(return_value=True)
@@ -243,6 +245,8 @@ def test_flutter_progress_callback_is_structured_without_protocol_text(capsys):
 
 
 def test_update_all_passes_graphical_askpass_to_aur_helper(monkeypatch):
+    from core.platform_profile import SystemProfile
+    monkeypatch.setattr("core.update_manager.detect_system_profile", lambda: SystemProfile("linux", "arch", native_manager="pacman"))
     async def run_update_all():
         manager = UpdateManager(
             config={"updates.include_aur_in_update_all": True}

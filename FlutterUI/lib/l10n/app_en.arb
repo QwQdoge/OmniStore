@@ -1407,5 +1407,6 @@
     }
   },
   "channelStable": "Stable",
-  "channelBeta": "Beta"
+  "channelBeta": "Beta",
+  "installAurHelper": "Install AUR helper"
 }

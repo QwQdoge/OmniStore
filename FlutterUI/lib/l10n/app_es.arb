@@ -1386,5 +1386,6 @@
   "switchToStable": "Cambiar a Stable",
   "downgradeNotice": "Los siguientes paquetes oficiales de Meo necesitan una versión Stable. Los paquetes de Arch y de terceros no se degradarán.\n\n{packages}",
   "channelStable": "Stable",
-  "channelBeta": "Beta"
+  "channelBeta": "Beta",
+  "installAurHelper": "Instalar asistente de AUR"
 }

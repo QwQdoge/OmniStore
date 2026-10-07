@@ -1386,5 +1386,6 @@
   "switchToStable": "Stable に切り替え",
   "downgradeNotice": "以下の公式 Meo パッケージは Stable バージョンが必要です。Arch およびサードパーティパッケージはダウングレードされません。\n\n{packages}",
   "channelStable": "Stable",
-  "channelBeta": "Beta"
+  "channelBeta": "Beta",
+  "installAurHelper": "AUR ヘルパーをインストール"
 }

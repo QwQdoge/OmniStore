@@ -1406,5 +1406,6 @@
   "switchToStable": "切换至稳定版",
   "downgradeNotice": "以下官方 Meo 软件包需要降级至稳定版本。Arch 及第三方软件包不会被降级。\n\n{packages}",
   "channelStable": "稳定版",
-  "channelBeta": "Beta 版"
+  "channelBeta": "Beta 版",
+  "installAurHelper": "安装 AUR 助手"
 }

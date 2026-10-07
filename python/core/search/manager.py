@@ -4,6 +4,7 @@ import aiohttp
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
 from .scoring import SmartScoring
+from core.platform_profile import detect_system_profile
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 import re
@@ -76,15 +77,19 @@ class SearchManager:
         # Source prefix filtering (e.g., "source:flatpak" or "source:flatpak term")
         source_filter_obj = None
         if query.lower().startswith("source:"):
-            parts = query.split(":", 2)
-            source_filter = parts[1].strip().lower()
-            remaining = parts[2].strip() if len(parts) > 2 else ""
+            match = re.fullmatch(r"source:([^\s:]+)(?:(?::|\s+)(.*))?", query, re.IGNORECASE)
+            if not match:
+                return []
+            source_filter = match.group(1).lower()
+            remaining = (match.group(2) or "").strip()
             if source_filter == "native":
-                source_filter = "pacman"
+                source_filter = detect_system_profile().native_manager
             source_obj = self.sources.get(source_filter)
-            if not source_obj:
-                # Unknown source, return empty results
-                active_sources = []
+            if not source_obj or not source_obj.enabled or not self.cm.get(
+                f"search.sources.{source_filter}", True
+            ):
+                # A missing/disabled explicit source must never broaden the search.
+                return []
             else:
                 if remaining == "":
                     # No search term, return recommendations for the source
