@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 class DaemonResult {
@@ -83,7 +84,13 @@ class DaemonClient {
       acquired = true;
     } catch (error) {
       debugPrint("DaemonClient: Refusing overlapping transaction: $error");
-      if (!currentMutex.isCompleted) currentMutex.complete();
+      // An abandoned queue slot still belongs behind its predecessor. Releasing
+      // it immediately would let the next request overlap an active transaction.
+      unawaited(
+        previousMutex.future.then((_) {
+          if (!currentMutex.isCompleted) currentMutex.complete();
+        }),
+      );
       return null;
     }
 
