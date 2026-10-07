@@ -95,23 +95,39 @@ def test_read_side_native_actions_reuse_existing_backend_cli_contract():
         assert flag in bridge
 
 
-def test_package_mutations_use_persistent_transaction_client_with_confirmation():
+def test_package_mutations_use_persistent_transaction_client_and_review_install_plan():
     app_row = read(QML_ROOT / "components" / "AppRow.qml")
     update_row = read(QML_ROOT / "components" / "UpdateRow.qml")
     details = read(QML_ROOT / "components" / "AppDetailsPane.qml")
+    plan_review = read(QML_ROOT / "components" / "InstallPlanReview.qml")
     updates = read(QML_ROOT / "pages" / "UpdatesPage.qml")
     main_cpp = read(NATIVE / "app" / "main.cpp")
     client = read(NATIVE / "app" / "transactionclient.cpp")
 
-    assert app_row.count("MeoDialog") >= 2
-    assert "onConfirmed: transactions.installApp" in app_row
+    # Installed-page rows are management-only and cannot bypass plan review.
+    assert "transactions.planInstall" not in app_row
+    assert "transactions.installApp" not in app_row
     assert "onConfirmed: transactions.removeApp" in app_row
-    assert "onConfirmed: transactions.updateApp" in update_row
-    assert "onConfirmed: transactions.installApp" in details
+
+    # Store details must request a read-only plan, render the structured review,
+    # then apply only the reviewed planHash through the persistent service.
+    assert "transactions.planInstall" in details
+    assert "InstallPlanReview" in details
+    assert "transactions.applyInstallPlan()" in details
+    assert "transactions.installApp" not in details
     assert "onConfirmed: transactions.removeApp" in details
+    assert "sourceData.trust" in plan_review
+    assert "packageData.downloadSize" in plan_review
+    assert "packageData.installedSize" in plan_review
+    assert "packageData.dependencies" in plan_review
+    assert "plan.requiresPrivilege" in plan_review
+
+    assert "onConfirmed: transactions.updateApp" in update_row
     assert "onConfirmed: transactions.updateAll" in updates
     assert 'setContextProperty(QStringLiteral("transactions"), &transactions)' in main_cpp
+    assert 'QStringLiteral("transaction.plan")' in client
     assert 'QStringLiteral("task.submit")' in client
+    assert 'QStringLiteral("plan_hash")' in client
     assert 'QStringLiteral("task.get")' in client
     assert 'QStringLiteral("task.list")' in client
 
@@ -122,6 +138,7 @@ def test_package_mutations_use_persistent_transaction_client_with_confirmation()
         "backend.removeApp(",
         "backend.updateApp(",
         "backend.updateAll(",
+        "transactions.installApp(",
     ):
         assert forbidden not in qml_text
 
@@ -208,8 +225,6 @@ def test_linux_release_assembly_is_native_only(tmp_path):
     backend.write_bytes(b"backend")
     binary.write_bytes(b"native")
 
-    # Prove stale migration output is actively removed rather than silently
-    # becoming a hidden second frontend.
     bundle.mkdir()
     (bundle / "frontend").write_bytes(b"flutter")
 
