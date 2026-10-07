@@ -37,35 +37,30 @@ class InstalledTab extends StatelessWidget {
                   child: Scrollbar(
                     controller: filterScrollController,
                     thumbVisibility: true,
-                    child: SingleChildScrollView(
+                    child: ListView.builder(
                       controller: filterScrollController,
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 4,
                       ),
-                      child: Row(
-                        children: availableFilters
-                            .map(
-                              (s) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(_filterLabel(context, s)),
-                                  tooltip: AppLocalizations.of(context)!
-                                      .sourceFilterSemantics(
-                                        _filterLabel(context, s),
-                                      ),
-                                  selected: selectedSourceFilter == s,
-                                  onSelected: (v) {
-                                    if (v) {
-                                      onSourceFilterSelected(s);
-                                    }
-                                  },
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
+                      itemCount: availableFilters.length,
+                      itemBuilder: (context, index) {
+                        final source = availableFilters[index];
+                        final label = _filterLabel(context, source);
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(label),
+                            tooltip: AppLocalizations.of(context)!
+                                .sourceFilterSemantics(label),
+                            selected: selectedSourceFilter == source,
+                            onSelected: (selected) {
+                              if (selected) onSourceFilterSelected(source);
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

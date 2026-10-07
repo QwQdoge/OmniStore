@@ -75,4 +75,53 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+  testWidgets(
+    'many source filters stay lazy and selectable at large text scale',
+    (tester) async {
+      final controller = ScrollController();
+      addTearDown(controller.dispose);
+      String? selected;
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+            child: Scaffold(
+              body: SizedBox(
+                width: 320,
+                child: InstalledTab(
+                  isLoading: false,
+                  selectedSourceFilter: 'source-0',
+                  filteredApps: const [],
+                  filterScrollController: controller,
+                  onSourceFilterSelected: (source) => selected = source,
+                  availableFilters: List.generate(
+                    30,
+                    (index) => 'source-$index',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('source-29'), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('source-29'),
+        400,
+        scrollable: find
+            .descendant(
+              of: find.byType(Scrollbar),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+        maxScrolls: 30,
+      );
+      await tester.tap(find.text('source-29'));
+      expect(selected, 'source-29');
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
