@@ -55,11 +55,15 @@ TransactionClient::TransactionClient(QObject *parent)
     connect(&m_socket, &QLocalSocket::readyRead, this, &TransactionClient::consumeSocketData);
     connect(&m_socket, &QLocalSocket::disconnected, this, [this] {
         m_available = false;
+        if (m_current.kind == RequestKind::Plan && m_planning) {
+            m_planning = false;
+            emit stateChanged();
+        }
         emit stateChanged();
         if (m_requestInFlight) {
-            // Never blindly retry a submit: the daemon may already own the
-            // transaction even if the reply was lost. Reconnect and task.list
-            // instead so the UI recovers state without duplicating mutation.
+            // Never blindly retry a mutation submit: the daemon may already own
+            // the transaction even if the reply was lost. Reconnect and
+            // task.list instead so the UI recovers state without duplication.
             m_requestInFlight = false;
             m_current = {};
             if (!m_queue.isEmpty())
@@ -135,8 +139,6 @@ void TransactionClient::reconnect()
 
 void TransactionClient::enqueue(RequestKind kind, const QJsonObject &payload)
 {
-    // Poll requests are disposable. Do not build an unbounded queue if the
-    // service is slow; one outstanding get is enough.
     if (kind == RequestKind::Get) {
         if (m_current.kind == RequestKind::Get)
             return;
@@ -166,6 +168,8 @@ void TransactionClient::sendCurrent()
 {
     const QByteArray payload = QJsonDocument(m_current.payload).toJson(QJsonDocument::Compact) + '\n';
     if (m_socket.write(payload) < 0) {
+        if (m_current.kind == RequestKind::Plan)
+            m_planning = false;
         m_errorMessage = tr("Could not send request to the OmniStore transaction service.");
         emit stateChanged();
         m_requestInFlight = false;
@@ -193,6 +197,8 @@ void TransactionClient::consumeSocketData()
         QJsonParseError error;
         const QJsonDocument document = QJsonDocument::fromJson(line, &error);
         if (error.error != QJsonParseError::NoError || !document.isObject()) {
+            if (m_current.kind == RequestKind::Plan)
+                m_planning = false;
             m_errorMessage = tr("The transaction service returned invalid JSON.");
             emit stateChanged();
         } else {
@@ -211,6 +217,8 @@ void TransactionClient::handleResponse(RequestKind kind, const QJsonObject &resp
 {
     const QString topStatus = response.value(QStringLiteral("status")).toString();
     if (topStatus != QStringLiteral("success")) {
+        if (kind == RequestKind::Plan)
+            m_planning = false;
         m_errorMessage = response.value(QStringLiteral("error")).toString();
         if (m_errorMessage.isEmpty())
             m_errorMessage = tr("The transaction service rejected the request.");
@@ -241,8 +249,32 @@ void TransactionClient::handleResponse(RequestKind kind, const QJsonObject &resp
         return;
     }
 
-    if ((kind == RequestKind::Submit || kind == RequestKind::Get) && value.isObject())
-        applyTask(value.toObject());
+    if (kind == RequestKind::Plan) {
+        m_planning = false;
+        if (!value.isObject()) {
+            m_errorMessage = tr("The transaction service returned an invalid install plan.");
+            emit stateChanged();
+            return;
+        }
+        m_installPlan = value.toObject();
+        m_errorMessage.clear();
+        emit planChanged();
+        emit stateChanged();
+        return;
+    }
+
+    if ((kind == RequestKind::Submit || kind == RequestKind::Get) && value.isObject()) {
+        const QJsonObject task = value.toObject();
+        applyTask(task);
+        if (kind == RequestKind::Submit && !m_installPlan.isEmpty()) {
+            const QString plannedHash = m_installPlan.value(QStringLiteral("planHash")).toString();
+            if (!plannedHash.isEmpty()
+                && task.value(QStringLiteral("planHash")).toString() == plannedHash) {
+                m_installPlan = {};
+                emit planChanged();
+            }
+        }
+    }
 }
 
 void TransactionClient::applyTask(const QJsonObject &task)
@@ -275,6 +307,80 @@ void TransactionClient::applyTask(const QJsonObject &task)
         emit operationFinished(m_actionName, m_status == QStringLiteral("succeeded"));
 }
 
+void TransactionClient::planInstall(const QString &name, const QString &source, const QString &url)
+{
+    if (busy()) {
+        m_errorMessage = tr("Finish the current package transaction before reviewing another install.");
+        emit stateChanged();
+        return;
+    }
+    if (m_planning)
+        return;
+
+    m_installPlan = {};
+    emit planChanged();
+
+    QJsonObject kwargs{
+        {QStringLiteral("kind"), QStringLiteral("install")},
+        {QStringLiteral("name"), name.trimmed()},
+        {QStringLiteral("source"), sourceOrNative(source)},
+    };
+    if (!url.trimmed().isEmpty())
+        kwargs.insert(QStringLiteral("url"), url.trimmed());
+
+    m_errorMessage.clear();
+    m_planning = true;
+    emit stateChanged();
+    enqueue(RequestKind::Plan, {
+        {QStringLiteral("action"), QStringLiteral("transaction.plan")},
+        {QStringLiteral("args"), QJsonArray{}},
+        {QStringLiteral("kwargs"), kwargs},
+    });
+}
+
+void TransactionClient::applyInstallPlan()
+{
+    if (busy()) {
+        m_errorMessage = tr("Finish the current package transaction before starting another one.");
+        emit stateChanged();
+        return;
+    }
+    if (m_installPlan.isEmpty()) {
+        m_errorMessage = tr("Review an install plan before applying it.");
+        emit stateChanged();
+        return;
+    }
+    if (!m_installPlan.value(QStringLiteral("canApply")).toBool(false)) {
+        m_errorMessage = tr("This install plan cannot be applied with the current source state.");
+        emit stateChanged();
+        return;
+    }
+
+    const QString planHash = m_installPlan.value(QStringLiteral("planHash")).toString().trimmed();
+    if (planHash.isEmpty()) {
+        m_errorMessage = tr("The reviewed install plan is missing its identity hash.");
+        emit stateChanged();
+        return;
+    }
+
+    m_errorMessage.clear();
+    enqueue(RequestKind::Submit, {
+        {QStringLiteral("action"), QStringLiteral("task.submit")},
+        {QStringLiteral("args"), QJsonArray{}},
+        {QStringLiteral("kwargs"), QJsonObject{
+            {QStringLiteral("plan_hash"), planHash},
+        }},
+    });
+}
+
+void TransactionClient::clearInstallPlan()
+{
+    if (m_installPlan.isEmpty())
+        return;
+    m_installPlan = {};
+    emit planChanged();
+}
+
 void TransactionClient::submit(const QString &kind, const QString &name,
                                const QString &source, const QString &url)
 {
@@ -298,11 +404,6 @@ void TransactionClient::submit(const QString &kind, const QString &name,
         {QStringLiteral("args"), QJsonArray{}},
         {QStringLiteral("kwargs"), kwargs},
     });
-}
-
-void TransactionClient::installApp(const QString &name, const QString &source, const QString &url)
-{
-    submit(QStringLiteral("install"), name, source, url);
 }
 
 void TransactionClient::removeApp(const QString &name, const QString &source)
