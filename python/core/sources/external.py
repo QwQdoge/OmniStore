@@ -9,8 +9,15 @@ import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
+from core.async_cleanup import finish_cleanup
 from core.sources.base import UnifiedSource
 from core.subprocess_utils import safe_subprocess
+
+
+async def _reap_installed_probe(task):
+    if not task.done():
+        task.cancel()
+    await asyncio.wait_for(asyncio.gather(task, return_exceptions=True), timeout=8)
 
 
 def _decode_output(data: bytes) -> str:
@@ -548,10 +555,13 @@ class ScoopSource(UnifiedSource):
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
+        # Own the probe for this search so command I/O and installed lookup
+        # overlap without leaking work on error, timeout, or cancellation.
+        installed_probe = asyncio.create_task(self._get_installed_ids())
         try:
             async with safe_subprocess("scoop", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                 stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
-                installed = await self._get_installed_ids()
+                installed = await installed_probe
                 if installed is None:
                     installed = {item["id"].lower() for item in await self.list_installed()}
                 results = []
@@ -576,6 +586,8 @@ class ScoopSource(UnifiedSource):
         except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:
             logging.getLogger(__name__).warning("Scoop search failed: %s", exc)
             return []
+        finally:
+            await finish_cleanup(_reap_installed_probe(installed_probe))
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         callback = self._async_callback(callback)
@@ -721,10 +733,13 @@ class BrewSource(UnifiedSource):
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         if not self.enabled:
             return []
+        # Own the probe for this search so command I/O and installed lookup
+        # overlap without leaking work on error, timeout, or cancellation.
+        installed_probe = asyncio.create_task(self._get_installed_ids())
         try:
             async with safe_subprocess("brew", "search", query, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
                 stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=20)
-                installed = await self._get_installed_ids()
+                installed = await installed_probe
                 if installed is None:
                     installed = {item["id"].lower() for item in await self.list_installed()}
                 results = []
@@ -745,6 +760,8 @@ class BrewSource(UnifiedSource):
         except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as exc:
             logging.getLogger(__name__).warning("Homebrew search failed: %s", exc)
             return []
+        finally:
+            await finish_cleanup(_reap_installed_probe(installed_probe))
 
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         callback = self._async_callback(callback)
