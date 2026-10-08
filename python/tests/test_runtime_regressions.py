@@ -303,6 +303,85 @@ def test_custom_repo_config_write_failure_fails_closed(monkeypatch):
     assert result is False
 
 
+def test_flatpak_add_preserves_an_existing_remote_on_persistence_failure(monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak")
+    state = {"present": True}
+    calls = []
+
+    class Config:
+        def get(self, key, default=None):
+            return []
+        def set(self, key, value):
+            raise OSError("disk full")
+
+    class Process:
+        def __init__(self, command):
+            self.command = command
+            self.returncode = 0
+        async def communicate(self):
+            if "remote-delete" in self.command:
+                state["present"] = False
+            elif "--if-not-exists" not in self.command:
+                self.returncode = 1  # authoritative duplicate rejection
+            return b"existing remote", b""
+
+    class Context:
+        def __init__(self, command):
+            calls.append(command)
+            self.process = Process(command)
+        async def __aenter__(self):
+            return self.process
+        async def __aexit__(self, *args):
+            pass
+
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess",
+                        lambda *command, **kwargs: Context(command))
+    manager = CustomRepoManager(Config(), None)
+    assert asyncio.run(manager.add_flatpak_remote("existing", "https://example.org/feed")) is False
+    assert state["present"]
+    assert len(calls) == 1 and "remote-add" in calls[0]
+
+
+def test_flatpak_add_reports_false_persistence_without_mutating_config_or_deleting(monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak")
+    calls = []
+    records = []
+
+    class Config:
+        def get(self, key, default=None):
+            return records
+        def set(self, key, value):
+            return False
+
+    class Process:
+        returncode = 0
+        async def communicate(self):
+            return b"", b""
+    class Context:
+        async def __aenter__(self):
+            return Process()
+        async def __aexit__(self, *args):
+            pass
+    def spawn(*command, **kwargs):
+        calls.append(command)
+        return Context()
+    monkeypatch.setattr("core.search.custom_repo.safe_subprocess", spawn)
+    callback = AsyncMock()
+    manager = CustomRepoManager(Config(), None)
+    assert asyncio.run(manager.add_flatpak_remote("new", "https://example.org/feed", callback)) is False
+    assert records == []
+    assert all("remote-delete" not in command for command in calls)
+    assert "left intact" in callback.await_args.args[0]
+
+
+def test_custom_repo_names_cannot_be_command_options():
+    for name in ("--user", " -remote", "--system"):
+        assert not CustomRepoManager._validate_name(name)
+    assert CustomRepoManager._validate_name("my-remote")
+
+
 def test_remove_flatpak_remote_rollback_on_config_failure(monkeypatch):
     monkeypatch.setattr("sys.platform", "linux")
     monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/flatpak" if name == "flatpak" else None)

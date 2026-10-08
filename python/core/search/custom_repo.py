@@ -35,7 +35,7 @@ class CustomRepoManager:
         if not name or not isinstance(name, str):
             return False
         name_str = name.strip()
-        if not (1 <= len(name_str) <= 128):
+        if not (1 <= len(name_str) <= 128) or name_str.startswith("-"):
             return False
         return bool(re.fullmatch(r"[A-Za-z0-9@._+:-]+", name_str))
 
@@ -120,7 +120,7 @@ class CustomRepoManager:
                 await self._safe_callback(callback, f"[INFO] Adding Flatpak remote '{name_clean}' ({url_clean})...")
 
                 async with safe_subprocess(
-                    "flatpak", "remote-add", "--user", "--if-not-exists", name_clean, url_clean,
+                    "flatpak", "remote-add", "--user", name_clean, url_clean,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT
                 ) as proc:
@@ -130,7 +130,7 @@ class CustomRepoManager:
                     if success:
                         if self.cm is not None:
                             try:
-                                custom_flatpaks = self.cm.get("custom_repos.flatpak", [])
+                                custom_flatpaks = copy.deepcopy(self.cm.get("custom_repos.flatpak", []))
                                 if not isinstance(custom_flatpaks, list):
                                     custom_flatpaks = []
                                 for r in custom_flatpaks:
@@ -138,19 +138,17 @@ class CustomRepoManager:
                                         break
                                 else:
                                     custom_flatpaks.append({"name": name_clean, "url": url_clean})
-                                    self.cm.set("custom_repos.flatpak", custom_flatpaks)
+                                    if self.cm.set("custom_repos.flatpak", custom_flatpaks) is False:
+                                        raise OSError("Configuration persistence failed")
                             except (OSError, IOError, KeyError, ValueError, TypeError) as cfg_err:
-                                logger.error(f"Failed to update config for flatpak remote, rolling back remote: {cfg_err}")
-                                try:
-                                    async with safe_subprocess(
-                                        "flatpak", "remote-delete", "--user", "--force", name_clean,
-                                        stdout=asyncio.subprocess.PIPE,
-                                        stderr=asyncio.subprocess.DEVNULL
-                                    ) as rb_proc:
-                                        await rb_proc.communicate()
-                                except (OSError, subprocess.SubprocessError) as rb_err:
-                                    logger.error(f"Rollback failed for flatpak remote '{name_clean}': {rb_err}")
-                                await self._safe_callback(callback, f"[ERROR] Configuration persistence failed: {cfg_err}")
+                                # remote-add without --if-not-exists lets Flatpak own
+                                # the atomic duplicate check. Never delete by name to
+                                # undo a local persistence failure: a different process
+                                # could already have replaced that remote.
+                                logger.error("Flatpak remote added, but local configuration persistence failed")
+                                await self._safe_callback(callback,
+                                    "[ERROR] Flatpak added the remote, but OmniStore could not save its configuration. "
+                                    "The remote was left intact; refresh its state before retrying.")
                                 return False
                         await self._safe_callback(callback, f"[INFO] Successfully added Flatpak remote '{name_clean}'.")
                         return True
