@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/l10n/app_localizations.dart';
@@ -7,7 +6,9 @@ import 'package:frontend/models/task_state.dart';
 import 'package:frontend/core/widgets/smooth_progress_bar.dart';
 import 'package:frontend/core/widgets/app_card.dart';
 import 'package:frontend/core/widgets/empty_state.dart';
+
 import 'terminal_dialog.dart';
+
 import 'package:frontend/core/widgets/smooth_size_switcher.dart';
 
 class TasksTab extends StatelessWidget {
@@ -183,18 +184,14 @@ class TasksTab extends StatelessWidget {
               sliver:
                   Selector<
                     TaskController,
-                    ({int length, List<TaskState> history})
+                    ({int version, int length, List<TaskState> history})
                   >(
                     selector: (context, c) => (
+                      version: c.completedTasksVersion,
                       length: c.completedTasks.length,
                       history: c.completedTasks,
                     ),
-                    shouldRebuild: (prev, next) =>
-                        prev.length != next.length ||
-                        !const IterableEquality().equals(
-                          prev.history,
-                          next.history,
-                        ),
+                    shouldRebuild: (prev, next) => prev.version != next.version,
                     builder: (context, data, child) {
                       final history = data.history;
                       return SliverList.builder(

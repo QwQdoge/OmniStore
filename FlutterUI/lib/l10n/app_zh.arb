@@ -221,7 +221,7 @@
   "@systemCleaningDesc": {
     "description": "systemCleaningDesc"
   },
-  "systemCleaningSubtitle": "清理孤立软件包与 pacman 缓存",
+  "systemCleaningSubtitle": "清理孤立软件包与 Pacman 缓存",
   "@systemCleaningSubtitle": {
     "description": "Subtitle for system cleanup feature"
   },
@@ -1327,7 +1327,7 @@
   "@configurePat": {
     "description": "Description for configurePat"
   },
-  "patHelperText": "请提供 GitHub Classic PAT 或 Fine-grained 令牌。",
+  "patHelperText": "请提供 GitHub Personal Access Token (Classic) 或细粒度 (Fine-grained) 令牌。",
   "@patHelperText": {
     "description": "Description for patHelperText"
   },
