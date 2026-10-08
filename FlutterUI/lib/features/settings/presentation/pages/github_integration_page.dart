@@ -19,6 +19,7 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
   final TextEditingController _patController = TextEditingController();
   bool _isSaving = false;
   bool _isLoading = false;
+  bool _showPat = false;
 
   @override
   void initState() {
@@ -65,13 +66,19 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
       final asciiRegExp = RegExp(r'^[\x20-\x7E]*$');
       if (!asciiRegExp.hasMatch(tokenText)) {
         if (mounted) {
-          Toast.show(context, 'Error: Token contains invalid or non-printable characters.');
+          Toast.show(
+            context,
+            'Error: Token contains invalid or non-printable characters.',
+          );
         }
         return;
       }
       if (tokenText.length > 512) {
         if (mounted) {
-          Toast.show(context, 'Error: Token length exceeds safety limit of 512 characters.');
+          Toast.show(
+            context,
+            'Error: Token length exceeds safety limit of 512 characters.',
+          );
         }
         return;
       }
@@ -96,7 +103,9 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
       }
     } catch (e, stackTrace) {
       debugPrint('Error saving GitHub PAT: $e\n$stackTrace');
-      if (mounted) Toast.show(context, 'Error: Failed to save GitHub token: $e');
+      if (mounted) {
+        Toast.show(context, 'Error: Failed to save GitHub token: $e');
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -110,7 +119,7 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.githubAuthTitle)),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,7 +127,11 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
             TextField(
               controller: _patController,
               enabled: isInteractive,
-              obscureText: true,
+              obscureText: !_showPat,
+              enableSuggestions: false,
+              autocorrect: false,
+              textInputAction: TextInputAction.done,
+              onSubmitted: isInteractive ? (_) => _savePat() : null,
               decoration: InputDecoration(
                 labelText: l10n.personalAccessToken,
                 border: OutlineInputBorder(
@@ -127,7 +140,9 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -142,12 +157,23 @@ class _GitHubIntegrationPageState extends State<GitHubIntegrationPage> {
                   vertical: 14,
                 ),
                 prefixIcon: const Icon(Icons.vpn_key_rounded),
+                suffixIcon: IconButton(
+                  tooltip: _showPat ? l10n.hidePassword : l10n.showPassword,
+                  icon: Icon(
+                    _showPat
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                  ),
+                  onPressed: isInteractive
+                      ? () => setState(() => _showPat = !_showPat)
+                      : null,
+                ),
                 helperText: l10n.patHelperText,
               ),
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
               children: [
                 FilledButton.icon(
                   onPressed: isInteractive ? _savePat : null,
