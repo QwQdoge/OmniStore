@@ -62,3 +62,47 @@ async def test_run_get_storage_info_json_mode(mock_backend):
                 expected_json_str = json.dumps(expected_result) + "\n"
                 mock_stdout.write.assert_called_with(expected_json_str)
                 mock_stdout.flush.assert_called_once()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("json_mode", [False, True])
+async def test_ai_health_response_and_owned_cleanup(mock_backend, json_mode):
+    from unittest.mock import AsyncMock
+    ai = MagicMock()
+    ai.generate_health_report = AsyncMock(return_value="Healthy fixture")
+    ai.close = AsyncMock()
+    mock_backend._ai = ai
+    mock_backend.env.check_env = AsyncMock(return_value={"status": "ok"})
+    mock_backend.initialize = AsyncMock()
+    with patch.object(mock_backend, "_output_command_response") as output, patch("core.backend.hijacked_print") as plain:
+        result = await mock_backend.run_ai_health(json_mode=json_mode)
+    assert result == "Healthy fixture"
+    ai.generate_health_report.assert_awaited_once_with({"status": "ok"})
+    ai.close.assert_awaited_once()
+    assert mock_backend._active_commands == {}
+    assert mock_backend._ref_count == 0
+    if json_mode:
+        response = output.call_args.args[0]
+        assert response.status == "success"
+        assert response.context == "ai_health"
+        assert response.response == "Healthy fixture"
+        plain.assert_not_called()
+    else:
+        plain.assert_called_once_with("Healthy fixture")
+        output.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_ai_health_failure_still_closes_owned_client(mock_backend):
+    from unittest.mock import AsyncMock
+    ai = MagicMock()
+    ai.generate_health_report = AsyncMock(side_effect=RuntimeError("fixture failure"))
+    ai.close = AsyncMock()
+    mock_backend._ai = ai
+    mock_backend.env.check_env = AsyncMock(return_value={"status": "ok"})
+    mock_backend.initialize = AsyncMock()
+    mock_backend._handle_error = AsyncMock()
+    assert await mock_backend.run_ai_health(json_mode=False) is False
+    ai.close.assert_awaited_once()
+    assert mock_backend._active_commands == {}
+    assert mock_backend._ref_count == 0

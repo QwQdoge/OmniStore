@@ -120,3 +120,16 @@ async def test_github_atomic_download_propagates_programming_errors(github_sourc
             await github_source.install({"id": "test/repo"}, callback=MagicMock())
 
     assert not list((tmp_path / "test_repo").glob(".tmp_*"))
+
+
+@pytest.mark.asyncio
+async def test_recommendation_variant_preserves_installed_state(github_source, tmp_path):
+    (tmp_path / "owner_installed").mkdir()
+    github_source.forge.search_repositories = AsyncMock(return_value=[
+        {"full_name": "owner/installed", "name": "Installed"},
+        {"full_name": "owner/absent", "name": "Absent"},
+    ])
+    with patch.object(github_source, "_managed_base_dir", return_value=tmp_path):
+        result = await github_source.get_recommendations()
+    assert [item["installed"] for item in result["featured"]] == [True, False]
+    assert [item["variants"][0]["installed"] for item in result["featured"]] == [True, False]
