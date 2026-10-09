@@ -316,15 +316,15 @@ Categories=Utility;Application;
         from core.subprocess_utils import safe_subprocess
         candidate = (apps_dir / f"{self._safe_filename(name)}.AppImage").resolve()
         if candidate.parent == apps_dir and candidate.is_file():
-            async with safe_subprocess(str(candidate), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached(str(candidate))
         return False
 
     async def locate(self, package: Dict[str, Any]) -> bool:
         apps_dir = Path.home() / "Applications"
         from core.subprocess_utils import safe_subprocess
-        async with safe_subprocess("xdg-open", str(apps_dir), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-            return True
+        from core.desktop_actions import launch_detached
+        return await launch_detached("xdg-open", str(apps_dir))
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
         return {"name": package_id, "source": "AppImage"}

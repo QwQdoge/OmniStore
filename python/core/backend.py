@@ -647,7 +647,28 @@ class OmnistoreBackend:
         v_id = SecurityValidator.validate_strict_id(app_id, "App ID")
         async with self:
             if not self.recommender: raise RuntimeError("Backend offline")
-            details = await asyncio.wait_for(self.recommender.get_details(v_id), timeout=30)
+            if source:
+                from core.platform_profile import detect_system_profile
+                source_id = source.strip().lower()
+                if source_id == "native":
+                    source_id = detect_system_profile().native_manager
+                provider = self.manager.sources.get(source_id) if self.manager else None
+                if provider is None or not provider.enabled:
+                    raise RuntimeError(f"Software source '{source}' is unavailable.")
+                details = await asyncio.wait_for(provider.get_details(v_id), timeout=15)
+                if source_id == "flatpak":
+                    rich_details = await asyncio.wait_for(self.recommender.get_details(v_id), timeout=15)
+                    details = {**(rich_details or {}), **(details or {})}
+                if details:
+                    details = dict(details)
+                    details["source"] = provider.name
+                    details["primary_source"] = provider.name
+                    if not details.get("variants"):
+                        details["variants"] = [{"id": v_id, "source": provider.name,
+                                                "version": details.get("version", ""),
+                                                "installed": details.get("installed", False)}]
+            else:
+                details = await asyncio.wait_for(self.recommender.get_details(v_id), timeout=30)
             if not isinstance(details, dict) or not details:
                 return CommandResponse(
                     status="error",
@@ -902,25 +923,36 @@ class OmnistoreBackend:
             if self.json_mode: sys.stdout.write(json.dumps({"status": "success", "count": len(installed)}) + "\n"); sys.stdout.flush()
         return True
 
+    async def _desktop_action(self, action: str, name: str, source: str, json_mode: bool) -> bool:
+        from core.platform_profile import detect_system_profile
+        async with self:
+            src = source.strip().lower()
+            if src in ("native", ""):
+                src = detect_system_profile().native_manager
+            provider = self.manager.sources.get(src) if self.manager else None
+            success = False
+            error = ""
+            try:
+                if provider is None or not provider.enabled:
+                    error = f"Software source '{source}' is unavailable."
+                else:
+                    success = await getattr(provider, action)({"name": name, "id": name})
+                    if not success:
+                        error = f"Could not {action} '{name}' from {provider.name}."
+            except Exception as exc:
+                error = f"Could not {action} '{name}': {exc}"
+            if json_mode:
+                sys.stdout.write(json.dumps({"status": "success" if success else "error", "error": error}) + "\n")
+                sys.stdout.flush()
+            return success
+
     @safe_command
     async def run_launch(self, name: str, source: str, json_mode: bool = False) -> bool:
-        async with self:
-            src = source.lower()
-            if self.manager and src in self.manager.sources:
-                success = await self.manager.sources[src].launch({"name": name, "id": name})
-                if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
-                return success
-            return False
+        return await self._desktop_action("launch", name, source, json_mode)
 
     @safe_command
     async def run_locate(self, name: str, source: str, json_mode: bool = False) -> bool:
-        async with self:
-            src = source.lower()
-            if self.manager and src in self.manager.sources:
-                success = await self.manager.sources[src].locate({"name": name, "id": name})
-                if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n")
-                return success
-            return False
+        return await self._desktop_action("locate", name, source, json_mode)
 
     @safe_command
     async def run_get_storage_info(self, json_mode: bool = False):

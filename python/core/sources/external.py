@@ -611,8 +611,8 @@ class ScoopSource(UnifiedSource):
             return False
         cmd = "explorer" if sys.platform == "win32" else ("open" if sys.platform == "darwin" else "xdg-open")
         try:
-            async with safe_subprocess(cmd, path, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached(cmd, path)
         except Exception:
             return False
 
@@ -785,8 +785,8 @@ class BrewSource(UnifiedSource):
             return False
         cmd = "open" if sys.platform == "darwin" else "xdg-open"
         try:
-            async with safe_subprocess(cmd, path, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached(cmd, path)
         except Exception:
             return False
 
@@ -1105,8 +1105,8 @@ class CommandPackageSource(UnifiedSource):
         if not package_id:
             return False
         try:
-            async with safe_subprocess(package_id, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached(package_id)
         except Exception:
             return False
 

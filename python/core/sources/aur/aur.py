@@ -198,29 +198,12 @@ class AurSource(UnifiedSource):
             return False
 
     async def launch(self, package: Dict[str, Any]) -> bool:
-        name = package.get("name")
-        if not name:
-            return False
-        try:
-            async with safe_subprocess(name, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) as proc:
-                # We don't wait for completion here as we want to just fire and forget the app
-                return True
-        except Exception:
-            return False
+        from core.desktop_actions import launch_native_package
+        return await launch_native_package(str(package.get("id") or package.get("name") or ""))
 
     async def locate(self, package: Dict[str, Any]) -> bool:
-        name = package.get("name")
-        if not name:
-            return False
-        try:
-            async with safe_subprocess("which", name, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL) as proc:
-                stdout, _ = await proc.communicate()
-                if proc.returncode == 0:
-                    binary_dir = os.path.dirname(stdout.decode().strip())
-                    async with safe_subprocess("xdg-open", binary_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                        return True
-        except Exception: pass
-        return False
+        from core.desktop_actions import locate_native_package
+        return await locate_native_package(str(package.get("id") or package.get("name") or ""))
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
         return {"name": package_id, "source": "AUR"}

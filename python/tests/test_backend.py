@@ -6,6 +6,39 @@ from unittest.mock import patch, MagicMock
 
 from core.backend import OmnistoreBackend
 
+
+@pytest.mark.asyncio
+async def test_details_use_selected_native_provider_without_flathub(mock_backend):
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+    provider = SimpleNamespace(name="Pacman", enabled=True,
+        get_details=AsyncMock(return_value={"id": "editor-bin", "name": "Editor", "installed": True}))
+    mock_backend.manager = SimpleNamespace(sources={"pacman": provider})
+    recommender = SimpleNamespace(get_details=AsyncMock())
+    mock_backend.recommender = recommender
+    mock_backend.initialize = AsyncMock()
+    mock_backend.cleanup = AsyncMock()
+    result = await mock_backend.run_app_details("editor-bin", source="Pacman")
+    assert result.id == "editor-bin"
+    assert result.installed
+    assert result.primary_source == "Pacman"
+    assert result.variants[0].id == "editor-bin"
+    recommender.get_details.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_native_launch_alias_routes_to_platform_provider(mock_backend):
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+    from core.platform_profile import SystemProfile
+    provider = SimpleNamespace(name="Pacman", enabled=True, launch=AsyncMock(return_value=True))
+    mock_backend.manager = SimpleNamespace(sources={"pacman": provider})
+    mock_backend.initialize = AsyncMock()
+    mock_backend.cleanup = AsyncMock()
+    with patch("core.platform_profile.detect_system_profile", return_value=SystemProfile(platform="linux", native_manager="pacman")):
+        assert await mock_backend.run_launch("editor-bin", "Native")
+    provider.launch.assert_awaited_once_with({"id": "editor-bin", "name": "editor-bin"})
+
 @pytest.fixture
 def mock_backend():
     with patch("core.backend.ConfigManager") as MockConfigManager, \

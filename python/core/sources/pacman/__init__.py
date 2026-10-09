@@ -40,6 +40,18 @@ class PacmanSource(UnifiedSource):
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         return await search_pacman(query, page)
 
+    async def get_category_apps(self, category: str) -> List[Dict[str, Any]]:
+        from core.category_catalog import native_category_apps
+        rows = await asyncio.to_thread(native_category_apps, category)
+        async with safe_subprocess("pacman", "-Qq", stdout=asyncio.subprocess.PIPE,
+                                   stderr=asyncio.subprocess.DEVNULL) as process:
+            stdout, _ = await process.communicate()
+            installed = set(stdout.decode(errors="replace").splitlines()) if process.returncode == 0 else set()
+        for row in rows:
+            row["installed"] = row["id"] in installed
+            row["variants"][0]["installed"] = row["installed"]
+        return rows
+
     async def install(self, package: Dict[str, Any], callback=None) -> bool:
         return await install_pacman(package, callback)
 
@@ -47,30 +59,12 @@ class PacmanSource(UnifiedSource):
         return await uninstall_pacman(package, callback)
 
     async def launch(self, package: Dict[str, Any]) -> bool:
-        name = package.get("name")
-        try:
-            async with safe_subprocess(name, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                return True
-        except Exception:
-            return False
+        from core.desktop_actions import launch_native_package
+        return await launch_native_package(str(package.get("id") or package.get("name") or ""))
 
     async def locate(self, package: Dict[str, Any]) -> bool:
-        name = package.get("name")
-        try:
-            async with safe_subprocess(
-                "which", name,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.DEVNULL
-            ) as proc:
-                stdout, _ = await proc.communicate()
-                if proc.returncode == 0:
-                    binary_path = stdout.decode().strip()
-                    binary_dir = os.path.dirname(binary_path)
-                    async with safe_subprocess("xdg-open", binary_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                        return True
-        except Exception:
-            pass
-        return False
+        from core.desktop_actions import locate_native_package
+        return await locate_native_package(str(package.get("id") or package.get("name") or ""))
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
         return await get_pacman_details(package_id)

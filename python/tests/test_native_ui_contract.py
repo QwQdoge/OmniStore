@@ -174,7 +174,9 @@ def test_details_only_accept_backend_payload_for_current_app():
     details = read(QML_ROOT / "components" / "AppDetailsPane.qml")
     assert "fallbackIdentity" in details
     assert "selectedIdentity === fallbackIdentity" in details
-    assert "selectedMatches ? backend.selectedApp : fallbackApp" in details
+    assert "if (!selectedMatches)" in details
+    assert "return fallbackApp" in details
+    assert "Object.assign({}, fallbackApp, backend.selectedApp)" in details
 
 
 def test_native_system_status_panel_uses_existing_backend_contracts():

@@ -93,7 +93,7 @@ Window {
             icon.name: "search"
             type: "tonal"
             visible: !root.overlaySheetOpen
-            Accessible.name: qsTr("Search")
+            Accessible.name: qsTr("Search packages")
             onClicked: root.openSearch("")
         }
     }
@@ -123,7 +123,7 @@ Window {
         pages: [homePage, explorePage, installedPage, updatesPage, settingsPage]
         compactNavigationLimit: 5
         sidebarTitle: qsTr("OmniStore")
-        searchPlaceholder: qsTr("Find a page")
+        showSearch: false
         showTopAppBarOnExpanded: true
         topAppBarActions: [searchAction, tasksAction]
         onCurrentIndexChanged: root.navigationIndex = currentIndex

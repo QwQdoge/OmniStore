@@ -223,8 +223,8 @@ class GitHubSource(UnifiedSource):
         if executables:
             # Sort by size, assuming the main binary is larger
             executables.sort(key=lambda x: x.stat().st_size, reverse=True)
-            async with safe_subprocess(str(executables[0]), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached(str(executables[0]))
         return False
 
     async def locate(self, package: Dict[str, Any]) -> bool:
@@ -246,8 +246,8 @@ class GitHubSource(UnifiedSource):
 
         install_dir = base_dir / repo_safe_name
         if install_dir.exists():
-            async with safe_subprocess(open_cmd, str(install_dir), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached(open_cmd, str(install_dir))
         return False
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:

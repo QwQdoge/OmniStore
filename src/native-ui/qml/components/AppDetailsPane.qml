@@ -14,7 +14,16 @@ Flickable {
     readonly property string selectedIdentity: String(backend.selectedApp.id || backend.selectedApp.name || "")
     readonly property bool selectedMatches: fallbackIdentity.length > 0
                                             && selectedIdentity === fallbackIdentity
-    readonly property var app: selectedMatches ? backend.selectedApp : fallbackApp
+    readonly property var app: {
+        if (!selectedMatches)
+            return fallbackApp
+        const merged = Object.assign({}, fallbackApp, backend.selectedApp)
+        if (!backend.selectedApp.variants || backend.selectedApp.variants.length === 0)
+            merged.variants = fallbackApp.variants || []
+        if (fallbackApp.installed === true)
+            merged.installed = true
+        return merged
+    }
     readonly property var screenshots: app.screenshots || []
     readonly property var currentPlan: transactions.installPlan || ({})
     readonly property var currentPlanRequest: currentPlan.request || ({})
@@ -179,6 +188,14 @@ Flickable {
                 icon.name: "open_in_new"
                 enabled: !backend.busy
                 onClicked: backend.launchApp(root.packageIdentity(), root.sourceName())
+            }
+            MeoButton {
+                visible: !!root.app.installed
+                text: qsTr("Open folder")
+                type: "tonal"
+                icon.name: "folder_open"
+                enabled: !backend.busy
+                onClicked: backend.locateApp(root.packageIdentity(), root.sourceName())
             }
             MeoButton {
                 visible: !!root.app.installed

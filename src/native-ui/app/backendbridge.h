@@ -23,6 +23,7 @@ class BackendBridge final : public QObject
     Q_PROPERTY(QString taskLog READ taskLog NOTIFY taskChanged)
 
     Q_PROPERTY(QVariantList searchResults READ searchResults NOTIFY dataChanged)
+    Q_PROPERTY(QVariantList categoryResults READ categoryResults NOTIFY dataChanged)
     Q_PROPERTY(QVariantList featuredApps READ featuredApps NOTIFY dataChanged)
     Q_PROPERTY(QVariantList trendingApps READ trendingApps NOTIFY dataChanged)
     Q_PROPERTY(QVariantList forYouApps READ forYouApps NOTIFY dataChanged)
@@ -50,6 +51,7 @@ public:
     QString taskLog() const { return m_taskLog; }
 
     QVariantList searchResults() const { return m_searchResults; }
+    QVariantList categoryResults() const { return m_categoryResults; }
     QVariantList featuredApps() const { return m_featuredApps; }
     QVariantList trendingApps() const { return m_trendingApps; }
     QVariantList forYouApps() const { return m_forYouApps; }
@@ -63,6 +65,8 @@ public:
 
     Q_INVOKABLE void loadRecommendations();
     Q_INVOKABLE void search(const QString &query);
+    Q_INVOKABLE void browseCategory(const QString &category);
+    Q_INVOKABLE void locateApp(const QString &name, const QString &source);
     Q_INVOKABLE void loadInstalled(bool forceRefresh = false);
     Q_INVOKABLE void loadInstalledUsage();
     Q_INVOKABLE void loadUpdates();
@@ -93,6 +97,7 @@ private:
         None,
         Recommendations,
         Search,
+        Category,
         Installed,
         InstalledUsage,
         Updates,
@@ -105,6 +110,7 @@ private:
         Update,
         UpdateAll,
         Launch,
+        Locate,
         PluginToggle,
     };
 
@@ -154,6 +160,7 @@ private:
     QString m_taskLog;
 
     QVariantList m_searchResults;
+    QVariantList m_categoryResults;
     QVariantList m_featuredApps;
     QVariantList m_trendingApps;
     QVariantList m_forYouApps;

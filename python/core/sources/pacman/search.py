@@ -23,7 +23,8 @@ async def search_pacman(query: str, page: int = 1) -> List[Dict[str, Any]]:
         async with safe_subprocess(
             pacman_bin, '-Ss', query,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL
+            stderr=asyncio.subprocess.DEVNULL,
+            env={**os.environ, "LC_ALL": "C"}
         ) as proc:
             stdout, _ = await proc.communicate()
             raw_output = stdout.decode().strip()
@@ -45,15 +46,17 @@ async def search_pacman(query: str, page: int = 1) -> List[Dict[str, Any]]:
                     repo, name, version, extra = header_match.groups()
                     current_pkg = {
                         "name": name,
+                        "id": name,
                         "repo": repo,
                         "last_version": version,
                         "source": "Pacman",
                         "description": "",
-                        "installed": "[installed]" in extra,
+                        "installed": "[installed" in extra,
                         "variants": [{
                             "source": "Pacman",
+                            "id": name,
                             "version": version,
-                            "installed": "[installed]" in extra
+                            "installed": "[installed" in extra
                         }]
                     }
                 elif current_pkg and line.startswith("    "):
@@ -71,25 +74,28 @@ async def get_pacman_details(package_id: str) -> Dict[str, Any]:
     if not pacman_bin or not sys.platform.startswith("linux"):
         return {}
 
-    try:
-        async with safe_subprocess(
-            pacman_bin, "-Si", package_id,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL
-        ) as proc:
-            stdout, _ = await proc.communicate()
-            if stdout:
-                info = stdout.decode()
-                details = {"name": package_id, "source": "Pacman"}
-                for line in info.splitlines():
-                    if ":" in line:
-                        key, val = line.split(":", 1)
-                        key = key.strip()
-                        val = val.strip()
-                        if key == "Depends On": details["depends"] = val.split()
-                        elif key == "Installed Size": details["installed_size"] = val
-                        elif key == "Description": details["description"] = val
+    for query_mode in ("-Qi", "-Si"):
+        try:
+            async with safe_subprocess(
+                pacman_bin, query_mode, "--", package_id,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
+                env={**os.environ, "LC_ALL": "C"}
+            ) as proc:
+                stdout, _ = await proc.communicate()
+                if proc.returncode != 0 or not stdout:
+                    continue
+                details = {"name": package_id, "id": package_id, "source": "Pacman",
+                           "installed": query_mode == "-Qi"}
+                for line in stdout.decode(errors="replace").splitlines():
+                    if ":" not in line:
+                        continue
+                    key, val = (part.strip() for part in line.split(":", 1))
+                    if key == "Version": details["version"] = val
+                    elif key == "Depends On": details["depends"] = [] if val == "None" else val.split()
+                    elif key == "Installed Size": details["installed_size"] = val
+                    elif key == "Download Size": details["download_size"] = val
+                    elif key == "Description": details["description"] = val
                 return details
-    except Exception:
-        pass
+        except OSError:
+            continue
     return {}

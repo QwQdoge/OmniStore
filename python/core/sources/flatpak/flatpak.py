@@ -212,8 +212,8 @@ class FlatpakSource(UnifiedSource):
         if not app_id:
             return False
         try:
-            async with safe_subprocess("flatpak", "run", app_id, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached("flatpak", "run", app_id)
         except Exception:
             return False
 
@@ -224,12 +224,12 @@ class FlatpakSource(UnifiedSource):
         try:
             user_path = os.path.expanduser(f"~/.local/share/flatpak/app/{app_id}")
             if os.path.exists(user_path):
-                async with safe_subprocess("xdg-open", user_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                    return True
+                from core.desktop_actions import launch_detached
+                return await launch_detached("xdg-open", user_path)
             system_path = f"/var/lib/flatpak/app/{app_id}"
             if os.path.exists(system_path):
-                async with safe_subprocess("xdg-open", system_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                    return True
+                from core.desktop_actions import launch_detached
+                return await launch_detached("xdg-open", system_path)
         except Exception:
             pass
         return False

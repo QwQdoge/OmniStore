@@ -67,12 +67,20 @@ class SearchManager:
                 "utility": "Utility", "utilities": "Utility"
             }
             standard_id = mapping.get(cat_id, cat_id.capitalize())
-            try:
-                results = await self.recommender.get_category_apps(standard_id)
-                if results: return results
-            except Exception as e:
-                logging.warning(f"Failed to get category apps for {standard_id}: {e}")
-            query = f"category:{standard_id}"
+            # Categories are metadata, never ordinary package search terms.
+            # Only consult providers that are actually enabled on this machine.
+            async def category_results(source):
+                try:
+                    if hasattr(source, "get_category_apps"):
+                        return await asyncio.wait_for(source.get_category_apps(standard_id), timeout=10)
+                    if source.name.lower() == "flatpak":
+                        return await asyncio.wait_for(self.recommender.get_category_apps(standard_id), timeout=10)
+                except Exception as error:
+                    logging.warning("Category lookup failed for %s: %s", source.name, error)
+                return []
+
+            responses = await asyncio.gather(*(category_results(source) for source in self._get_active_sources()))
+            return [item for response in responses if isinstance(response, list) for item in response]
 
         # Source prefix filtering (e.g., "source:flatpak" or "source:flatpak term")
         source_filter_obj = None

@@ -42,6 +42,65 @@ private:
 private slots:
     void cleanup() { qunsetenv("OMNISTORE_BACKEND"); }
 
+    void liveReadOnlyCatalog()
+    {
+        const auto backend = qgetenv("OMNISTORE_LIVE_READONLY_BACKEND");
+        if (backend.isEmpty())
+            QSKIP("Set OMNISTORE_LIVE_READONLY_BACKEND to verify a real local backend.");
+        qputenv("OMNISTORE_BACKEND", backend);
+        BackendBridge bridge;
+        QSignalSpy finished(&bridge, &BackendBridge::operationFinished);
+        bridge.loadInstalled();
+        QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 30000);
+        QVERIFY2(finished.last().at(1).toBool(), qPrintable(bridge.errorMessage()));
+        QVERIFY(!bridge.installedApps().isEmpty());
+        qInfo() << "Real installed applications:" << bridge.installedApps().size();
+        finished.clear();
+        bridge.browseCategory("Game");
+        QTRY_VERIFY_WITH_TIMEOUT(!bridge.categoryResults().isEmpty(), 30000);
+        QVERIFY2(finished.last().at(1).toBool(), qPrintable(bridge.errorMessage()));
+        QVERIFY(!bridge.categoryResults().isEmpty());
+        qInfo() << "Real game category:" << bridge.categoryResults().size();
+    }
+
+    void latestQueuedCategoryWinsAndDoesNotReplaceSearch()
+    {
+        const QString path = directory.filePath("category-backend.py");
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("#!/usr/bin/env python3\nimport sys,time,json\n"
+                   "time.sleep(0.1)\nprint(json.dumps([{'id':sys.argv[2]}]))\n");
+        file.close();
+        file.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+        qputenv("OMNISTORE_BACKEND", path.toUtf8());
+        BackendBridge bridge;
+        QSignalSpy finished(&bridge, &BackendBridge::operationFinished);
+        bridge.search("editor");
+        bridge.browseCategory("Game");
+        bridge.browseCategory("Office");
+        QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 2, 3000);
+        QCOMPARE(bridge.searchResults().first().toMap().value("id").toString(), "editor");
+        QCOMPARE(bridge.categoryResults().first().toMap().value("id").toString(), "category:Office");
+    }
+
+    void launchJsonFailureIsVisibleEvenWithZeroExitCode()
+    {
+        const QString path = directory.filePath("launch-backend.py");
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("#!/usr/bin/env python3\n"
+                   "print('{\"status\":\"error\",\"error\":\"Application is not installed\"}')\n");
+        file.close();
+        file.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+        qputenv("OMNISTORE_BACKEND", path.toUtf8());
+        BackendBridge bridge;
+        QSignalSpy finished(&bridge, &BackendBridge::operationFinished);
+        bridge.launchApp("missing", "Pacman");
+        QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 3000);
+        QCOMPARE(finished.first().at(1).toBool(), false);
+        QCOMPARE(bridge.errorMessage(), "Application is not installed");
+    }
+
     void successfulReadDoesNotBlockEventLoop()
     {
         QVERIFY(!fixture(valid()).isEmpty());

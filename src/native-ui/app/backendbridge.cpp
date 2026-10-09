@@ -91,9 +91,11 @@ void BackendBridge::enqueueRead(Operation operation, const QString &label,
 {
     Request request{operation, label, arguments, false};
     if (m_process) {
-        for (const Request &queued : std::as_const(m_queue)) {
-            if (queued.operation == operation)
+        for (Request &queued : m_queue) {
+            if (queued.operation == operation) {
+                queued = request;
                 return;
+            }
         }
         m_queue.enqueue(request);
         return;
@@ -368,6 +370,9 @@ void BackendBridge::applyResponse(Operation operation)
         m_forYouApps = response.value(QStringLiteral("for_you")).toList();
         break;
     }
+    case Operation::Category:
+        m_categoryResults = asList(payload);
+        break;
     case Operation::Search:
         m_searchResults = asList(payload);
         break;
@@ -432,6 +437,9 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
     if (!finished.mutating && processSucceeded)
         applyResponse(finished.operation);
 
+    if (finished.mutating && processSucceeded && !m_lastJson.isEmpty())
+        payloadFromDocument();
+
     bool success = processSucceeded && !m_callbackError && m_errorMessage.isEmpty();
     if (!processSucceeded && m_errorMessage.isEmpty()) {
         m_errorMessage = exitStatus == QProcess::CrashExit
@@ -484,6 +492,7 @@ QString BackendBridge::operationName(Operation operation)
     switch (operation) {
     case Operation::Recommendations: return QStringLiteral("recommendations");
     case Operation::Search: return QStringLiteral("search");
+    case Operation::Category: return QStringLiteral("category");
     case Operation::Installed: return QStringLiteral("installed");
     case Operation::InstalledUsage: return QStringLiteral("installed-usage");
     case Operation::Updates: return QStringLiteral("updates");
@@ -496,6 +505,7 @@ QString BackendBridge::operationName(Operation operation)
     case Operation::Update: return QStringLiteral("update");
     case Operation::UpdateAll: return QStringLiteral("update-all");
     case Operation::Launch: return QStringLiteral("launch");
+    case Operation::Locate: return QStringLiteral("locate");
     case Operation::PluginToggle: return QStringLiteral("plugin-toggle");
     default: return QStringLiteral("idle");
     }
@@ -517,6 +527,22 @@ void BackendBridge::search(const QString &query)
     }
     enqueueRead(Operation::Search, tr("search"),
                 {QStringLiteral("--search"), normalized, QStringLiteral("--json")});
+}
+
+void BackendBridge::browseCategory(const QString &category)
+{
+    m_categoryResults.clear();
+    emit dataChanged();
+    enqueueRead(Operation::Category, tr("category"),
+                {QStringLiteral("--search"), QStringLiteral("category:") + category.trimmed(),
+                 QStringLiteral("--json")});
+}
+
+void BackendBridge::locateApp(const QString &name, const QString &source)
+{
+    startMutation(Operation::Locate, tr("open folder for %1").arg(name.trimmed()),
+                  {QStringLiteral("--locate"), name.trimmed(), QStringLiteral("--source"),
+                   sourceOrNative(source), QStringLiteral("--json")});
 }
 
 void BackendBridge::loadInstalled(bool forceRefresh)

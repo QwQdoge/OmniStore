@@ -15,7 +15,7 @@ Item {
     function browseCategory(category, label) {
         root.activeCategory = label
         root.activeCategoryQuery = category
-        backend.search("category:" + category)
+        backend.browseCategory(category)
     }
 
     Component.onCompleted: backend.loadRecommendations()
@@ -68,7 +68,7 @@ Item {
 
             MeoProgressBar {
                 Layout.fillWidth: true
-                visible: backend.busyAction === qsTr("search")
+                visible: backend.busyAction === qsTr("category")
                 indeterminate: true
             }
 
@@ -98,7 +98,7 @@ Item {
                     enabled: !backend.busy
                     onClicked: {
                         if (root.activeCategoryQuery.length > 0)
-                            backend.search("category:" + root.activeCategoryQuery)
+                            backend.browseCategory(root.activeCategoryQuery)
                         else
                             backend.loadRecommendations()
                     }
@@ -114,7 +114,7 @@ Item {
 
                 Repeater {
                     model: root.activeCategory.length > 0
-                           ? backend.searchResults
+                           ? backend.categoryResults
                            : (backend.trendingApps.length > 0
                               ? backend.trendingApps
                               : backend.featuredApps)
@@ -132,7 +132,7 @@ Item {
                 Layout.fillWidth: true
                 visible: !backend.busy
                          && (root.activeCategory.length > 0
-                             ? backend.searchResults.length === 0
+                             ? backend.categoryResults.length === 0
                              : backend.trendingApps.length === 0
                                && backend.featuredApps.length === 0)
                 icon: "explore"

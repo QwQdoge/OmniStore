@@ -156,10 +156,10 @@ class BituSource(UnifiedSource):
         try:
             from core.subprocess_utils import safe_subprocess
             if target.is_dir():
-                async with safe_subprocess(open_cmd, str(target), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                    return True
-            async with safe_subprocess(str(target), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                return True
+                from core.desktop_actions import launch_detached
+                return await launch_detached(open_cmd, str(target))
+            from core.desktop_actions import launch_detached
+            return await launch_detached(str(target))
         except Exception:
             return False
 
@@ -172,8 +172,8 @@ class BituSource(UnifiedSource):
         if install_dir.exists():
             open_cmd = "explorer" if sys.platform == "win32" else ("open" if sys.platform == "darwin" else "xdg-open")
             from core.subprocess_utils import safe_subprocess
-            async with safe_subprocess(open_cmd, str(install_dir), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL):
-                return True
+            from core.desktop_actions import launch_detached
+            return await launch_detached(open_cmd, str(install_dir))
         return False
 
     async def get_details(self, package_id: str) -> Dict[str, Any]:
