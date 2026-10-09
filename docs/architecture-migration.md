@@ -1,53 +1,56 @@
 # OmniStore architecture migration
 
-OmniStore currently contains three implementation generations in one repository. This document makes the intended direction explicit so maintenance does not accidentally treat all clients as equal product authorities.
+OmniStore contains one current native desktop client, one current Python backend authority, and one retained legacy Flutter client. The repository layout now reflects those roles directly.
 
 ## Current direction
 
 ### Current
 - `python/`: backend/daemon, source/plugin logic, install/update/search authority and backend tests.
-- `NativeUI/`: current Meo native client direction. New desktop product UI work should land here unless a task explicitly targets legacy compatibility.
+- `src/native-ui/`: current Meo native client direction. New desktop product UI work lands here unless a task explicitly targets legacy compatibility.
 - `plugins/sources/`: source manifests consumed by the backend.
 - root packaging/release files: current packaging/release authority until they are deliberately reorganized.
 
 ### Legacy compatibility
-- `FlutterUI/`: retained legacy client during NativeUI migration. It remains buildable/testable while required by release/compatibility contracts, but it is not the preferred target for new OmniStore desktop product features.
+- `legacy/flutter-ui/`: retained historical Flutter client. It remains buildable/testable only where compatibility or provenance still requires it; it is not the preferred target for OmniStore desktop product features and is not part of the normal MeoArch native release bundle.
 
 ### Shared/product-neutral boundaries
-Reusable Meo controls/tokens/motion belong in MeoUI. Plasma/KWin/system shell behavior belongs in meo-kde. OmniStore should consume those boundaries rather than copying them.
+Reusable Meo controls/tokens/motion belong in MeoUI. Plasma/KWin/system shell behavior belongs in meo-kde. OmniStore consumes those boundaries rather than copying them.
 
-## Target repository shape
-
-The intended end state is conceptually:
+## Repository shape
 
 ```text
 src/
-  backend/        # current python backend/daemon authority
-  native-ui/      # current Qt/MeoUI client
+  native-ui/      # current Qt/QML + MeoUI client
+python/            # current backend/daemon authority
 legacy/
-  flutter-ui/     # retained only while migration/release compatibility requires it
+  flutter-ui/     # historical compatibility client
 plugins/
   sources/
-packaging/
-  arch/
 docs/
-tests/
 ```
 
-This document does **not** authorize an immediate path move. Current CI, PKGBUILD and developer commands refer directly to `python/`, `NativeUI/` and `FlutterUI/`; moving them before those contracts are prepared would create churn without product value.
+The Python backend remains at `python/` for now because its package/test/tooling boundary is already clear and moving it would create mechanical churn without resolving an active ownership ambiguity.
 
-## Migration sequence
+## Migration completed
 
-1. Treat NativeUI as the default destination for new desktop UI work.
-2. Track feature parity explicitly; do not infer parity from visual similarity.
-3. Remove packaging/runtime dependence on FlutterUI where no longer needed.
-4. Update CI and developer scripts so paths are not duplicated across many files.
-5. Only then perform an atomic directory move to `src/` / `legacy/` and update build/package references in the same change.
-6. After at least one release train no longer consumes FlutterUI, archive/delete it in a dedicated cleanup change if no supported consumer remains.
+The client-side structural migration moved:
+
+- `NativeUI/` -> `src/native-ui/`
+- `FlutterUI/` -> `legacy/flutter-ui/`
+
+CI, release scripts, contract tests, developer documentation and compatibility localization tools must use the new paths. Do not recreate top-level compatibility copies to satisfy stale path assumptions; fix the stale consumer instead.
+
+## Remaining migration work
+
+1. Keep NativeUI as the default destination for new desktop UI work.
+2. Keep release/package paths native-only.
+3. Retain legacy Flutter quality checks only while the source remains intentionally maintained.
+4. Remove legacy-only localization or build helpers when their supported use case disappears.
+5. After at least one supported release train has no Flutter dependency and no maintained consumer remains, archive/delete `legacy/flutter-ui/` in a dedicated cleanup change.
 
 ## Parity gate before Flutter retirement
 
-NativeUI must cover the supported release contract for:
+The native client must continue to cover the supported release contract for:
 
 - browsing/searching sources;
 - package details and install/remove/update flows;
@@ -57,8 +60,8 @@ NativeUI must cover the supported release contract for:
 - package/build integration used by MeoArch;
 - real backend/daemon communication rather than preview-only data.
 
-A successful NativeUI build is not proof of feature parity.
+A successful native build is not proof of feature parity.
 
 ## No split authority
 
-The Python backend remains the authority for store/source operations during this migration. FlutterUI and NativeUI are clients; neither should grow a second package/source engine that diverges from the backend.
+The Python backend remains the authority for store/source operations. Legacy Flutter and the current native client are clients; neither should grow a second package/source engine that diverges from the backend.
