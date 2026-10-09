@@ -10,8 +10,10 @@ set(QT_QML_GENERATE_QMLLS_INI ON)
 # builds deliberately report "development" rather than a stale product version.
 set(OMNISTORE_RELEASE_VERSION "development" CACHE STRING "OmniStore release version shown by the native client")
 
-find_package(Qt6 6.6 REQUIRED COMPONENTS Core Gui LinguistTools Network Qml Quick QuickControls2)
-qt_standard_project_setup(REQUIRES 6.6)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui LinguistTools Network Qml Quick QuickControls2)
+# QTP0004 redirects subdirectory implicit imports to this QML module.
+# Without it Main/pages/components cannot reliably resolve sibling types.
+qt_standard_project_setup(REQUIRES 6.8)
 
 # Development builds can point at a MeoUI checkout. Production MeoArch builds
 # normally consume the separately installed MeoUI QML module from /usr/lib/qt6/qml.
@@ -89,7 +91,7 @@ target_compile_definitions(omnistore-native PRIVATE
 )
 
 if(TARGET meoui_module)
-    add_dependencies(omnistore-native meoui_module)
+    add_dependencies(omnistore-native meoui_moduleplugin)
     target_compile_definitions(omnistore-native PRIVATE
         OMNISTORE_MEOUI_BUILD_IMPORT_PATH="${CMAKE_BINARY_DIR}/meoui"
     )
@@ -118,6 +120,9 @@ if(BUILD_TESTING)
     )
     target_include_directories(external-install-request-test PRIVATE app)
     target_link_libraries(external-install-request-test PRIVATE Qt6::Core Qt6::Test)
+    add_test(NAME native-qml-components COMMAND omnistore-native --check-qml)
+    set_tests_properties(native-qml-components PROPERTIES
+        TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")
     add_test(NAME external-install-request COMMAND external-install-request-test)
     set_tests_properties(external-install-request PROPERTIES TIMEOUT 10)
     add_test(NAME backend-installed-usage COMMAND backend-usage-test)

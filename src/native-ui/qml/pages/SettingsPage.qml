@@ -310,7 +310,7 @@ Item {
             root.pendingPluginId = ""
             root.pendingPluginName = ""
         }
-        onRejected: {
+        onCancelled: {
             root.pendingPluginId = ""
             root.pendingPluginName = ""
         }

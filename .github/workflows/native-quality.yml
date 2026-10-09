@@ -55,6 +55,12 @@ jobs:
       - name: Build NativeUI
         run: cmake --build build/native-ui --target omnistore-native --parallel 2
 
+      - name: Check embedded QML pages with the built MeoUI
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_FORCE_STDERR_LOGGING: '1'
+        run: build/native-ui/omnistore-native --check-qml
+
       - name: Test installed usage and external request validation
         run: |
           cmake -S src/native-ui -B build/backend-tests -DBUILD_TESTING=ON

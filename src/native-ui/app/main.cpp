@@ -9,6 +9,7 @@
 #include <QLocale>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQmlComponent>
 #include <QQuickStyle>
 #include <QTranslator>
 #include <QVariantMap>
@@ -50,9 +51,28 @@ int main(int argc, char *argv[])
     TransactionClient transactions;
     QQmlApplicationEngine engine;
 #ifdef OMNISTORE_MEOUI_BUILD_IMPORT_PATH
+    // addImportPath prepends: the explicitly built dependency must win over
+    // an older system-installed MeoUI module.
     engine.addImportPath(QString::fromUtf8(OMNISTORE_MEOUI_BUILD_IMPORT_PATH));
 #endif
-    engine.addImportPath(QStringLiteral("/usr/lib/qt6/qml"));
+    if (app.arguments().mid(1) == QStringList{QStringLiteral("--check-qml")}) {
+        // Compile real embedded pages without instantiating them or starting
+        // backend requests. Main's Meo.System integration is checked on Meo.
+        const QStringList types = {QStringLiteral("SearchPage"), QStringLiteral("TasksPage"),
+            QStringLiteral("HomePage"), QStringLiteral("ExplorePage"),
+            QStringLiteral("UpdatesPage"), QStringLiteral("InstalledPage"),
+            QStringLiteral("SettingsPage"), QStringLiteral("AppDetailsPane")};
+        for (const auto &type : types) {
+            QQmlComponent component(&engine);
+            component.loadFromModule(QStringLiteral("OmniStore.Native"), type);
+            if (!component.isReady()) {
+                std::fprintf(stderr, "%s: %s\n", qPrintable(type), qPrintable(component.errorString()));
+                return 1;
+            }
+        }
+        return 0;
+    }
+
     QVariantMap pendingInstallRequest;
     if (request.status == ExternalInstallRequest::Status::Accepted) {
         pendingInstallRequest.insert(QStringLiteral("id"), request.packageId);
