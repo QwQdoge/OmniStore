@@ -90,7 +90,7 @@ void BackendBridge::enqueueRead(Operation operation, const QString &label,
                                 const QStringList &arguments)
 {
     Request request{operation, label, arguments, false};
-    if (m_process) {
+    if (m_process || !m_queue.isEmpty()) {
         for (Request &queued : m_queue) {
             if (queued.operation == operation) {
                 queued = request;
@@ -98,6 +98,8 @@ void BackendBridge::enqueueRead(Operation operation, const QString &label,
             }
         }
         m_queue.enqueue(request);
+        if (!m_process)
+            startNextQueued();
         return;
     }
     startRequest(request);
@@ -184,8 +186,11 @@ void BackendBridge::startNextQueued()
 {
     if (m_process || m_queue.isEmpty())
         return;
-    const Request next = m_queue.dequeue();
-    QTimer::singleShot(0, this, [this, next] { startRequest(next); });
+    QTimer::singleShot(0, this, [this] {
+        if (m_process || m_queue.isEmpty())
+            return;
+        startRequest(m_queue.dequeue());
+    });
 }
 
 void BackendBridge::consumeStdout()

@@ -101,6 +101,32 @@ private slots:
         QCOMPARE(bridge.errorMessage(), "Application is not installed");
     }
 
+    void queuedReadCannotOverwriteRequestStartedBetweenCompletions()
+    {
+        const QString path = directory.filePath("queue-backend.py");
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("#!/usr/bin/env python3\nimport sys,time,json\n"
+                   "time.sleep(0.1)\nprint(json.dumps([{'id':sys.argv[2]}]))\n");
+        file.close();
+        file.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+        qputenv("OMNISTORE_BACKEND", path.toUtf8());
+        BackendBridge bridge;
+        QSignalSpy finished(&bridge, &BackendBridge::operationFinished);
+        bool submitted = false;
+        connect(&bridge, &BackendBridge::operationFinished, this, [&] {
+            if (!submitted) {
+                submitted = true;
+                bridge.browseCategory("Game");
+            }
+        }, Qt::QueuedConnection);
+        bridge.search("first");
+        bridge.search("second");
+        QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 3, 3000);
+        QCOMPARE(bridge.searchResults().first().toMap().value("id").toString(), "second");
+        QCOMPARE(bridge.categoryResults().first().toMap().value("id").toString(), "category:Game");
+    }
+
     void successfulReadDoesNotBlockEventLoop()
     {
         QVERIFY(!fixture(valid()).isEmpty());
