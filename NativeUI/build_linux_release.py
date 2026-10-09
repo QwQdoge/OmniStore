@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the native Qt/QML + MeoUI OmniStore release bundle for MeoArch.
 
-This Linux release path intentionally does not build or assemble Flutter.  It
+This Linux release path intentionally does not build or assemble Flutter. It
 reuses the existing PyInstaller backend build helper, then assembles the
 release bundle around the native client and the shared backend contracts.
 """
@@ -17,8 +17,8 @@ import sys
 from pathlib import Path
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-NATIVE_ROOT = REPO_ROOT / "NativeUI"
+NATIVE_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT.parent / "outputs"
 
 
@@ -84,9 +84,9 @@ def build_backend(build_root: Path) -> Path:
 def _native_parallelism() -> int:
     """Return a conservative release-build parallelism value.
 
-    MeoUI compiles a large generated QML resource translation unit.  Hosted CI
+    MeoUI compiles a large generated QML resource translation unit. Hosted CI
     runners can OOM when CMake expands to every advertised CPU, so release
-    builds default to two jobs.  Builders with known memory headroom can raise
+    builds default to two jobs. Builders with known memory headroom can raise
     this explicitly without changing the release contract.
     """
     raw = os.environ.get("OMNISTORE_BUILD_JOBS", "2").strip()
@@ -198,8 +198,6 @@ def assemble_native_bundle(
         encoding="utf-8",
     )
 
-    # A release bundle with a Flutter frontend would reintroduce two divergent
-    # products. Refuse stale output instead of silently shipping both.
     stale_frontend = bundle / "frontend"
     if stale_frontend.exists():
         if stale_frontend.is_dir():
