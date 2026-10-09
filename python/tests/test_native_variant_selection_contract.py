@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DETAILS = ROOT / "NativeUI" / "qml" / "components" / "AppDetailsPane.qml"
+DETAILS = ROOT / "src" / "native-ui" / "qml" / "components" / "AppDetailsPane.qml"
 
 
 def test_selected_variant_controls_package_identity_source_and_plan():
