@@ -10,25 +10,33 @@ Flickable {
     id: root
     property var fallbackApp: ({})
     property string selectedSource: ""
-    readonly property string fallbackIdentity: String(fallbackApp.id || fallbackApp.name || "")
-    readonly property string selectedIdentity: String(backend.selectedApp.id || backend.selectedApp.name || "")
-    readonly property bool selectedMatches: fallbackIdentity.length > 0
-                                            && selectedIdentity === fallbackIdentity
+    property string selectedPackageId: ""
+    signal searchRequested(string query)
+    readonly property var sourceVariants: {
+        if (fallbackApp.variants && fallbackApp.variants.length > 0)
+            return fallbackApp.variants
+        return [{source: fallbackApp.primary_source || fallbackApp.source || "Native",
+                 id: fallbackApp.id || fallbackApp.name || "", installed: fallbackApp.installed === true,
+                 version: fallbackApp.version || "", url: fallbackApp.url || ""}]
+    }
+    readonly property bool selectedMatches: packageIdentity().length > 0
+        && String(backend.selectedApp.id || backend.selectedApp.name || "") === packageIdentity()
+        && sourceKey(backend.selectedApp.primary_source || backend.selectedApp.source || "") === sourceKey(sourceName())
     readonly property var app: {
-        if (!selectedMatches)
-            return fallbackApp
-        const merged = Object.assign({}, fallbackApp, backend.selectedApp)
-        if (!backend.selectedApp.variants || backend.selectedApp.variants.length === 0)
-            merged.variants = fallbackApp.variants || []
-        if (fallbackApp.installed === true)
-            merged.installed = true
+        const merged = Object.assign({}, fallbackApp, selectedVariant())
+        if (selectedMatches)
+            Object.assign(merged, backend.selectedApp)
+        merged.variants = sourceVariants
         return merged
     }
+    readonly property bool selectedInstalled: selectedVariant().installed === true
+        || (selectedMatches && backend.selectedApp.installed === true)
     readonly property var screenshots: app.screenshots || []
     readonly property var currentPlan: transactions.installPlan || ({})
     readonly property var currentPlanRequest: currentPlan.request || ({})
     readonly property bool planMatches: String(currentPlanRequest.name || "") === root.packageIdentity()
-                                        && String(currentPlanRequest.source || "") === root.sourceName()
+                                        && sourceKey(currentPlanRequest.source || "") === sourceKey(root.sourceName())
+                                        && (!root.installUrl() || String(currentPlanRequest.url || "") === root.installUrl())
 
     clip: true
     contentWidth: width
@@ -37,29 +45,33 @@ Flickable {
 
     function appName() { return String(app.name || app.id || qsTr("App details")) }
     function appId() { return String(app.id || app.name || "") }
-    function primarySourceName() { return String(app.primary_source || app.source || qsTr("Native")) }
+    function sourceKey(source) {
+        const key = String(source).toLowerCase()
+        return key === "native" ? "pacman" : key
+    }
+    function primarySourceName() { return String(fallbackApp.primary_source || fallbackApp.source || "Native") }
     function sourceName() { return selectedSource.length > 0 ? selectedSource : primarySourceName() }
     function selectedVariant() {
-        const variants = app.variants || []
-        const source = sourceName()
-        for (let index = 0; index < variants.length; ++index) {
-            if (String(variants[index].source || "") === source)
-                return variants[index]
+        for (let index = 0; index < sourceVariants.length; ++index) {
+            const variant = sourceVariants[index]
+            if (sourceKey(variant.source || "") === sourceKey(sourceName())
+                && (!selectedPackageId || String(variant.id || variant.name || "") === selectedPackageId))
+                return variant
         }
         return ({})
     }
     function packageIdentity() {
         const variant = selectedVariant()
-        return String(variant.id || variant.name || app.id || app.name || "")
+        return String(variant.id || variant.name || "")
     }
     function versionText() {
         const variant = selectedVariant()
-        return String(variant.version || app.version || "")
+        return String((selectedMatches ? backend.selectedApp.version : "") || variant.version || "")
     }
     function iconSource() { return String(app.icon || "") }
     function installUrl() {
         const variant = selectedVariant()
-        return String(variant.url || app.url || "")
+        return String(variant.url || (selectedMatches ? backend.selectedApp.url : "") || "")
     }
     function formatBytes(value) {
         const bytes = Number(value)
@@ -84,16 +96,20 @@ Flickable {
             return String(app.installed_size)
         return formatBytes(app.disk_size)
     }
-    function chooseSource(source) {
+    function chooseSource(source, packageId) {
         const next = String(source || "").trim()
-        if (next.length === 0 || next === root.sourceName())
+        const nextId = String(packageId || "").trim()
+        if (!next || !nextId || (sourceKey(next) === sourceKey(sourceName()) && nextId === packageIdentity()))
             return
         transactions.clearInstallPlan()
         selectedSource = next
+        selectedPackageId = nextId
+        backend.loadDetails(nextId, next)
     }
 
-    onFallbackIdentityChanged: {
+    onFallbackAppChanged: {
         selectedSource = ""
+        selectedPackageId = ""
         transactions.clearInstallPlan()
     }
 
@@ -128,7 +144,7 @@ Flickable {
                 MeoIcon {
                     anchors.centerIn: parent
                     visible: !appIcon.visible
-                    icon: root.app.installed ? "check_circle" : "apps"
+                    icon: root.selectedInstalled ? "check_circle" : "apps"
                     size: 42 * MeoTheme.globalScale
                     color: MeoTheme.contentOnPrimaryContainer
                 }
@@ -176,12 +192,63 @@ Flickable {
             tone: "info"
         }
 
+        ColumnLayout {
+            Layout.fillWidth: true
+            visible: (root.app.variants || []).length > 0
+            spacing: 8 * MeoTheme.globalScale
+
+            MeoText {
+                text: qsTr("Choose source")
+                typeRole: "title"
+                typeSize: "small"
+                emphasized: true
+                color: MeoTheme.contentOnSurface
+            }
+            MeoText {
+                Layout.fillWidth: true
+                visible: (root.app.variants || []).length > 1
+                text: qsTr("The selected package and source are used for the installation plan. Trust, availability and permissions are checked again before you can install.")
+                typeRole: "body"
+                typeSize: "small"
+                color: MeoTheme.contentOnSurfaceVariant
+                wrapMode: Text.WordWrap
+            }
+
+            Repeater {
+                model: root.app.variants || []
+                delegate: MeoListItem {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    headline: String(modelData.source || qsTr("Source"))
+                    overline: String(modelData.id || modelData.name || "")
+                    supportingText: String(modelData.version || qsTr("Unknown version"))
+                                   + (modelData.installed_size ? " · " + String(modelData.installed_size) : "")
+                    leadingIcon: modelData.installed ? "check_circle" : "package_2"
+                    interactive: true
+                    enabled: !!(modelData.id || modelData.name) && !transactions.planning && !transactions.busy
+                    isSegmented: true
+                    vibrant: true
+                    selected: root.sourceKey(modelData.source || "") === root.sourceKey(root.sourceName())
+                              && String(modelData.id || modelData.name || "") === root.packageIdentity()
+                    onClicked: root.chooseSource(String(modelData.source || ""), String(modelData.id || modelData.name || ""))
+                }
+            }
+        }
+
+        MeoButton {
+            visible: root.fallbackApp.external_install_request === true
+            text: qsTr("Find other sources")
+            type: "text"
+            icon.name: "search"
+            onClicked: root.searchRequested(String(root.fallbackApp.name || root.packageIdentity()))
+        }
+
         RowLayout {
             Layout.fillWidth: true
             spacing: 8 * MeoTheme.globalScale
 
             MeoButton {
-                visible: !!root.app.installed
+                visible: !!root.selectedInstalled
                 Layout.fillWidth: true
                 text: qsTr("Open")
                 type: "filled"
@@ -190,7 +257,7 @@ Flickable {
                 onClicked: backend.launchApp(root.packageIdentity(), root.sourceName())
             }
             MeoButton {
-                visible: !!root.app.installed
+                visible: !!root.selectedInstalled
                 text: qsTr("Open folder")
                 type: "tonal"
                 icon.name: "folder_open"
@@ -198,7 +265,7 @@ Flickable {
                 onClicked: backend.locateApp(root.packageIdentity(), root.sourceName())
             }
             MeoButton {
-                visible: !!root.app.installed
+                visible: !!root.selectedInstalled
                 Layout.fillWidth: true
                 text: qsTr("Remove")
                 type: "outlined"
@@ -207,12 +274,13 @@ Flickable {
                 onClicked: removeDialog.open()
             }
             MeoButton {
-                visible: !root.app.installed
+                objectName: "installButton"
+                visible: !root.selectedInstalled
                 Layout.fillWidth: true
                 text: transactions.planning ? qsTr("Preparing…") : qsTr("Install")
                 type: "filled"
                 icon.name: transactions.planning ? "hourglass_top" : "download"
-                enabled: !backend.busy && !transactions.busy
+                enabled: root.packageIdentity().length > 0 && !backend.busy && !transactions.busy
                          && !transactions.planning && transactions.available
                 onClicked: transactions.planInstall(root.packageIdentity(), root.sourceName(), root.installUrl())
             }
@@ -220,7 +288,7 @@ Flickable {
 
         Store.InstallPlanReview {
             Layout.fillWidth: true
-            visible: !root.app.installed && (transactions.planning || root.planMatches)
+            visible: !root.selectedInstalled && (transactions.planning || root.planMatches)
             plan: root.planMatches ? transactions.installPlan : ({})
             planning: transactions.planning
             errorMessage: transactions.errorMessage
@@ -379,47 +447,6 @@ Flickable {
             }
         }
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            visible: (root.app.variants || []).length > 0
-            spacing: 8 * MeoTheme.globalScale
-
-            MeoText {
-                text: qsTr("Choose source")
-                typeRole: "title"
-                typeSize: "small"
-                emphasized: true
-                color: MeoTheme.contentOnSurface
-            }
-            MeoText {
-                Layout.fillWidth: true
-                visible: (root.app.variants || []).length > 1
-                text: qsTr("The selected package and source are used for the installation plan. Trust, availability and permissions are checked again before you can install.")
-                typeRole: "body"
-                typeSize: "small"
-                color: MeoTheme.contentOnSurfaceVariant
-                wrapMode: Text.WordWrap
-            }
-
-            Repeater {
-                model: root.app.variants || []
-                delegate: MeoListItem {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    headline: String(modelData.source || qsTr("Source"))
-                    overline: String(modelData.id || modelData.name || "")
-                    supportingText: String(modelData.version || qsTr("Unknown version"))
-                                   + (modelData.installed_size ? " · " + String(modelData.installed_size) : "")
-                    leadingIcon: modelData.installed ? "check_circle" : "package_2"
-                    interactive: true
-                    enabled: !transactions.planning && !transactions.busy
-                    isSegmented: true
-                    vibrant: true
-                    selected: String(modelData.source || "") === root.sourceName()
-                    onClicked: root.chooseSource(String(modelData.source || ""))
-                }
-            }
-        }
 
         MeoCard {
             Layout.fillWidth: true

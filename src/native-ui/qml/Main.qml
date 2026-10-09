@@ -215,7 +215,13 @@ Window {
         isOpen: false
         title: qsTr("App details")
         content: Component {
-            Store.AppDetailsPane { fallbackApp: root.detailFallback }
+            Store.AppDetailsPane {
+                fallbackApp: root.detailFallback
+                onSearchRequested: function(query) {
+                    detailSheet.isOpen = false
+                    root.openSearch(query)
+                }
+            }
         }
     }
 

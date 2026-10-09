@@ -173,11 +173,11 @@ def test_meolistitem_is_not_given_settings_only_properties():
 
 def test_details_only_accept_backend_payload_for_current_app():
     details = read(QML_ROOT / "components" / "AppDetailsPane.qml")
-    assert "fallbackIdentity" in details
-    assert "selectedIdentity === fallbackIdentity" in details
-    assert "if (!selectedMatches)" in details
-    assert "return fallbackApp" in details
-    assert "Object.assign({}, fallbackApp, backend.selectedApp)" in details
+    assert '=== packageIdentity()' in details
+    assert 'sourceKey(backend.selectedApp.primary_source' in details
+    assert 'if (selectedMatches)' in details
+    assert 'Object.assign(merged, backend.selectedApp)' in details
+    assert 'merged.variants = sourceVariants' in details
 
 
 def test_native_system_status_panel_uses_existing_backend_contracts():
