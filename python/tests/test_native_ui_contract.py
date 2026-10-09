@@ -4,7 +4,7 @@ import re
 
 
 ROOT = Path(__file__).resolve().parents[2]
-NATIVE = ROOT / "NativeUI"
+NATIVE = ROOT / "src" / "native-ui"
 QML_ROOT = NATIVE / "qml"
 TEXT_SOURCE_SUFFIXES = {".py", ".qml", ".cpp", ".h", ".md", ".txt"}
 
@@ -104,13 +104,10 @@ def test_package_mutations_use_persistent_transaction_client_and_review_install_
     main_cpp = read(NATIVE / "app" / "main.cpp")
     client = read(NATIVE / "app" / "transactionclient.cpp")
 
-    # Installed-page rows are management-only and cannot bypass plan review.
     assert "transactions.planInstall" not in app_row
     assert "transactions.installApp" not in app_row
     assert "onConfirmed: transactions.removeApp" in app_row
 
-    # Store details must request a read-only plan, render the structured review,
-    # then apply only the reviewed planHash through the persistent service.
     assert "transactions.planInstall" in details
     assert "InstallPlanReview" in details
     assert "transactions.applyInstallPlan()" in details
@@ -131,7 +128,6 @@ def test_package_mutations_use_persistent_transaction_client_and_review_install_
     assert 'QStringLiteral("task.get")' in client
     assert 'QStringLiteral("task.list")' in client
 
-    # Release QML must no longer own package mutation through BackendBridge.
     qml_text = "\n".join(read(path) for path in QML_ROOT.rglob("*.qml"))
     for forbidden in (
         "backend.installApp(",
