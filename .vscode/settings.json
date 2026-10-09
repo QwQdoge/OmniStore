@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/FlutterUI/linux",
+    "cmake.sourceDirectory": "${workspaceFolder}/src/native-ui",
     "python.defaultInterpreterPath": "${workspaceFolder}/python/.venv/bin/python",
     "python.interpreterPath": "${workspaceFolder}/python/.venv/bin/python",
     "python.analysis.venvPath": "${workspaceFolder}/python",
