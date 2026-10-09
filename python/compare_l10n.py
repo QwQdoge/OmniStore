@@ -16,8 +16,8 @@ def check_missing(base_file, target_file):
 
 locales = ['zh', 'zh_Hant', 'ja', 'es']
 for loc in locales:
-    base_file = 'FlutterUI/lib/l10n/app_en.arb'
-    target_file = f'FlutterUI/lib/l10n/app_{loc}.arb'
+    base_file = 'legacy/flutter-ui/lib/l10n/app_en.arb'
+    target_file = f'legacy/flutter-ui/lib/l10n/app_{loc}.arb'
     missing = check_missing(base_file, target_file)
     if missing:
         print(f"Missing keys in {loc}: {missing}")
