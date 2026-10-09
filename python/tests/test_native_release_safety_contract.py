@@ -34,6 +34,14 @@ def test_native_version_is_build_injected_not_stale_literal():
     assert 'os.environ.get("OMNISTORE_VERSION", "development")' in release_builder
 
 
+def test_linux_package_exposes_stable_native_launcher():
+    pkgbuild = read(ROOT / "PKGBUILD")
+
+    assert '${pkgdir}/usr/bin/omnistore-native' in pkgbuild
+    assert 'exec /opt/omnistore/omnistore-native "$@"' in pkgbuild
+    assert 'exec /usr/bin/omnistore-native "$@"' in pkgbuild
+
+
 def test_source_settings_use_runtime_availability_and_trust_metadata():
     settings = read(NATIVE / "qml" / "pages" / "SettingsPage.qml")
     for token in (

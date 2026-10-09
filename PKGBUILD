@@ -89,11 +89,18 @@ package() {
     "${pkgdir}/usr/lib/omnistore/meo-repository-helper.py"
 
   install -d "${pkgdir}/usr/bin"
-  cat > "${pkgdir}/usr/bin/omnistore" <<'EOF'
+  cat > "${pkgdir}/usr/bin/omnistore-native" <<'EOF'
 #!/bin/sh
 set -eu
 cd /opt/omnistore
 exec /opt/omnistore/omnistore-native "$@"
+EOF
+  chmod +x "${pkgdir}/usr/bin/omnistore-native"
+
+  cat > "${pkgdir}/usr/bin/omnistore" <<'EOF'
+#!/bin/sh
+set -eu
+exec /usr/bin/omnistore-native "$@"
 EOF
   chmod +x "${pkgdir}/usr/bin/omnistore"
 

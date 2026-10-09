@@ -18,7 +18,10 @@ def test_recommendation_manager_honors_xdg_cache_home(tmp_path, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_featured_is_stable_offline_and_ordered(tmp_path):
-    manager = RecommendationManager(EmptySession())
+    manager = RecommendationManager(
+        EmptySession(),
+        application_catalog_path=tmp_path / "missing-catalog.json",
+    )
     manager.cache_dir = tmp_path
     manager.cache_path = tmp_path / "recommendations.json"
     manager.metadata_cache_path = tmp_path / "metadata.json"
@@ -54,7 +57,10 @@ def test_featured_prefers_installed_meo_release_catalog(tmp_path):
 
 @pytest.mark.asyncio
 async def test_expired_dynamic_cache_is_retained_when_refresh_fails(tmp_path, monkeypatch):
-    manager = RecommendationManager(EmptySession())
+    manager = RecommendationManager(
+        EmptySession(),
+        application_catalog_path=tmp_path / "missing-catalog.json",
+    )
     manager.cache_dir = tmp_path
     manager.cache_path = tmp_path / "recommendations.json"
     dynamic = {"trending": [{"id": "old", "name": "Old"}], "for_you": []}
