@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SETTINGS = ROOT / "NativeUI" / "qml" / "pages" / "SettingsPage.qml"
+SETTINGS = ROOT / "src" / "native-ui" / "qml" / "pages" / "SettingsPage.qml"
 
 
 def text() -> str:
