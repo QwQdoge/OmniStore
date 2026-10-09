@@ -5,17 +5,19 @@
 On MeoArch, OmniStore's canonical and only shipped graphical client is Qt 6 + QML + MeoUI.
 The MeoArch Linux release path is native-only: it must not build, bundle, launch, or silently fall back to Flutter.
 
-The historical `FlutterUI/` source tree may remain temporarily as migration/reference material while any still-valid behavior or localization is transferred. Its presence in Git does not make it a supported MeoArch runtime frontend, and new MeoArch UI work must not target it.
+The historical `legacy/flutter-ui/` source tree remains as migration/reference material while any still-valid behavior or localization is transferred. Its presence in Git does not make it a supported MeoArch runtime frontend, and new MeoArch UI work must not target it.
+
+The current native client source is under `src/native-ui/`.
 
 The release architecture is:
 
 ```text
 OmniStore
-├── Qt/QML client
+├── Qt/QML client (`src/native-ui/`)
 │   └── MeoUI presentation
 ├── persistent transaction service
 │   └── install/remove/update task ownership
-├── Python backend
+├── Python backend (`python/`)
 │   └── package/source/update authority
 └── source plugins
 ```
@@ -124,12 +126,12 @@ Dynamic color, shape, typography, spacing and motion come from MeoUI/Meo desktop
 
 The MeoArch release path has already crossed the runtime retirement boundary:
 
-- Flutter is not built by `NativeUI/build_linux_release.py`;
+- Flutter is not built by `src/native-ui/build_linux_release.py`;
 - a native release bundle must contain `omnistore-native` and must not contain the legacy `frontend` artifact;
 - the MeoArch launcher/package runs the native client directly and provides no Flutter runtime fallback;
 - package transaction and source authority live outside either UI implementation.
 
-Remaining Flutter source is migration/reference material only. Before deleting that tree, transfer any still-valid behavior that is not already represented elsewhere, such as useful localization strings, metadata presentation rules, tests or Account/consent behavior that remains part of the current product.
+Remaining Flutter source under `legacy/flutter-ui/` is migration/reference material only. Before deleting that tree, transfer any still-valid behavior that is not already represented elsewhere, such as useful localization strings, metadata presentation rules, tests or Account/consent behavior that remains part of the current product.
 
 Deleting the historical tree must not be used as a reason to reimplement backend/package logic in QML.
 
@@ -160,4 +162,4 @@ The native MeoArch client is release-ready when:
 4. the client has usable localization for release languages;
 5. app identity/version are build/package-derived rather than stale hard-coded UI values;
 6. the MeoArch release bundle contains no Flutter runtime fallback;
-7. package/repository validation and NativeUI build checks pass for the release revision.
+7. package/repository validation and `src/native-ui/` build checks pass for the release revision.
