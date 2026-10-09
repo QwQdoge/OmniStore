@@ -1,7 +1,7 @@
 import json
 
 def polish(loc, updates):
-    path = f'FlutterUI/lib/l10n/app_{loc}.arb'
+    path = f'legacy/flutter-ui/lib/l10n/app_{loc}.arb'
     with open(path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
