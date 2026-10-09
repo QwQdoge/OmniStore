@@ -2,8 +2,8 @@ import json
 import os
 
 def sync_locale(loc):
-    base_file = 'FlutterUI/lib/l10n/app_en.arb'
-    target_file = f'FlutterUI/lib/l10n/app_{loc}.arb'
+    base_file = 'legacy/flutter-ui/lib/l10n/app_en.arb'
+    target_file = f'legacy/flutter-ui/lib/l10n/app_{loc}.arb'
 
     with open(base_file, 'r', encoding='utf-8') as f:
         base = json.load(f)
@@ -48,13 +48,11 @@ def sync_locale(loc):
         }
     }
 
-    # Remove keys from target if not in base
     target_keys = list(target.keys())
     for k in target_keys:
         if k not in base:
             del target[k]
 
-    # Add/Sync keys from base
     for k, v in base.items():
         if k not in target:
             if k in new_keys:
@@ -64,14 +62,10 @@ def sync_locale(loc):
         elif k.startswith('@') and k[1:] in new_keys:
              target[k] = v
 
-    # Sort target according to base order
     synced = {}
     for k in base.keys():
         if k in target:
             synced[k] = target[k]
-        else:
-            # Should not happen if everything is synced
-            pass
 
     with open(target_file, 'w', encoding='utf-8') as f:
         json.dump(synced, f, ensure_ascii=False, indent=2)
