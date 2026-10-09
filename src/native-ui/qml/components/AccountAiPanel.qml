@@ -88,8 +88,8 @@ Flickable {
                     text: String(accountAi.consent.providerName || "") + "\n"
                           + String(accountAi.consent.destination || "") + "\n"
                           + String(accountAi.consent.model || "") + "\n"
-                          + String(accountAi.consent.purpose || "") + "\n"
-                          + String(accountAi.consent.dataCategories || "") + " · "
+                          + qsTr("Software search, recommendations and package analysis") + "\n"
+                          + qsTr("Your request and package metadata") + " · "
                           + qsTr("%1 characters").arg(accountAi.consent.promptCharacters || 0)
                     typeRole: "body"; typeSize: "small"; wrapMode: Text.WrapAnywhere
                 }

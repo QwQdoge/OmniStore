@@ -231,4 +231,8 @@
     <message><source>Ask AI</source><translation>询问 AI</translation></message>
     <message><source>Always allow this type</source><translation>始终允许此类请求</translation></message>
   </context>
+  <context><name>AccountAiPanel</name>
+    <message><source>Software search, recommendations and package analysis</source><translation>软件搜索、推荐与软件包分析</translation></message>
+    <message><source>Your request and package metadata</source><translation>你的请求与软件包资料</translation></message>
+  </context>
 </TS>
