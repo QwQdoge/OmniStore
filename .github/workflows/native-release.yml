@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - main
-      - cleanup/client-layout
     paths:
       - '.github/workflows/native-release.yml'
       - 'src/native-ui/build_linux_release.py'

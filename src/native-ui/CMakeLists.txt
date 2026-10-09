@@ -18,7 +18,16 @@ qt_standard_project_setup(REQUIRES 6.6)
 set(MEOUI_SOURCE_DIR "" CACHE PATH "Optional MeoUI source checkout for development builds")
 if(MEOUI_SOURCE_DIR AND EXISTS "${MEOUI_SOURCE_DIR}/CMakeLists.txt")
     set(MEOUI_BUILD_SHOWCASE OFF CACHE BOOL "Build MeoUI showcase" FORCE)
+    # MeoUI is a build dependency here, not part of OmniStore's test suite.
+    # Keep its independently-owned CTest contracts in the MeoUI repository;
+    # registering them through this EXCLUDE_FROM_ALL subdirectory leaves their
+    # plugin and smoke-test targets unbuilt and can load a stale installed QML
+    # plugin during an otherwise valid OmniStore build.
+    set(_OMNISTORE_BUILD_TESTING "${BUILD_TESTING}")
+    set(BUILD_TESTING OFF)
     add_subdirectory("${MEOUI_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/meoui" EXCLUDE_FROM_ALL)
+    set(BUILD_TESTING "${_OMNISTORE_BUILD_TESTING}")
+    unset(_OMNISTORE_BUILD_TESTING)
 endif()
 
 qt_add_executable(omnistore-native

@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - main
-      - cleanup/client-layout
     paths:
       - 'src/native-ui/**'
       - 'PKGBUILD'
@@ -60,4 +59,4 @@ jobs:
         run: |
           cmake -S src/native-ui -B build/backend-tests -DBUILD_TESTING=ON
           cmake --build build/backend-tests --target backend-usage-test external-install-request-test --parallel 2
-          ctest --test-dir build/backend-tests --output-on-failure
+          ctest --test-dir build/backend-tests --output-on-failure -R '^(backend-installed-usage|external-install-request)$'
