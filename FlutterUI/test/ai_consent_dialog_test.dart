@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/features/ai/ai_consent_dialog.dart';
+import 'package:frontend/features/ai/widgets/ai_mark.dart';
 import 'package:frontend/l10n/app_localizations.dart';
 
 const _summary = AiConsentSummary(
@@ -47,6 +48,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('确认这一次 AI 请求'), findsOneWidget);
+    final aiMark = find.descendant(
+      of: find.byType(AiMark),
+      matching: find.byType(CustomPaint),
+    );
+    expect(tester.getSize(aiMark), const Size(32, 32));
     expect(find.text('应用名称 · 应用描述'), findsOneWidget);
     expect(find.text('app_name'), findsNothing);
     expect(find.text('暂不发送'), findsOneWidget);
