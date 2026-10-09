@@ -24,9 +24,10 @@ on:
   push:
     branches:
       - main
+      - cleanup/client-layout
     paths:
       - '.github/workflows/native-release.yml'
-      - 'NativeUI/build_linux_release.py'
+      - 'src/native-ui/build_linux_release.py'
 
 permissions:
   contents: write
@@ -85,7 +86,7 @@ jobs:
           OMNISTORE_VERSION: ${{ env.RELEASE_VERSION }}
         run: |
           set -euo pipefail
-          python3 NativeUI/build_linux_release.py \
+          python3 src/native-ui/build_linux_release.py \
             --version "$OMNISTORE_VERSION" \
             --meoui-source "$GITHUB_WORKSPACE/MeoUI" \
             --output-root "$RUNNER_TEMP/meo-output" \
