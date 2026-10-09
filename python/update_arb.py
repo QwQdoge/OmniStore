@@ -376,7 +376,7 @@ def sort_keys_by_english(data, en_data):
 
 
 def update_arb(lang):
-    path = f'FlutterUI/lib/l10n/app_{lang}.arb'
+    path = f'legacy/flutter-ui/lib/l10n/app_{lang}.arb'
     data = load_arb_data(path)
 
     # Use a copy so we don't accidentally modify the MAPPINGS constant
@@ -385,7 +385,7 @@ def update_arb(lang):
     merge_new_keys(data, new_keys)
 
     # Load English to get the final key order
-    en_data = load_arb_data('FlutterUI/lib/l10n/app_en.arb')
+    en_data = load_arb_data('legacy/flutter-ui/lib/l10n/app_en.arb')
 
     # Ensure all new keys are in en_data for ordering (if we are updating en first)
     if lang == 'en':
