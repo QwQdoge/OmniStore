@@ -4,22 +4,26 @@
 
 Work only in the owning layer for the task. Inspect `git status`, the affected files, and the nearest relevant tests/contracts before editing; do not scan the whole repository or read every document by default.
 
+Read `docs/architecture-migration.md` before work that touches client architecture, directory layout, Flutter/Native parity, or packaging paths.
+
 ## Ownership
 
-- `FlutterUI/`: Flutter client. Run Flutter commands from this directory.
-- `python/`: Python backend, source/plugin logic, daemon mode, and Python tests.
-- `NativeUI/`: Qt native client surface.
+- `python/`: **current backend authority** for Python backend, source/plugin logic, daemon mode, and Python tests.
+- `NativeUI/`: **current desktop client direction**. New OmniStore desktop UI/product work should target NativeUI unless the task explicitly concerns legacy compatibility.
+- `FlutterUI/`: **legacy compatibility client during migration**. Keep it buildable where release/compatibility contracts still require it, but do not add new desktop product features here by default.
 - `plugins/sources/`: source manifests. A manifest or toggle alone does not prove search/install/update support.
 - `PKGBUILD`, `auto_build.py`, release/export scripts: packaging and release contracts.
 - This repository has Python daemon code; it does **not** contain a Rust daemon/Cargo workspace. Do not invent or describe one.
 
 Shared OS/Plasma UI belongs in MeoUI or meo-kde rather than being copied here.
 
+Do not perform a broad `FlutterUI/`/`NativeUI/` path move as incidental cleanup. The target `src/` + `legacy/` layout and migration gates are defined in `docs/architecture-migration.md`; an actual move must update CI, packaging and developer paths atomically.
+
 ## Validation matrix
 
 Run the narrowest matching checks first.
 
-- Flutter change:
+- Flutter compatibility change:
   `cd FlutterUI && flutter pub get && flutter analyze && flutter test --reporter expanded`
   Add `flutter build linux --release` when Linux integration, dependencies, packaging, or release behavior changed.
 - Python/backend change:
