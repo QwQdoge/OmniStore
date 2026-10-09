@@ -13,11 +13,11 @@ def compare_arb(source_file, target_file):
     missing = source_keys - target_keys
     return missing
 
-en_file = 'FlutterUI/lib/l10n/app_en.arb'
+en_file = 'legacy/flutter-ui/lib/l10n/app_en.arb'
 locales = ['zh', 'zh_Hant', 'es', 'ja']
 
 for locale in locales:
-    target_file = f'FlutterUI/lib/l10n/app_{locale}.arb'
+    target_file = f'legacy/flutter-ui/lib/l10n/app_{locale}.arb'
     try:
         missing = compare_arb(en_file, target_file)
         if missing:
