@@ -10,7 +10,7 @@ set(QT_QML_GENERATE_QMLLS_INI ON)
 # builds deliberately report "development" rather than a stale product version.
 set(OMNISTORE_RELEASE_VERSION "development" CACHE STRING "OmniStore release version shown by the native client")
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui LinguistTools Network Qml Quick QuickControls2)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui LinguistTools Network DBus Qml Quick QuickControls2)
 # QTP0004 redirects subdirectory implicit imports to this QML module.
 # Without it Main/pages/components cannot reliably resolve sibling types.
 qt_standard_project_setup(REQUIRES 6.8)
@@ -34,6 +34,7 @@ endif()
 
 qt_add_executable(omnistore-native
     app/main.cpp
+    app/accountaibridge.cpp app/accountaibridge.h
     app/externalinstallrequest.cpp app/externalinstallrequest.h
     app/backendbridge.cpp
     app/backendbridge.h
@@ -50,6 +51,7 @@ qt_add_qml_module(omnistore-native
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+        qml/components/AccountAiPanel.qml
         qml/components/AppDetailsPane.qml
         qml/components/AppRow.qml
         qml/components/InstallPlanReview.qml
@@ -80,6 +82,7 @@ target_link_libraries(omnistore-native PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network
+    Qt6::DBus
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
@@ -108,6 +111,11 @@ install(TARGETS omnistore-native RUNTIME DESTINATION bin)
 include(CTest)
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
+    qt_add_executable(account-ai-test tests/account_ai_test.cpp app/accountaibridge.cpp app/accountaibridge.h)
+    target_include_directories(account-ai-test PRIVATE app)
+    target_link_libraries(account-ai-test PRIVATE Qt6::Core Qt6::DBus Qt6::Test)
+    add_test(NAME account-ai-consent COMMAND dbus-run-session -- $<TARGET_FILE:account-ai-test>)
+    set_tests_properties(account-ai-consent PROPERTIES TIMEOUT 15)
     qt_add_executable(backend-usage-test
         tests/backend_usage_test.cpp
         app/backendbridge.cpp app/backendbridge.h

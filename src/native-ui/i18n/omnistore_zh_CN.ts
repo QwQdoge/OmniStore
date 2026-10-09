@@ -172,4 +172,63 @@
     <message><source>The installed usage information was not in the expected format.</source><translation>已安装应用容量信息的格式不正确。</translation></message>
     <message><source>Installed app usage took too long to load.</source><translation>加载已安装应用容量信息超时。</translation></message>
   </context>
+  <context>
+    <name>Main</name>
+    <message><source>OmniStore AI · Meo Account</source><translation>OmniStore AI · Meo 账户</translation></message>
+  </context>
+  <context>
+    <name>HomePage</name>
+    <message><source>AI pick of the day</source><translation>AI 每日推荐</translation></message>
+    <message><source>Recommend a useful app for today</source><translation>推荐一个今天值得使用的应用</translation></message>
+  </context>
+  <context>
+    <name>SearchPage</name>
+    <message><source>AI search</source><translation>AI 搜索</translation></message>
+    <message><source>AI best match</source><translation>AI 最佳匹配</translation></message>
+  </context>
+  <context>
+    <name>AppDetailsPane</name>
+    <message><source>What is this package?</source><translation>这是什么软件包？</translation></message>
+    <message><source>AI safety analysis</source><translation>AI 安全分析</translation></message>
+    <message><source>Find other sources</source><translation>查找其他来源</translation></message>
+  </context>
+  <context>
+    <name>AccountAiPanel</name>
+    <message><source>Uses the system AI connections saved in Meo Settings. OmniStore never receives your API key. Review what will be sent before each request.</source><translation>使用 Meo Settings 保存的系统 AI 连接。OmniStore 不读取 API 密钥。每次调用前请查看将发送的内容。</translation></message>
+    <message><source>Refresh system AI connections</source><translation>刷新系统 AI 连接</translation></message>
+    <message><source>System AI unavailable</source><translation>系统 AI 不可用</translation></message>
+    <message><source>Prepare AI request</source><translation>准备 AI 请求</translation></message>
+    <message><source>Allow this AI request?</source><translation>允许本次 AI 请求？</translation></message>
+    <message><source>%1 characters</source><translation>%1 个字符</translation></message>
+    <message><source>Cancel</source><translation>取消</translation></message>
+    <message><source>Allow once</source><translation>允许一次</translation></message>
+  </context>
+  <context>
+    <name>AccountAiBridge</name>
+    <message><source>Choose today's app recommendation</source><translation>选择今日应用推荐</translation></message>
+    <message><source>Find package search terms</source><translation>查找软件包搜索关键词</translation></message>
+    <message><source>Analyze package safety</source><translation>分析软件包安全性</translation></message>
+    <message><source>Explain this package</source><translation>解释此软件包</translation></message>
+    <message><source>Choose the best matching package</source><translation>选择最符合需求的软件包</translation></message>
+    <message><source>No system AI connections are available. Configure one in Meo Settings.</source><translation>没有可用的系统 AI 连接，请在 Meo Settings 中配置。</translation></message>
+    <message><source>Select a system AI connection with a default model in Meo Settings.</source><translation>请在 Meo Settings 中选择系统 AI 连接并设置默认模型。</translation></message>
+    <message><source>No real package candidates are available. Search or refresh the catalog first.</source><translation>没有真实候选软件包，请先搜索或刷新软件目录。</translation></message>
+    <message><source>AI consent expired. Request it again.</source><translation>AI 授权已过期，请重新请求。</translation></message>
+    <message><source>AI returned no content.</source><translation>AI 没有返回内容。</translation></message>
+    <message><source>AI returned an invalid package search term.</source><translation>AI 返回的软件包搜索关键词无效。</translation></message>
+    <message><source>AI did not select a valid package from the available catalog.</source><translation>AI 未从当前目录中选出有效的软件包。</translation></message>
+    <message><source>AI request cancelled. No prompt was sent to the provider.</source><translation>AI 请求已取消，未向服务商发送提示内容。</translation></message>
+    <message><source>Searching real sources for: %1. Use Best match after the results load.</source><translation>正在真实软件源中搜索：%1。结果加载后可以使用 AI 最佳匹配。</translation></message>
+  </context>
+  <context><name>AccountAiPanel</name>
+    <message><source>Hide request contents</source><translation>收起请求内容</translation></message>
+    <message><source>Show request contents</source><translation>查看请求内容</translation></message>
+  </context>
+  <context><name>AccountAiPanel</name>
+    <message><source>AI catalog advice is always allowed</source><translation>已始终允许 AI 软件咨询</translation></message>
+    <message><source>Applies only to this connection and model, for OmniStore searches, recommendations and package analysis. Package changes still require confirmation.</source><translation>仅用于当前连接和模型的 OmniStore 搜索、推荐与软件包分析。软件包变更仍需确认。</translation></message>
+    <message><source>Revoke saved AI permission</source><translation>撤销已保存的 AI 授权</translation></message>
+    <message><source>Ask AI</source><translation>询问 AI</translation></message>
+    <message><source>Always allow this type</source><translation>始终允许此类请求</translation></message>
+  </context>
 </TS>

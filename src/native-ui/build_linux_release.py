@@ -167,6 +167,7 @@ def assemble_native_bundle(
     destination.chmod(destination.stat().st_mode | 0o111)
 
     _copy_tree(REPO_ROOT / "plugins" / "sources", bundle / "plugins" / "sources")
+    _copy_tree(REPO_ROOT / "data" / "meo-account", bundle / "data" / "meo-account")
     _copy_tree(REPO_ROOT / "data" / "app-manifests", bundle / "data" / "app-manifests")
     _copy_tree(REPO_ROOT / "data" / "systemd" / "user", bundle / "data" / "systemd" / "user")
 

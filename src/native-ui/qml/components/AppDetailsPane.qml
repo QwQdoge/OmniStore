@@ -12,6 +12,7 @@ Flickable {
     property string selectedSource: ""
     property string selectedPackageId: ""
     signal searchRequested(string query)
+    signal aiRequested(string mode, string query, var candidates)
     readonly property var sourceVariants: {
         if (fallbackApp.variants && fallbackApp.variants.length > 0)
             return fallbackApp.variants
@@ -283,6 +284,21 @@ Flickable {
                 enabled: root.packageIdentity().length > 0 && !backend.busy && !transactions.busy
                          && !transactions.planning && transactions.available
                 onClicked: transactions.planInstall(root.packageIdentity(), root.sourceName(), root.installUrl())
+            }
+        }
+
+        RowLayout {
+            MeoButton {
+                text: qsTr("What is this package?")
+                icon.name: "auto_awesome"; type: "tonal"
+                enabled: !backend.busy && !accountAi.busy
+                onClicked: root.aiRequested("explain", root.appName(), [root.app])
+            }
+            MeoButton {
+                text: qsTr("AI safety analysis")
+                icon.name: "shield"; type: "outlined"
+                enabled: !backend.busy && !accountAi.busy
+                onClicked: root.aiRequested("safety", root.appName(), [root.app])
             }
         }
 

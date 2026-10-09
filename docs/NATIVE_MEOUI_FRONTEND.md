@@ -163,3 +163,32 @@ The native MeoArch client is release-ready when:
 5. app identity/version are build/package-derived rather than stale hard-coded UI values;
 6. the MeoArch release bundle contains no Flutter runtime fallback;
 7. package/repository validation and `src/native-ui/` build checks pass for the release revision.
+
+### System AI in the native client
+
+The native client uses the `org.meo.Accounts1` device AI broker and the
+package-owned `local_ai` client capability. Select a system AI connection saved
+in Meo Settings; OmniStore neither reads nor persists its provider key. Daily
+picks, package explanation, safety analysis, AI search terms and best-match
+ranking all use `prepare_inference`, a visible payload review, and a separate
+one-time user approval before `invoke`. Denial sends `deny_inference`. Users
+may instead choose **Always allow this type** for catalog advice only. The
+Account broker stores this per-client, connection and model grant in KWallet;
+OmniStore can revoke it, and changed provider/endpoint/model invalidates it.
+Package changes remain separately confirmed.
+
+AI search obtains a search term, then queries the real enabled store sources.
+Best-match ranking selects only indexes in that returned catalog. Daily picks
+also retain the original package IDs, sources and variants; recommendations
+open the normal details/source/install-plan flow and never install anything.
+Safety analysis is metadata-based advice, not a signature or malware scan.
+
+The root release recipe installs the Account manifest for `/opt/omnistore`;
+the central Meo repository recipe owns its manifest for `/usr/lib/omnistore`.
+An older Account broker without device AI methods cannot run these features:
+the UI reports the connection error rather than using a separate provider or
+reading keys from OmniStore configuration.
+
+The native runtime regression tests include an isolated D-Bus broker checking
+that preparing and denying requests never invokes the provider, and that AI
+ranking cannot inject invented package IDs or out-of-range candidate indexes.

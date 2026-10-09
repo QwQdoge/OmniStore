@@ -7,6 +7,7 @@ import MeoUI 1.0
 Item {
     id: root
     signal searchRequested(string query)
+    signal aiRequested(string mode, string query, var candidates)
     signal exploreRequested()
     signal detailsRequested(var app)
 
@@ -42,6 +43,14 @@ Item {
             x: (parent.width - width) / 2
             y: 28 * MeoTheme.globalScale
             spacing: 26 * MeoTheme.globalScale
+
+            MeoButton {
+                text: qsTr("AI pick of the day")
+                icon.name: "auto_awesome"; type: "tonal"
+                enabled: !backend.busy && !accountAi.busy
+                onClicked: root.aiRequested("daily", qsTr("Recommend a useful app for today"),
+                    backend.featuredApps.concat(backend.trendingApps).concat(backend.forYouApps))
+            }
 
             RowLayout {
                 Layout.fillWidth: true

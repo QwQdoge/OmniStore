@@ -16,6 +16,9 @@ Window {
     title: qsTr("OmniStore")
     color: MeoTheme.surfaceContainerLow
 
+    property string aiMode: "daily"
+    property string aiQuery: ""
+    property var aiCandidates: []
     property int navigationIndex: 0
     property string pendingSearch: ""
     property var detailFallback: ({})
@@ -23,11 +26,14 @@ Window {
         MeoTheme.colorSchemeMode === "dynamic"
         && MeoTheme.hasActiveDynamicColorScheme
     readonly property bool overlaySheetOpen:
-        detailSheet.isOpen || searchSheet.isOpen || tasksSheet.isOpen
+        detailSheet.isOpen || searchSheet.isOpen || tasksSheet.isOpen || aiSheet.isOpen
 
+    SystemPalette { id: desktopPalette }
     function syncDynamicColor() {
-        const lightScheme = MaterialColors.currentScheme(false)
-        const darkScheme = MaterialColors.currentScheme(true)
+        const lightScheme = typeof MaterialColors.currentScheme === "function"
+            ? MaterialColors.currentScheme(false) : MaterialColors.schemeFor(desktopPalette.highlight, false)
+        const darkScheme = typeof MaterialColors.currentScheme === "function"
+            ? MaterialColors.currentScheme(true) : MaterialColors.schemeFor(desktopPalette.highlight, true)
         MeoTheme.applyDynamicColorSchemes(
             lightScheme,
             darkScheme,
@@ -38,6 +44,15 @@ Window {
     function openSearch(query) {
         root.pendingSearch = String(query || "")
         searchSheet.isOpen = true
+    }
+
+    function openAi(mode, query, candidates) {
+        accountAi.clearPresentation()
+        root.aiMode = mode
+        root.aiQuery = query
+        root.aiCandidates = candidates
+        aiSheet.isOpen = true
+        accountAi.refreshConnections()
     }
 
     function openTasks() {
@@ -64,6 +79,7 @@ Window {
 
     Connections {
         target: MaterialColors
+        ignoreUnknownSignals: true
         function onSchemeChanged() {
             root.syncDynamicColor()
         }
@@ -132,6 +148,7 @@ Window {
     Component {
         id: homePage
         Store.HomePage {
+            onAiRequested: function(mode, query, candidates) { root.openAi(mode, query, candidates) }
             onSearchRequested: function(query) { root.openSearch(query) }
             onExploreRequested: root.navigationIndex = 1
             onDetailsRequested: function(app) { root.showDetails(app) }
@@ -188,6 +205,7 @@ Window {
         title: qsTr("Search")
         content: Component {
             Store.SearchPage {
+                onAiRequested: function(mode, query, candidates) { root.openAi(mode, query, candidates) }
                 initialQuery: root.pendingSearch
                 onDetailsRequested: function(app) {
                     searchSheet.isOpen = false
@@ -217,6 +235,7 @@ Window {
         content: Component {
             Store.AppDetailsPane {
                 fallbackApp: root.detailFallback
+                onAiRequested: function(mode, query, candidates) { root.openAi(mode, query, candidates) }
                 onSearchRequested: function(query) {
                     detailSheet.isOpen = false
                     root.openSearch(query)
@@ -238,4 +257,29 @@ Window {
             }
         }
     }
+    Connections {
+        target: accountAi
+        function onSearchSuggested(query) {
+            aiSheet.isOpen = false
+            root.openSearch(query)
+            backend.search(query)
+        }
+    }
+    MeoSideSheet {
+        id: aiSheet
+        z: 110
+        height: root.height
+        width: Math.min(760 * MeoTheme.globalScale, root.width * 0.78)
+        isOpen: false
+        title: qsTr("OmniStore AI · Meo Account")
+        content: Component {
+            Store.AccountAiPanel {
+                requestMode: root.aiMode
+                query: root.aiQuery
+                candidates: root.aiCandidates
+                onDetailsRequested: function(app) { aiSheet.isOpen = false; root.showDetails(app) }
+            }
+        }
+    }
+
 }

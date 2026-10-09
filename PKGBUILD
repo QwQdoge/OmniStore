@@ -88,6 +88,9 @@ package() {
   install -Dm755 "${pkgdir}/opt/omnistore/backends/meo_repository_helper.py" \
     "${pkgdir}/usr/lib/omnistore/meo-repository-helper.py"
 
+  install -Dm644 "$_src_dir/data/meo-account/org.meo.OmniStore.json" \
+    "${pkgdir}/usr/share/meo-account/clients/org.meo.OmniStore.json"
+
   install -d "${pkgdir}/usr/bin"
   cat > "${pkgdir}/usr/bin/omnistore-native" <<'EOF'
 #!/bin/sh

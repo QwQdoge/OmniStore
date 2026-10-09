@@ -1,4 +1,5 @@
 #include "backendbridge.h"
+#include "accountaibridge.h"
 #include "externalinstallrequest.h"
 #include "repositorybridge.h"
 #include "systembridge.h"
@@ -45,6 +46,7 @@ int main(int argc, char *argv[])
     // by the design system from importing a competing Material theme.
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
+    AccountAiBridge accountAi;
     BackendBridge backend;
     RepositoryBridge repositoryBridge;
     SystemBridge systemBridge;
@@ -61,7 +63,7 @@ int main(int argc, char *argv[])
         const QStringList types = {QStringLiteral("SearchPage"), QStringLiteral("TasksPage"),
             QStringLiteral("HomePage"), QStringLiteral("ExplorePage"),
             QStringLiteral("UpdatesPage"), QStringLiteral("InstalledPage"),
-            QStringLiteral("SettingsPage"), QStringLiteral("AppDetailsPane")};
+            QStringLiteral("SettingsPage"), QStringLiteral("AppDetailsPane"), QStringLiteral("AccountAiPanel")};
         for (const auto &type : types) {
             QQmlComponent component(&engine);
             component.loadFromModule(QStringLiteral("OmniStore.Native"), type);
@@ -82,6 +84,7 @@ int main(int argc, char *argv[])
     }
     engine.rootContext()->setContextProperty(QStringLiteral("pendingInstallRequest"), pendingInstallRequest);
     engine.rootContext()->setContextProperty(QStringLiteral("backend"), &backend);
+    engine.rootContext()->setContextProperty(QStringLiteral("accountAi"), &accountAi);
     engine.rootContext()->setContextProperty(QStringLiteral("repoBridge"), &repositoryBridge);
     engine.rootContext()->setContextProperty(QStringLiteral("systemBridge"), &systemBridge);
     engine.rootContext()->setContextProperty(QStringLiteral("transactions"), &transactions);

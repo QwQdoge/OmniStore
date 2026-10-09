@@ -9,6 +9,7 @@ Item {
     id: root
     property string initialQuery: ""
     signal detailsRequested(var app)
+    signal aiRequested(string mode, string query, var candidates)
 
     ColumnLayout {
         anchors.fill: parent
@@ -45,6 +46,21 @@ Item {
                 icon.name: "search"
                 enabled: searchBar.text.trim().length > 0 && !backend.busy
                 onClicked: backend.search(searchBar.text.trim())
+            }
+        }
+
+        RowLayout {
+            MeoButton {
+                text: qsTr("AI search")
+                icon.name: "auto_awesome"; type: "tonal"
+                enabled: searchBar.text.trim().length > 0 && !accountAi.busy && !backend.busy
+                onClicked: root.aiRequested("search", searchBar.text.trim(), [])
+            }
+            MeoButton {
+                text: qsTr("AI best match")
+                icon.name: "recommend"; type: "tonal"
+                enabled: backend.searchResults.length > 0 && !accountAi.busy && !backend.busy
+                onClicked: root.aiRequested("rank", searchBar.text.trim(), backend.searchResults)
             }
         }
 

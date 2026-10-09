@@ -10,7 +10,7 @@ def test_selected_variant_controls_package_identity_source_and_plan():
 
     assert 'property string selectedSource: ""' in text
     assert "function selectedVariant()" in text
-    assert "variant.id || variant.name || """ in text
+    assert 'return String(variant.id || variant.name || "")' in text
     assert "function packageIdentity()" in text
     assert "transactions.planInstall(root.packageIdentity(), root.sourceName(), root.installUrl())" in text
     assert 'String(currentPlanRequest.name || "") === root.packageIdentity()' in text

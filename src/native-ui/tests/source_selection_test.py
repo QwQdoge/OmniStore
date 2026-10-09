@@ -79,6 +79,7 @@ engine = QQmlApplicationEngine()
 engine.addImportPath(str(output))
 backend, transactions = Backend(), Transactions()
 engine.rootContext().setContextProperty("backend", backend)
+engine.rootContext().setContextProperty("accountAi", backend)
 engine.rootContext().setContextProperty("transactions", transactions)
 engine.loadData(('''import QtQuick
 import QtQuick.Controls
