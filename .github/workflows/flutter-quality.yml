@@ -1,15 +1,16 @@
-name: Flutter quality
+name: Flutter legacy quality
 
 on:
   pull_request:
     paths:
-      - 'FlutterUI/**'
+      - 'legacy/flutter-ui/**'
       - '.github/workflows/flutter-quality.yml'
   push:
     branches:
       - main
+      - cleanup/client-layout
     paths:
-      - 'FlutterUI/**'
+      - 'legacy/flutter-ui/**'
       - '.github/workflows/flutter-quality.yml'
 
 permissions:
@@ -21,12 +22,12 @@ concurrency:
 
 jobs:
   analyze-test-build:
-    name: Analyze, test, and build Linux
+    name: Legacy Flutter analyze, test, and build Linux
     runs-on: ubuntu-latest
     timeout-minutes: 40
     defaults:
       run:
-        working-directory: FlutterUI
+        working-directory: legacy/flutter-ui
 
     steps:
       - name: Check out repository
