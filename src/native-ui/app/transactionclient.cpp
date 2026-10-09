@@ -287,8 +287,18 @@ void TransactionClient::applyTask(const QJsonObject &task)
     m_status = task.value(QStringLiteral("status")).toString();
     const QString kind = task.value(QStringLiteral("kind")).toString();
     const QString name = task.value(QStringLiteral("name")).toString();
-    m_actionName = name.isEmpty() ? kind : QStringLiteral("%1 %2").arg(kind, name);
+    if (kind == QStringLiteral("update_all"))
+        m_actionName = tr("Update all software");
+    else if (kind == QStringLiteral("update"))
+        m_actionName = tr("Update %1").arg(name);
+    else if (kind == QStringLiteral("install"))
+        m_actionName = tr("Install %1").arg(name);
+    else if (kind == QStringLiteral("remove"))
+        m_actionName = tr("Remove %1").arg(name);
+    else
+        m_actionName = name.isEmpty() ? kind : QStringLiteral("%1 %2").arg(kind, name);
     m_stage = task.value(QStringLiteral("stage")).toString();
+    m_sourceUpdates = task.value(QStringLiteral("sourceUpdates")).toArray().toVariantList();
     m_authenticationPrompt = busy()
         ? task.value(QStringLiteral("authenticationPrompt")).toString() : QString{};
     m_speed = task.value(QStringLiteral("speed")).toString();

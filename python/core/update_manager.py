@@ -6,6 +6,8 @@ import re
 import inspect
 import os
 import platform
+import json
+import codecs
 from pathlib import Path
 from typing import Awaitable, Callable, List, Dict, Optional
 
@@ -47,6 +49,7 @@ class UpdateManager:
         callback: Optional[Callable[[str], Awaitable[None]]] = None,
     ) -> bool:
         commands = []
+        skipped = []
         privilege_env = None
         native = self.profile.native_manager
         if self.profile.immutable:
@@ -75,8 +78,14 @@ class UpdateManager:
                     await self._emit(callback, f"[ERROR] {exc}")
                     return False
                 commands.append((native.upper(), ["sudo", "-A", *command], privilege_env))
+        if self.profile.immutable:
+            skipped.append(("System", "Native updates are not supported on this immutable system"))
+        elif native and not commands:
+            skipped.append(("Pacman" if native == "pacman" else native.upper(), "Disabled or package manager is not installed"))
         if self._source_enabled("flatpak") and shutil.which("flatpak"):
             commands.append(("Flatpak", ["flatpak", "update", "--user", "-y"], None))
+        else:
+            skipped.append(("Flatpak", "Disabled or Flatpak is not installed"))
         include_aur = bool(
             self.config
             and self.config.get("updates.include_aur_in_update_all", False)
@@ -93,22 +102,46 @@ class UpdateManager:
             # this phase to AUR packages and avoids a duplicate system upgrade
             # plus its extra authorization requests.
             commands.append(("AUR", [aur_helper, "--sudoflags", "-A", "-Sua", "--noconfirm"], privilege_env))
+        elif native == "pacman":
+            skipped.append(("AUR", "Not included in update-all, disabled, or no AUR helper is installed"))
+
+        for name, reason in skipped:
+            await self._source_status(callback, name, "skipped", detail=reason)
+        for name, _, _ in commands:
+            await self._source_status(callback, name, "queued")
 
         if not commands:
             await self._emit(callback, "[ERROR] No supported update manager is available.")
             return False
 
         succeeded = True
+        await self._emit(callback, "[PROGRESS] 0")
         for index, (name, command, command_env) in enumerate(commands):
+            await self._emit(callback, f"[STAGE] Updating {name} ({index + 1}/{len(commands)})")
+            await self._source_status(callback, name, "running")
             await self._emit(callback, f"[INFO] Updating {name} packages...")
-            if not await self._run_update_command(command, callback, env=command_env):
+
+            async def source_output(message):
+                await self._emit(callback, message)
+                if message.startswith("[INFO]"):
+                    detail = message[len("[INFO]"):].strip()
+                    percent = re.search(r"(?<![\d.])(\d{1,3}(?:\.\d+)?)\s*%", detail)
+                    progress = float(percent.group(1)) / 100 if percent and float(percent.group(1)) <= 100 else None
+                    await self._source_status(callback, name, "running", detail=detail, progress=progress)
+
+            success = await self._run_update_command(command, source_output, env=command_env)
+            await self._source_status(callback, name, "succeeded" if success else "failed")
+            if not success:
                 succeeded = False
                 await self._emit(callback, f"[ERROR] {name} update failed.")
+            else:
+                await self._emit(callback, f"[INFO] {name} update completed.")
             await self._emit(
                 callback,
                 f"[PROGRESS] {round(((index + 1) / len(commands)) * 100)}",
             )
         if succeeded:
+            await self._emit(callback, "[STAGE] Checking the updated system")
             await self._emit(callback, "[INFO] All enabled package sources are up to date.")
             postflight = await self.postflight_report()
             try:
@@ -116,7 +149,13 @@ class UpdateManager:
             except (OSError, ValueError) as exc:
                 await self._emit(callback, f"[WARNING] Could not persist update status: {exc}")
             await self._emit_postflight(callback, postflight)
+        await self._emit(callback, "[STAGE] Updates completed" if succeeded else "[STAGE] Updates completed with failures")
         return succeeded
+
+    @staticmethod
+    async def _source_status(callback, source, status, detail="", progress=None):
+        event = {"source": source, "status": status, "detail": detail[:512], "progress": progress}
+        await UpdateManager._emit(callback, "[SOURCE] " + json.dumps(event))
 
     @staticmethod
     def _acquire_update_lock():
@@ -153,10 +192,21 @@ class UpdateManager:
                 env=env,
             ) as proc:
                 if proc.stdout:
-                    async for raw_line in proc.stdout:
-                        line = raw_line.decode("utf-8", errors="replace").strip()
-                        if line:
-                            await self._emit(callback, f"[INFO] {line}")
+                    decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+                    pending = ""
+                    while chunk := await proc.stdout.read(4096):
+                        pending += decoder.decode(chunk)
+                        lines = re.split(r"[\r\n]+", pending)
+                        pending = lines.pop()
+                        for line in lines:
+                            if line.strip():
+                                await self._emit(callback, f"[INFO] {line.strip()}")
+                        if len(pending) > 8192:
+                            await self._emit(callback, f"[INFO] {pending}")
+                            pending = ""
+                    pending += decoder.decode(b"", final=True)
+                    if pending.strip():
+                        await self._emit(callback, f"[INFO] {pending.strip()}")
                 await proc.wait()
                 return proc.returncode == 0
         except Exception as exc:
@@ -213,7 +263,11 @@ class UpdateManager:
         return combined
 
     def _source_enabled(self, source_id, default=True):
-        return bool(self.config.get(f"search.sources.{source_id}", default)) if self.config else default
+        if not self.config:
+            return default
+        enabled_plugins = self.config.get("plugins.enabled", {}) or {}
+        return bool(enabled_plugins.get(f"builtin.{source_id}", True)
+                    and self.config.get(f"search.sources.{source_id}", default))
 
     async def _capture(self, cmd: List[str], timeout: int = 45) -> tuple[int, str]:
         try:

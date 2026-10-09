@@ -503,6 +503,8 @@ class OmnistoreBackend:
                     output_data = {"type": "speed", "speed": clean_msg.replace("[SPEED]", "", 1).strip()}
                 elif clean_msg.startswith("[STAGE]"):
                     output_data = {"type": "stage", "stage": clean_msg.replace("[STAGE]", "", 1).strip()}
+                elif clean_msg.startswith("[SOURCE] "):
+                    output_data = {"type": "source_update", "sourceUpdate": json.loads(clean_msg[len("[SOURCE] "):])}
                 else:
                     output_data = {"type": "error" if level == "ERROR" else "log", "message": clean_msg, "level": level.lower()}
                 output = json.dumps(output_data, ensure_ascii=False)

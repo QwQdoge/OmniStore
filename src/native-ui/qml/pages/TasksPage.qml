@@ -1,12 +1,29 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import MeoUI 1.0
 import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
+
+    function sourceStatusLabel(status) {
+        if (status === "queued") return qsTr("Waiting")
+        if (status === "running") return qsTr("Updating")
+        if (status === "succeeded") return qsTr("Completed")
+        if (status === "failed") return qsTr("Failed")
+        if (status === "skipped") return qsTr("Skipped")
+        return status
+    }
+
+    function sourceSummary() {
+        const rows = transactions.sourceUpdates || []
+        const planned = rows.filter(row => row.status !== "skipped")
+        const finished = planned.filter(row => row.status === "succeeded" || row.status === "failed")
+        return qsTr("Sources finished: %1 / %2").arg(finished.length).arg(planned.length)
+    }
 
     function statusLabel() {
         const value = String(transactions.status || "")
@@ -127,6 +144,14 @@ Item {
                     wavy: transactions.busy
                 }
 
+                MeoText {
+                    visible: transactions.sourceUpdates.length > 0
+                    text: root.sourceSummary()
+                    typeRole: "label"
+                    typeSize: "medium"
+                    color: MeoTheme.contentOnSurfaceVariant
+                }
+
                 RowLayout {
                     Layout.fillWidth: true
                     MeoText {
@@ -144,6 +169,64 @@ Item {
                         type: "text"
                         icon.name: "refresh"
                         onClicked: transactions.reconnect()
+                    }
+                }
+            }
+        }
+
+        ScrollView {
+            id: sourceScroll
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.min(sourceColumn.implicitHeight, root.height * 0.35)
+            visible: transactions.sourceUpdates.length > 0
+            clip: true
+            contentWidth: availableWidth
+            contentHeight: sourceColumn.implicitHeight
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+            ColumnLayout {
+                id: sourceColumn
+                width: sourceScroll.availableWidth
+                spacing: 8 * MeoTheme.globalScale
+                Repeater {
+                    model: transactions.sourceUpdates
+                    delegate: MeoCard {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        padding: 12 * MeoTheme.globalScale
+                        type: "filled"
+                        ColumnLayout {
+                            width: parent.width
+                            MeoText {
+                                Layout.fillWidth: true
+                                text: String(modelData.source) + " · " + root.sourceStatusLabel(modelData.status)
+                                typeRole: "title"
+                                typeSize: "small"
+                                color: modelData.status === "failed" ? MeoTheme.error : MeoTheme.contentOnSurface
+                            }
+                            MeoText {
+                                Layout.fillWidth: true
+                                visible: !!modelData.detail
+                                text: String(modelData.detail || "")
+                                elide: Text.ElideRight
+                                typeRole: "body"
+                                typeSize: "small"
+                                color: MeoTheme.contentOnSurfaceVariant
+                            }
+                            MeoProgressBar {
+                                Layout.fillWidth: true
+                                visible: modelData.status === "running"
+                                indeterminate: modelData.progress === null || modelData.progress === undefined
+                                value: Number(modelData.progress || 0)
+                            }
+                            MeoText {
+                                visible: modelData.status === "running" && modelData.progress !== null && modelData.progress !== undefined
+                                text: qsTr("Current operation: %1%").arg(Math.round(Number(modelData.progress || 0) * 100))
+                                typeRole: "label"
+                                typeSize: "small"
+                                color: MeoTheme.contentOnSurfaceVariant
+                            }
+                        }
                     }
                 }
             }

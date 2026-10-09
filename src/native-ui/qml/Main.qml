@@ -149,7 +149,7 @@ Window {
         id: installedPage
         Store.InstalledPage { onDetailsRequested: function(app) { root.showDetails(app) } }
     }
-    Component { id: updatesPage; Store.UpdatesPage {} }
+    Component { id: updatesPage; Store.UpdatesPage { onTasksRequested: root.openTasks() } }
     Component { id: settingsPage; Store.SettingsPage {} }
 
     MeoBanner {

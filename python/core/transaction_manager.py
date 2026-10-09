@@ -47,6 +47,7 @@ class TransactionRecord:
     updated_at: str = field(default_factory=_utc_now)
     progress: float | None = None
     stage: str = ""
+    source_updates: dict[str, dict[str, Any]] = field(default_factory=dict)
     authentication_prompt: str = ""
     speed: str = ""
     log: str = ""
@@ -65,6 +66,7 @@ class TransactionRecord:
             "createdAt": self.created_at,
             "updatedAt": self.updated_at,
             "stage": self.stage,
+            "sourceUpdates": list(self.source_updates.values()),
             "authenticationPrompt": self.authentication_prompt if self.status == "running" else "",
             "speed": self.speed,
             "log": self.log,
@@ -129,7 +131,8 @@ class _TaskCapture:
                 lowered.startswith(("place your ", "swipe your "))
                 and "finger" in lowered
             )
-            self._record.authentication_prompt = message[:512] if fingerprint_prompt else ""
+            if message:
+                self._record.authentication_prompt = message[:512] if fingerprint_prompt else ""
             if kind == "progress":
                 try:
                     value = float(payload.get("progress"))
@@ -140,6 +143,10 @@ class _TaskCapture:
                     pass
             elif kind == "stage":
                 self._record.stage = str(payload.get("stage") or "")[:512]
+            elif kind == "source_update":
+                update = payload.get("sourceUpdate")
+                if isinstance(update, dict) and update.get("source"):
+                    self._record.source_updates[str(update["source"])[:64]] = update
             elif kind == "speed":
                 self._record.speed = str(payload.get("speed") or "")[:256]
             else:

@@ -29,6 +29,7 @@ private slots:
                     QVERIFY(action == "task.list" || action == "task.get");
                     QJsonObject task{{"taskId", "test"}, {"kind", "install"},
                                      {"status", finished ? "succeeded" : "running"},
+                                     {"sourceUpdates", QJsonArray{QJsonObject{{"source", "Pacman"}, {"status", finished ? "succeeded" : "running"}}}},
                                      {"authenticationPrompt", prompt}};
                     QJsonValue value = action == "task.list"
                         ? QJsonValue(QJsonArray{task}) : QJsonValue(task);
@@ -41,9 +42,12 @@ private slots:
         TransactionClient client;
         QTRY_COMPARE_WITH_TIMEOUT(client.authenticationPrompt(), prompt, 2000);
         QVERIFY(client.busy());
+        QCOMPARE(client.sourceUpdates().size(), 1);
+        QCOMPARE(client.sourceUpdates().first().toMap().value("status").toString(), "running");
         finished = true;
         QTRY_VERIFY_WITH_TIMEOUT(!client.busy(), 2000);
         QCOMPARE(client.authenticationPrompt(), QString{});
+        QCOMPARE(client.sourceUpdates().first().toMap().value("status").toString(), "succeeded");
     }
 };
 QTEST_GUILESS_MAIN(TransactionAuthenticationTest)

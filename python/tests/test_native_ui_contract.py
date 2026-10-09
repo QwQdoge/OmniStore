@@ -120,7 +120,8 @@ def test_package_mutations_use_persistent_transaction_client_and_review_install_
     assert "plan.requiresPrivilege" in plan_review
 
     assert "onConfirmed: transactions.updateApp" in update_row
-    assert "onConfirmed: transactions.updateAll" in updates
+    assert "transactions.updateAll()" in updates
+    assert "root.tasksRequested()" in updates
     assert 'setContextProperty(QStringLiteral("transactions"), &transactions)' in main_cpp
     assert 'QStringLiteral("transaction.plan")' in client
     assert 'QStringLiteral("task.submit")' in client

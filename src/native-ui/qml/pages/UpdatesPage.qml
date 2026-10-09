@@ -8,6 +8,7 @@ import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
+    signal tasksRequested()
 
     Component.onCompleted: {
         if (backend.updates.length === 0)
@@ -24,7 +25,7 @@ Item {
             Store.PageHeading {
                 Layout.fillWidth: true
                 title: qsTr("Updates")
-                subtitle: qsTr("One review surface for updates reported by every enabled OmniStore source.")
+                subtitle: qsTr("Updates for enabled system packages, user Flatpak and opted-in AUR packages.")
                 icon: "system_update"
             }
             MeoButton {
@@ -83,7 +84,7 @@ Item {
                     MeoText {
                         Layout.fillWidth: true
                         text: transactions.busy
-                              ? qsTr("The transaction is owned by the background OmniStore service and can continue after this window closes.")
+                              ? (transactions.stage || qsTr("Preparing updates…"))
                               : qsTr("The backend checks the real package sources; this UI does not synthesize update state.")
                         typeRole: "body"; typeSize: "small"
                         color: MeoTheme.contentOnSurfaceVariant
@@ -144,6 +145,9 @@ Item {
         icon: "system_update"
         confirmText: qsTr("Update all")
         cancelText: qsTr("Cancel")
-        onConfirmed: transactions.updateAll()
+        onConfirmed: {
+            transactions.updateAll()
+            root.tasksRequested()
+        }
     }
 }

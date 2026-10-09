@@ -127,6 +127,17 @@ User-visible native QML strings should use Qt translation mechanisms and release
 
 ## Release UI hygiene
 
+Update-all tasks expose additive `sourceUpdates` entries with `source`, `status`
+(`queued`, `running`, `succeeded`, `failed`, `skipped`), `detail`, and nullable
+`progress`. They remain available through task snapshots after GUI reconnection.
+Overall update progress counts finished source phases; it is not a byte-weighted
+download percentage. Per-source progress describes the current package-manager
+operation and may restart between downloads, installation and verification.
+Absent percentages are indeterminate. Failure in one source does not hide the
+remaining source outcomes. Update-all currently covers the selected native
+manager, user Flatpak, and explicitly opted-in AUR; it does not imply that every
+source plugin supports unattended bulk updates.
+
 Raw backend JSON, build-environment repair, implementation paths and developer diagnostics are not normal user settings. They belong behind an Advanced/Diagnostics surface when they remain useful.
 
 Environment repair should normally route through the Meo Repair/system repair contract rather than teaching the store to bootstrap a development environment.
