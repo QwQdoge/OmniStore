@@ -4,16 +4,17 @@ on:
   pull_request:
     paths:
       - 'python/**'
-      - 'NativeUI/**'
+      - 'src/native-ui/**'
       - 'PKGBUILD'
       - 'auto_build.py'
       - '.github/workflows/python-quality.yml'
   push:
     branches:
       - main
+      - cleanup/client-layout
     paths:
       - 'python/**'
-      - 'NativeUI/**'
+      - 'src/native-ui/**'
       - 'PKGBUILD'
       - 'auto_build.py'
       - '.github/workflows/python-quality.yml'
