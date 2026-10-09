@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-NATIVE = ROOT / "NativeUI"
+NATIVE = ROOT / "src" / "native-ui"
 QML = NATIVE / "qml"
 
 
