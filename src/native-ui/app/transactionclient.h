@@ -21,6 +21,7 @@ class TransactionClient final : public QObject
     Q_PROPERTY(QString status READ status NOTIFY taskChanged)
     Q_PROPERTY(QString actionName READ actionName NOTIFY taskChanged)
     Q_PROPERTY(QString stage READ stage NOTIFY taskChanged)
+    Q_PROPERTY(QString authenticationPrompt READ authenticationPrompt NOTIFY taskChanged)
     Q_PROPERTY(QString speed READ speed NOTIFY taskChanged)
     Q_PROPERTY(QString log READ log NOTIFY taskChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
@@ -38,6 +39,7 @@ public:
     QString status() const { return m_status; }
     QString actionName() const { return m_actionName; }
     QString stage() const { return m_stage; }
+    QString authenticationPrompt() const { return m_authenticationPrompt; }
     QString speed() const { return m_speed; }
     QString log() const { return m_log; }
     QString errorMessage() const { return m_errorMessage; }
@@ -98,6 +100,7 @@ private:
     QString m_status;
     QString m_actionName;
     QString m_stage;
+    QString m_authenticationPrompt;
     QString m_speed;
     QString m_log;
     QString m_errorMessage;

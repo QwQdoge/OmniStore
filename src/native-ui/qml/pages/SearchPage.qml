@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
@@ -14,7 +15,7 @@ Item {
         anchors.margins: 28 * MeoTheme.globalScale
         spacing: 14 * MeoTheme.globalScale
 
-        PageHeading {
+        Store.PageHeading {
             Layout.fillWidth: true
             title: qsTr("Search")
             subtitle: qsTr("Search all enabled OmniStore sources. Results keep their real source and variant metadata.")
@@ -78,7 +79,7 @@ Item {
                 width: results.cellWidth
                 height: results.cellHeight
 
-                StoreAppCard {
+                Store.StoreAppCard {
                     anchors.fill: parent
                     anchors.rightMargin: 10 * MeoTheme.globalScale
                     anchors.bottomMargin: 10 * MeoTheme.globalScale

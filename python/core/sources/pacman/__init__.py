@@ -100,10 +100,9 @@ class PacmanSource(UnifiedSource):
         if not self.enabled:
             return results
         try:
-            # ⚡ Bolt: Use a single pacman -Qi call to retrieve all native package metadata at once (O(1) subprocess)
-            # We pipe names of native explicitly installed packages to pacman -Qi to get their metadata in batch.
-            cmd = "pacman -Qqne | pacman -Qi -"
-            async with safe_subprocess("bash", "-c", cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
+            # Query explicit native package metadata directly. pacman's stdin
+            # target mode tries to reopen a terminal, which a GUI/service lacks.
+            async with safe_subprocess("pacman", "-Qine", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, env={**os.environ, "LC_ALL": "C"}) as proc:
                 stdout, _ = await proc.communicate()
                 output = stdout.decode(errors="ignore")
 

@@ -47,6 +47,7 @@ class TransactionRecord:
     updated_at: str = field(default_factory=_utc_now)
     progress: float | None = None
     stage: str = ""
+    authentication_prompt: str = ""
     speed: str = ""
     log: str = ""
     error: str = ""
@@ -64,6 +65,7 @@ class TransactionRecord:
             "createdAt": self.created_at,
             "updatedAt": self.updated_at,
             "stage": self.stage,
+            "authenticationPrompt": self.authentication_prompt if self.status == "running" else "",
             "speed": self.speed,
             "log": self.log,
         }
@@ -119,6 +121,15 @@ class _TaskCapture:
                 self._append_log(line)
                 return
             kind = str(payload.get("type") or "")
+            message = str(payload.get("message") or "")
+            # These are PAM conversation messages forwarded by sudo, never
+            # credentials. Other process output clears the transient prompt.
+            lowered = message.lower()
+            fingerprint_prompt = (
+                lowered.startswith(("place your ", "swipe your "))
+                and "finger" in lowered
+            )
+            self._record.authentication_prompt = message[:512] if fingerprint_prompt else ""
             if kind == "progress":
                 try:
                     value = float(payload.get("progress"))

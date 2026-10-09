@@ -22,6 +22,7 @@ class PrivilegeManager:
         self._askpass_tool = askpass_tool
         env = os.environ.copy()
         env["SUDO_ASKPASS"] = askpass_tool
+        env["LC_ALL"] = "C"
         return env
 
     async def ensure_privileged(self, callback: Optional[Callable[[str], Awaitable[None]]] = None) -> bool:
@@ -30,31 +31,13 @@ class PrivilegeManager:
         if os.getuid() == 0:
             return True
 
-        # 1. Silent check with timeout
-        check = None
-        try:
-            async with safe_subprocess(
-                "sudo", "-n", "true",
-                stderr=asyncio.subprocess.DEVNULL,
-                stdout=asyncio.subprocess.DEVNULL,
-            ) as check:
-                await asyncio.wait_for(check.wait(), timeout=5)
-                if check.returncode == 0:
-                    return True
-        except (asyncio.TimeoutError, Exception):
-            pass
-        finally:
-            if check and check.returncode is None:
-                try:
-                    check.kill()
-                    await check.wait()
-                except Exception:
-                    pass
-
-        # 2. GUI askpass. Let sudo invoke the desktop helper directly so the
+        # Let sudo handle cached credentials and PAM in the same conversation.
+        # A silent sudo -n probe can itself start fingerprint authentication
+        # while hiding every PAM message from the user.
+        # GUI askpass lets sudo invoke the desktop helper directly so the
         # application process never receives or stores the password.
         if callback:
-            await callback("[INFO] Requesting administrator password (a dialog will appear)...")
+            await callback("[INFO] Waiting for system authentication...")
 
         try:
             askpass_tool = await asyncio.wait_for(self._find_askpass(), timeout=5)
@@ -75,9 +58,17 @@ class PrivilegeManager:
                     stderr=asyncio.subprocess.PIPE,
                     env=env,
                 ) as sudo_proc:
-                    _, stderr_bytes = await asyncio.wait_for(
-                        sudo_proc.communicate(), timeout=60
-                    )
+                    async def read_authentication():
+                        lines = []
+                        if sudo_proc.stderr:
+                            async for raw_line in sudo_proc.stderr:
+                                lines.append(raw_line)
+                                if callback:
+                                    await callback("[INFO] " + raw_line.decode("utf-8", errors="replace").strip())
+                        await sudo_proc.wait()
+                        return b"".join(lines)
+
+                    stderr_bytes = await asyncio.wait_for(read_authentication(), timeout=60)
             except asyncio.TimeoutError:
                 if sudo_proc and sudo_proc.returncode is None:
                     try:

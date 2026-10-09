@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
@@ -34,7 +35,7 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            PageHeading {
+            Store.PageHeading {
                 Layout.fillWidth: true
                 title: qsTr("Installed")
                 subtitle: qsTr("Apps detected through the enabled sources. Uninstall and launch actions still use the existing OmniStore backend.")
@@ -108,7 +109,7 @@ Item {
             model: backend.installedApps
             boundsBehavior: Flickable.StopAtBounds
 
-            delegate: AppRow {
+            delegate: Store.AppRow {
                 required property var modelData
                 width: ListView.view.width
                 app: modelData

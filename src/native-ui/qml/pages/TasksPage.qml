@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
@@ -34,7 +35,7 @@ Item {
         anchors.margins: 28 * MeoTheme.globalScale
         spacing: 14 * MeoTheme.globalScale
 
-        PageHeading {
+        Store.PageHeading {
             Layout.fillWidth: true
             title: qsTr("Tasks")
             subtitle: qsTr("Package transactions are owned by the OmniStore background service, so they can continue after this window closes.")

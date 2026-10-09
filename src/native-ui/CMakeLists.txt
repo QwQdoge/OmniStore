@@ -120,6 +120,14 @@ if(BUILD_TESTING)
     )
     target_include_directories(external-install-request-test PRIVATE app)
     target_link_libraries(external-install-request-test PRIVATE Qt6::Core Qt6::Test)
+    qt_add_executable(transaction-authentication-test
+        tests/transaction_authentication_test.cpp
+        app/transactionclient.cpp app/transactionclient.h
+    )
+    target_include_directories(transaction-authentication-test PRIVATE app)
+    target_link_libraries(transaction-authentication-test PRIVATE Qt6::Core Qt6::Network Qt6::Test)
+    add_test(NAME transaction-authentication COMMAND transaction-authentication-test)
+    set_tests_properties(transaction-authentication PROPERTIES TIMEOUT 10)
     add_test(NAME native-qml-components COMMAND omnistore-native --check-qml)
     set_tests_properties(native-qml-components PROPERTIES
         TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")

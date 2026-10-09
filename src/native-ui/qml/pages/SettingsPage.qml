@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
@@ -14,7 +15,7 @@ Item {
     function appearanceRows() {
         return [{
             "title": qsTr("Dark mode"),
-            "subtitle": qsTr("Use MeoUI's dark color roles in this OmniStore window."),
+            "subtitle": qsTr("Use a dark appearance in OmniStore."),
             "leadingIcon": "dark_mode",
             "trailingKind": "switch",
             "checked": MeoTheme.isDarkMode,
@@ -195,25 +196,27 @@ Item {
         repoBridge.refresh()
     }
 
-    Flickable {
+    ScrollView {
+        id: settingsScroll
         anchors.fill: parent
         clip: true
-        contentWidth: width
+        contentWidth: availableWidth
         contentHeight: settingsColumn.implicitHeight + 64 * MeoTheme.globalScale
-        boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
         ColumnLayout {
             id: settingsColumn
-            width: Math.min(parent.width - 56 * MeoTheme.globalScale,
+            width: Math.min(settingsScroll.availableWidth - 56 * MeoTheme.globalScale,
                             980 * MeoTheme.globalScale)
-            x: (parent.width - width) / 2
+            x: (settingsScroll.availableWidth - width) / 2
             y: 28 * MeoTheme.globalScale
             spacing: 18 * MeoTheme.globalScale
 
-            PageHeading {
+            Store.PageHeading {
                 Layout.fillWidth: true
                 title: qsTr("Settings")
-                subtitle: qsTr("Configure OmniStore using the capabilities and sources detected on this system.")
+                subtitle: qsTr("Manage appearance, software sources and updates.")
                 icon: "settings"
             }
 
@@ -223,7 +226,7 @@ Item {
                 model: root.appearanceRows()
             }
 
-            SystemStatusPanel {
+            Store.SystemStatusPanel {
                 Layout.fillWidth: true
             }
 
@@ -259,7 +262,7 @@ Item {
                 model: root.sourceRows("advanced")
             }
 
-            RepositoryManager {
+            Store.RepositoryManager {
                 Layout.fillWidth: true
             }
 
@@ -313,6 +316,7 @@ Item {
         onCancelled: {
             root.pendingPluginId = ""
             root.pendingPluginName = ""
+            backend.loadPlugins()
         }
     }
 }

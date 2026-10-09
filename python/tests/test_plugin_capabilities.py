@@ -33,6 +33,24 @@ class DummyConfig:
         return None
 
 
+def test_frozen_registry_finds_bundle_when_started_in_backend_directory(tmp_path, monkeypatch):
+    bundle = tmp_path / "bundle"
+    backend = bundle / "backends" / "python_server"
+    backend.parent.mkdir(parents=True)
+    backend.touch()
+    (bundle / "plugins" / "sources").mkdir(parents=True)
+    (bundle / "data").mkdir()
+    (bundle / "data" / "native-ui-v2").touch()
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "executable", str(backend))
+    monkeypatch.chdir(backend.parent)
+
+    registry = PluginRegistry(DummyConfig())
+
+    assert registry.root == bundle
+    assert registry.package_dir == bundle / "plugins" / "sources"
+
+
 CLASS_BY_PLUGIN = {
     "builtin.appimage": lambda: AppImageSource(DummySession(), DummyConfig()),
     "builtin.aur": lambda: AurSource(DummySession()),

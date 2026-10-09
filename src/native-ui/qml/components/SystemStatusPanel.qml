@@ -80,7 +80,7 @@ ColumnLayout {
 
             MeoText {
                 Layout.fillWidth: true
-                text: qsTr("Uses OmniStore's existing package-owned channel and update contracts. Channel changes may request administrator authentication.")
+                text: qsTr("Choose your update channel and check system readiness.")
                 typeRole: "body"
                 typeSize: "small"
                 color: MeoTheme.contentOnSurfaceVariant
@@ -117,12 +117,15 @@ ColumnLayout {
     GridLayout {
         Layout.fillWidth: true
         columns: width >= 820 * MeoTheme.globalScale ? 3 : 1
+        uniformCellWidths: true
         columnSpacing: 10 * MeoTheme.globalScale
         rowSpacing: 10 * MeoTheme.globalScale
 
         MeoCard {
             Layout.fillWidth: true
             Layout.minimumHeight: 150 * MeoTheme.globalScale
+            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             type: "filled"
             padding: 16 * MeoTheme.globalScale
 
@@ -180,6 +183,8 @@ ColumnLayout {
         MeoCard {
             Layout.fillWidth: true
             Layout.minimumHeight: 150 * MeoTheme.globalScale
+            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             type: "filled"
             padding: 16 * MeoTheme.globalScale
 
@@ -210,7 +215,7 @@ ColumnLayout {
                 MeoText {
                     Layout.fillWidth: true
                     text: String((systemBridge.updateState || ({})).checked_at || "").length > 0
-                          ? qsTr("Last checked: %1").arg(String(systemBridge.updateState.checked_at))
+                          ? qsTr("Last checked: %1").arg(Qt.formatDateTime(new Date(systemBridge.updateState.checked_at), Qt.DefaultLocaleShortDate))
                           : qsTr("No saved update check timestamp")
                     typeRole: "body"
                     typeSize: "small"
@@ -223,6 +228,8 @@ ColumnLayout {
         MeoCard {
             Layout.fillWidth: true
             Layout.minimumHeight: 150 * MeoTheme.globalScale
+            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             type: "filled"
             padding: 16 * MeoTheme.globalScale
 

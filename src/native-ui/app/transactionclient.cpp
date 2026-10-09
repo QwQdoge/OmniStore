@@ -50,7 +50,10 @@ TransactionClient::TransactionClient(QObject *parent)
         m_reconnectAttempts = 0;
         m_errorMessage.clear();
         emit stateChanged();
-        startNext();
+        if (m_queue.isEmpty())
+            reconnect(); // Restore tasks after initial connection or a service restart.
+        else
+            startNext();
     });
     connect(&m_socket, &QLocalSocket::readyRead, this, &TransactionClient::consumeSocketData);
     connect(&m_socket, &QLocalSocket::disconnected, this, [this] {
@@ -286,6 +289,8 @@ void TransactionClient::applyTask(const QJsonObject &task)
     const QString name = task.value(QStringLiteral("name")).toString();
     m_actionName = name.isEmpty() ? kind : QStringLiteral("%1 %2").arg(kind, name);
     m_stage = task.value(QStringLiteral("stage")).toString();
+    m_authenticationPrompt = busy()
+        ? task.value(QStringLiteral("authenticationPrompt")).toString() : QString{};
     m_speed = task.value(QStringLiteral("speed")).toString();
     m_log = task.value(QStringLiteral("log")).toString();
     m_progress = task.contains(QStringLiteral("progress"))

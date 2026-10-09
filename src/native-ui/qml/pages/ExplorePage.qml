@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
@@ -34,7 +35,7 @@ Item {
             y: 28 * MeoTheme.globalScale
             spacing: 20 * MeoTheme.globalScale
 
-            PageHeading {
+            Store.PageHeading {
                 Layout.fillWidth: true
                 title: qsTr("Explore")
                 subtitle: qsTr("Browse software across the sources available on this system.")

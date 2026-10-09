@@ -69,7 +69,7 @@ ColumnLayout {
             }
             MeoText {
                 Layout.fillWidth: true
-                text: qsTr("Flatpak remotes, OmniStore-managed Pacman repositories, and AppImage feed URLs use the existing Python repository manager and validation rules.")
+                text: qsTr("Manage Flatpak remotes, Pacman repositories and AppImage feeds.")
                 typeRole: "body"
                 typeSize: "small"
                 color: MeoTheme.contentOnSurfaceVariant
@@ -215,7 +215,7 @@ ColumnLayout {
             }
             MeoText {
                 Layout.fillWidth: true
-                text: qsTr("Pacman repositories require HTTPS. Names use OmniStore's safe repository-name format; the backend validates the URL again before changing anything.")
+                text: qsTr("Enter a name and URL. Pacman repositories require HTTPS.")
                 typeRole: "body"
                 typeSize: "small"
                 color: MeoTheme.contentOnSurfaceVariant

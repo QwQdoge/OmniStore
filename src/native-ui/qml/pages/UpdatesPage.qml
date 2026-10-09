@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
@@ -20,7 +21,7 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            PageHeading {
+            Store.PageHeading {
                 Layout.fillWidth: true
                 title: qsTr("Updates")
                 subtitle: qsTr("One review surface for updates reported by every enabled OmniStore source.")

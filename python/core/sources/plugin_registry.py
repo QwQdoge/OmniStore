@@ -97,6 +97,12 @@ class PluginRegistry:
         self.errors: Dict[str, str] = {}
 
     def _find_project_root(self) -> Path:
+        if getattr(sys, "frozen", False):
+            # Packaged backends live in bundle/backends. GUI callers may use
+            # that directory as cwd; manifests belong to the bundle root.
+            bundle = Path(sys.executable).resolve().parent.parent
+            if (bundle / "data" / "native-ui-v2").is_file() and (bundle / "plugins" / "sources").is_dir():
+                return bundle
         candidates = [Path.cwd(), Path(__file__).resolve()]
         for start in candidates:
             directory = start if start.is_dir() else start.parent

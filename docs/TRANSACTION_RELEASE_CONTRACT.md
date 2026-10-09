@@ -35,6 +35,13 @@ Until that service owns mutations, the native client must fail safe: it must pre
 
 Explicit cancellation is a separate typed operation. Cancellation must be supported only where the underlying package operation can be interrupted safely; closing the UI is not cancellation.
 
+Task snapshots expose an additive `authenticationPrompt` string for a running
+PAM fingerprint conversation. The backend forwards sudo's informational output
+as it arrives; the frontend displays the prompt with a fingerprint indicator.
+Ordinary command output and terminal task states clear the prompt. Passwords
+remain inside sudo's graphical askpass helper, and fingerprint verification
+remains owned by PAM. The UI never treats this informational field as approval.
+
 ## Stable install contract
 
 The public install/remove API should be versioned and structured. A caller should request an intent/capability rather than know the package-manager command when possible.

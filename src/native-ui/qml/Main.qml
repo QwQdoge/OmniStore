@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 import Meo.System 1.0
 
 Window {
@@ -122,6 +123,7 @@ Window {
         pages: [homePage, explorePage, installedPage, updatesPage, settingsPage]
         compactNavigationLimit: 5
         sidebarTitle: qsTr("OmniStore")
+        searchPlaceholder: qsTr("Find a page")
         showTopAppBarOnExpanded: true
         topAppBarActions: [searchAction, tasksAction]
         onCurrentIndexChanged: root.navigationIndex = currentIndex
@@ -129,7 +131,7 @@ Window {
 
     Component {
         id: homePage
-        HomePage {
+        Store.HomePage {
             onSearchRequested: function(query) { root.openSearch(query) }
             onExploreRequested: root.navigationIndex = 1
             onDetailsRequested: function(app) { root.showDetails(app) }
@@ -138,17 +140,30 @@ Window {
 
     Component {
         id: explorePage
-        ExplorePage {
+        Store.ExplorePage {
             onDetailsRequested: function(app) { root.showDetails(app) }
         }
     }
 
     Component {
         id: installedPage
-        InstalledPage { onDetailsRequested: function(app) { root.showDetails(app) } }
+        Store.InstalledPage { onDetailsRequested: function(app) { root.showDetails(app) } }
     }
-    Component { id: updatesPage; UpdatesPage {} }
-    Component { id: settingsPage; SettingsPage {} }
+    Component { id: updatesPage; Store.UpdatesPage {} }
+    Component { id: settingsPage; Store.SettingsPage {} }
+
+    MeoBanner {
+        z: 130
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: 16 * MeoTheme.globalScale
+        visible: transactions.busy && transactions.authenticationPrompt.length > 0
+        title: qsTr("Scan your fingerprint")
+        text: transactions.authenticationPrompt
+        icon: "fingerprint"
+        tone: "info"
+    }
 
     MeoBanner {
         id: dynamicColorWarning
@@ -172,7 +187,7 @@ Window {
         isOpen: false
         title: qsTr("Search")
         content: Component {
-            SearchPage {
+            Store.SearchPage {
                 initialQuery: root.pendingSearch
                 onDetailsRequested: function(app) {
                     searchSheet.isOpen = false
@@ -189,7 +204,7 @@ Window {
         width: Math.min(620 * MeoTheme.globalScale, root.width * 0.68)
         isOpen: false
         title: qsTr("Tasks")
-        content: Component { TasksPage {} }
+        content: Component { Store.TasksPage {} }
     }
 
     MeoSideSheet {
@@ -200,7 +215,7 @@ Window {
         isOpen: false
         title: qsTr("App details")
         content: Component {
-            AppDetailsPane { fallbackApp: root.detailFallback }
+            Store.AppDetailsPane { fallbackApp: root.detailFallback }
         }
     }
 
