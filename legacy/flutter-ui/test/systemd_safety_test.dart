@@ -4,12 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
 void main() {
-  final projectRoot = Directory.current.parent.path;
+  final flutterRoot = Directory.current.path;
+  final repositoryRoot = Directory.current.parent.parent.path;
 
   test('systemd background unit is oneshot and cannot restart-loop', () {
     final packageService = File(
       p.join(
-        projectRoot,
+        repositoryRoot,
         'data',
         'systemd',
         'user',
@@ -17,7 +18,13 @@ void main() {
       ),
     ).readAsStringSync();
     final packageTimer = File(
-      p.join(projectRoot, 'data', 'systemd', 'user', 'omnistore-update.timer'),
+      p.join(
+        repositoryRoot,
+        'data',
+        'systemd',
+        'user',
+        'omnistore-update.timer',
+      ),
     ).readAsStringSync();
 
     expect(packageService, contains('Type=oneshot'));
@@ -31,23 +38,10 @@ void main() {
 
   test('backend daemon uses a one-shot health timer and lightweight ping', () {
     final backendService = File(
-      p.join(
-        projectRoot,
-        'FlutterUI',
-        'lib',
-        'services',
-        'backend_service.dart',
-      ),
+      p.join(flutterRoot, 'lib', 'services', 'backend_service.dart'),
     ).readAsStringSync();
     final daemonClient = File(
-      p.join(
-        projectRoot,
-        'FlutterUI',
-        'lib',
-        'services',
-        'backend',
-        'daemon_client.dart',
-      ),
+      p.join(flutterRoot, 'lib', 'services', 'backend', 'daemon_client.dart'),
     ).readAsStringSync();
 
     expect(backendService, contains('_scheduleHealthCheck'));
@@ -62,12 +56,11 @@ void main() {
 
   test('platform-vault AI keys are never injected into Python processes', () {
     final pythonBridge = File(
-      p.join(projectRoot, 'FlutterUI', 'lib', 'data', 'python_bridge.dart'),
+      p.join(flutterRoot, 'lib', 'data', 'python_bridge.dart'),
     ).readAsStringSync();
     final processExecutor = File(
       p.join(
-        projectRoot,
-        'FlutterUI',
+        flutterRoot,
         'lib',
         'services',
         'backend',
@@ -75,13 +68,7 @@ void main() {
       ),
     ).readAsStringSync();
     final backendService = File(
-      p.join(
-        projectRoot,
-        'FlutterUI',
-        'lib',
-        'services',
-        'backend_service.dart',
-      ),
+      p.join(flutterRoot, 'lib', 'services', 'backend_service.dart'),
     ).readAsStringSync();
 
     expect(pythonBridge, isNot(contains("env['OMNISTORE_AI_API_KEY']")));
@@ -93,13 +80,7 @@ void main() {
     'systemd disable path preserves package units and removes only drop-in',
     () {
       final updateService = File(
-        p.join(
-          projectRoot,
-          'FlutterUI',
-          'lib',
-          'services',
-          'update_service.dart',
-        ),
+        p.join(flutterRoot, 'lib', 'services', 'update_service.dart'),
       ).readAsStringSync();
 
       expect(updateService, contains("'disable'"));
@@ -118,8 +99,7 @@ void main() {
   test('settings systemd switch writes systemd config, not daemon config', () {
     final settingsPage = File(
       p.join(
-        projectRoot,
-        'FlutterUI',
+        flutterRoot,
         'lib',
         'features',
         'settings',
@@ -142,7 +122,8 @@ void main() {
   });
 
   test('linux package exposes user systemd cleanup command', () {
-    final pkgbuild = File(p.join(projectRoot, 'PKGBUILD')).readAsStringSync();
+    final pkgbuild = File(p.join(repositoryRoot, 'PKGBUILD'))
+        .readAsStringSync();
 
     expect(pkgbuild, contains('omnistore-cleanup-systemd'));
     expect(
@@ -162,8 +143,7 @@ void main() {
   test('completed updates trigger a silent authoritative recheck', () {
     final updatesTab = File(
       p.join(
-        projectRoot,
-        'FlutterUI',
+        flutterRoot,
         'lib',
         'features',
         'task_manager',
@@ -174,8 +154,7 @@ void main() {
     ).readAsStringSync();
     final downloadPage = File(
       p.join(
-        projectRoot,
-        'FlutterUI',
+        flutterRoot,
         'lib',
         'features',
         'task_manager',
