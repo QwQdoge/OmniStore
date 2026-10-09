@@ -9,28 +9,28 @@ Read `docs/architecture-migration.md` before work that touches client architectu
 ## Ownership
 
 - `python/`: **current backend authority** for Python backend, source/plugin logic, daemon mode, and Python tests.
-- `NativeUI/`: **current desktop client direction**. New OmniStore desktop UI/product work should target NativeUI unless the task explicitly concerns legacy compatibility.
-- `FlutterUI/`: **legacy compatibility client during migration**. Keep it buildable where release/compatibility contracts still require it, but do not add new desktop product features here by default.
+- `src/native-ui/`: **current desktop client direction**. New OmniStore desktop UI/product work should target the native client unless the task explicitly concerns legacy compatibility.
+- `legacy/flutter-ui/`: **legacy compatibility client**. Keep it buildable where compatibility contracts still require it, but do not add new desktop product features here by default.
 - `plugins/sources/`: source manifests. A manifest or toggle alone does not prove search/install/update support.
 - `PKGBUILD`, `auto_build.py`, release/export scripts: packaging and release contracts.
 - This repository has Python daemon code; it does **not** contain a Rust daemon/Cargo workspace. Do not invent or describe one.
 
 Shared OS/Plasma UI belongs in MeoUI or meo-kde rather than being copied here.
 
-Do not perform a broad `FlutterUI/`/`NativeUI/` path move as incidental cleanup. The target `src/` + `legacy/` layout and migration gates are defined in `docs/architecture-migration.md`; an actual move must update CI, packaging and developer paths atomically.
+The client layout has crossed the structural migration boundary: native code is under `src/`, legacy Flutter is under `legacy/`. Do not recreate top-level `NativeUI/` or `FlutterUI/` compatibility copies. If a maintained tool still references those paths, fix the tool instead of restoring duplicate trees.
 
 ## Validation matrix
 
 Run the narrowest matching checks first.
 
 - Flutter compatibility change:
-  `cd FlutterUI && flutter pub get && flutter analyze && flutter test --reporter expanded`
-  Add `flutter build linux --release` when Linux integration, dependencies, packaging, or release behavior changed.
+  `cd legacy/flutter-ui && flutter pub get && flutter analyze && flutter test --reporter expanded`
+  Add `flutter build linux --release` when Linux integration, dependencies, packaging, or compatibility behavior changed.
 - Python/backend change:
   `cd python && python -m pytest -q`
   If dependencies changed, also install/check `requirements.txt` in an isolated environment.
 - NativeUI change:
-  mirror `.github/workflows/native-quality.yml`: configure with CMake using a real MeoUI checkout, then build target `omnistore-native`.
+  mirror `.github/workflows/native-quality.yml`: configure `src/native-ui/` with CMake using a real MeoUI checkout, then build target `omnistore-native`.
 - Plugin/source-manifest change: run the directly related Python/plugin tests and verify the claimed operations actually exist.
 - Packaging/release change: run the repository's existing contract/export checks; a successful package build is not proof of install/update behavior.
 
