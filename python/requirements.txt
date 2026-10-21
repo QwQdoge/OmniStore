@@ -1,11 +1,11 @@
 # --- 核心后端 ---
-fastapi==0.142.2
+fastapi==0.156.2
 uvicorn[standard]==0.54.0
 websockets==17.1
 python-multipart==0.0.32
 
 # --- 异步网络与并发 ---
-aiohttp==3.14.3
+aiohttp==3.14.5
 httpx==0.28.1
 
 # --- 系统与工具 ---
