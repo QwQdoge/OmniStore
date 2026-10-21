@@ -50,6 +50,13 @@ class AIModel(BaseModel):
     max_tokens: int = Field(default=2048, ge=1)
     proxy: str = ""
 
+class DaemonModel(BaseModel):
+    model_config = {"extra": "allow"}
+    enabled: bool = True
+    check_interval_hours: int = Field(default=4, ge=1, le=168)
+    auto_update: bool = False
+    notifications: bool = True
+
 class PluginsModel(BaseModel):
     enabled: Dict[str, bool] = Field(default_factory=dict)
     config: Dict[str, Any] = Field(default_factory=dict)
@@ -69,7 +76,7 @@ class ConfigModel(BaseModel):
     ai: AIModel = Field(default_factory=AIModel)
     custom_repos: Dict[str, list] = Field(default_factory=dict)
     mirrors: Dict[str, Any] = Field(default_factory=dict)
-    daemon: Dict[str, Any] = Field(default_factory=dict)
+    daemon: DaemonModel = Field(default_factory=DaemonModel)
     plugins: PluginsModel = Field(default_factory=PluginsModel)
     sources: SourcesModel = Field(default_factory=SourcesModel)
 
@@ -151,7 +158,13 @@ class ConfigManager:
                 "zypper": [],
                 "apk": [],
                 "chocolatey": [],
-                "fdroid": []
+                "fdroid": [],
+                "winget": [],
+                "scoop": [],
+                "brew": [],
+                "snap": [],
+                "github": [],
+                "bitu": []
             },
             "mirrors": {
                 "pacman": "/etc/pacman.d/mirrorlist",
@@ -243,6 +256,8 @@ class ConfigManager:
             try:
                 cfg = ConfigModel(**(new_config if new_config is not None
                                      else self.current_config)).model_dump()
+                # Secrets are never persisted; they come from the environment.
+                cfg["ai"]["api_key"] = ""
                 self.config_dir.mkdir(parents=True, exist_ok=True)
                 # Exclusive, private, distinct files prevent concurrent saves
                 # from truncating or replacing each other's temporary output.
@@ -265,6 +280,14 @@ class ConfigManager:
             finally:
                 if temporary is not None:
                     temporary.unlink(missing_ok=True)
+
+    def github_token(self) -> str:
+        """GitHub token from the environment (preferred) or the legacy key."""
+        for name in ("OMNISTORE_GITHUB_TOKEN", "GITHUB_TOKEN"):
+            value = os.environ.get(name, "").strip()
+            if value:
+                return value
+        return str(self.get("github_store.pat", "") or "").strip()
 
     def get(self, key_path: str, default: Any = None) -> Any:
         """支持 'ui.appearance' 路径式获取"""

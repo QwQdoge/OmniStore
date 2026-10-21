@@ -111,7 +111,12 @@ class CLIArguments(BaseModel):
             parts = [p.strip() for p in v_stripped.split(',', 2)]
             if len(parts) < 3 and parts[0] == "appimage" and len(parts) >= 2:
                 parts = ["appimage", "", parts[1]]
+            if len(parts) == 2 and parts[0] in ("brew", "github"):
+                parts.append("")
             if len(parts) < 3: raise ValueError("Invalid format: type,name,url")
+            from core.search.custom_sources import ALL_TYPES
+            if parts[0] not in ALL_TYPES:
+                raise ValueError(f"Unsupported repository type; use one of: {', '.join(ALL_TYPES)}")
         return v
 
     @field_validator("remove_custom_repo")
@@ -269,6 +274,8 @@ async def handle_cli(backend: OmnistoreBackend, args):
         parts = [p.strip() for p in raw_repo.split(',', 2)]
         if len(parts) < 3 and parts[0] == "appimage" and len(parts) >= 2:
             parts = ["appimage", "", parts[1]]
+        if len(parts) == 2 and parts[0] in ("brew", "github"):
+            parts.append("")
         async with backend: await backend.run_add_custom_repo(parts[0], parts[1], parts[2], validated_args.json_mode)
 
     async def _handle_remove_custom_repo(raw_repo):
@@ -332,7 +339,8 @@ async def handle_cli(backend: OmnistoreBackend, args):
                 async with safe_subprocess(
                     "notify-send",
                     "--app-name=OmniStore",
-                    "--icon=omnistore",
+                    "--icon=org.meo.OmniStore",
+                    "--hint=string:desktop-entry:org.meo.OmniStore",
                     "Updates available",
                     f"{len(updates)} resource package(s) can be updated. Open OmniStore to review them.",
                     stdout=asyncio.subprocess.DEVNULL,

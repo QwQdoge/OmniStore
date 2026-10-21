@@ -22,7 +22,7 @@ class GitHubSource(UnifiedSource):
         self.session = session
 
         # Apply PAT if available
-        pat = self.cm.get("github_store.pat")
+        pat = self.cm.github_token() if hasattr(self.cm, "github_token") else self.cm.get("github_store.pat")
         if pat:
             self.forge.headers["Authorization"] = f"token {pat}"
 

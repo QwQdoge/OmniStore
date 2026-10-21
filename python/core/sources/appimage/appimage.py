@@ -145,7 +145,7 @@ class AppImageSource(UnifiedSource):
         api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
         headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "Omnistore/0.1"}
 
-        pat = self.cm.get("github_store.pat")
+        pat = self.cm.github_token() if hasattr(self.cm, "github_token") else self.cm.get("github_store.pat")
         if pat:
             headers["Authorization"] = f"token {pat}"
 

@@ -10,10 +10,14 @@
 # --- Search Settings ---
 search:
   sources:
-    pacman: false       # Search native repositories
+    pacman: true        # Search native repositories
     aur: false          # Search AUR user repository
-    flatpak: false      # Search Flatpak applications
+    flatpak: true       # Search Flatpak applications
     appimage: false     # Search AppImages from AppImage GitHub feed
+    snap: false         # Snap store (review before enabling)
+    github: false       # GitHub releases (review before enabling)
+    bitu: false         # Bitu source (review before enabling)
+    ai: false           # AI-assisted search (uses Meo Account AI, consent per request)
     apt: false          # Debian/Ubuntu APT source (review before enabling)
     dnf: false          # Fedora/RHEL DNF source (review before enabling)
     zypper: false       # openSUSE Zypper source (review before enabling)
@@ -81,18 +85,20 @@ updates:
   remind_updates: true
   include_aur_in_update_all: true
 
-# --- AI Assistant Settings (Ollama / OpenAI Compatible) ---
+# --- AI ---
+# The OmniStore UI uses the system AI connections saved in Meo Settings through
+# Meo Account (org.meo.Accounts1); OmniStore never receives those API keys.
+# The settings below only configure the legacy in-backend assistant, which is
+# disabled on the CLI. API keys are never written to this file: supply one with
+# the OMNISTORE_AI_API_KEY environment variable if you really need it.
 ai:
   enabled: false
-  provider: "ollama"   # "ollama" for local LLM or "openai" for OpenAI API compatible (DeepSeek, etc.)
-  endpoint: "http://localhost:11434" # Ollama default API URL or Custom LLM Gateway
-  model: "qwen2.5:7b"  # Model tag to run (e.g. qwen2.5:7b, deepseek-chat, llama3)
-  api_key: ""          # Required for OpenAI/DeepSeek endpoints, leave empty for Ollama
-  temperature: 0.7     # AI generation temperature
+  provider: "ollama"
+  endpoint: "http://localhost:11434"
+  model: "qwen2.5:7b"
+  temperature: 0.7
 
-# --- GitHub Integration ---
-github:
-  pat: ""              # GitHub Personal Access Token
+# GitHub tokens are read from OMNISTORE_GITHUB_TOKEN / GITHUB_TOKEN, never from this file.
 
 # --- Initial Setup ---
 first_run: true        # Whether this is the first time the app is run
@@ -107,7 +113,13 @@ custom_repos:
   zypper: []           # openSUSE repositories tracked for UI display
   apk: []              # Alpine repositories tracked for UI display
   chocolatey: []       # Chocolatey sources tracked for UI display
-  fdroid: []           # F-Droid repositories tracked for UI display
+  fdroid: []           # fdroidcl repositories
+  winget: []           # winget sources
+  scoop: []            # scoop buckets
+  brew: []             # brew taps
+  snap: []
+  github: []           # owner or owner/repo entries to watch
+  bitu: []
 
 # --- Mirrors Editing (Local Configuration Targets) ---
 mirrors:
@@ -115,9 +127,9 @@ mirrors:
   flatpak_remotes:
     - "https://dl.flathub.org/repo/flathub.flatpakrepo"
 
-# --- Background Daemon (Rust Checker) ---
+# --- Background Daemon (Python, python/daemon_main.py) ---
 daemon:
-  enabled: true        # Start the Rust updater service in background
+  enabled: true        # Start the background update service
   check_interval_hours: 4 # Check interval
   auto_update: false   # Enable automatic software updates (runs in background)
   notifications: true  # Let background service trigger desktop alerts

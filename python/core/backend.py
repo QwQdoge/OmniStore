@@ -417,6 +417,13 @@ class OmnistoreBackend:
         return self._repo_manager
 
     @property
+    def generic_repos(self):
+        if getattr(self, "_generic_repos", None) is None:
+            from core.search.custom_sources import GenericCustomSources
+            self._generic_repos = GenericCustomSources(self.config)
+        return self._generic_repos
+
+    @property
     def essentials(self):
         if self._essentials is None:
             from core.essentials import EssentialsManager
@@ -779,18 +786,22 @@ class OmnistoreBackend:
         pacmans = await self.repo_manager.list_pacman_repos()
         appimages = self.repo_manager.list_appimage_feeds()
         result = {"flatpak": flatpaks, "pacman": pacmans, "appimage": [{"name": Path(url).stem, "url": url} for url in appimages]}
+        result.update(self.generic_repos.list_all())
+        result["capabilities"] = self.generic_repos.describe()
         sys.stdout.write(json.dumps(result, ensure_ascii=False) + "\n"); sys.stdout.flush()
         return result
 
     @safe_command
     async def run_add_custom_repo(self, repo_type: str, name: str, url: str, json_mode: bool = False) -> bool:
-        SecurityValidator.validate_string(repo_type, "Repo Type"); SecurityValidator.validate_string(name, "Repo Name"); SecurityValidator.validate_url(url)
+        SecurityValidator.validate_string(repo_type, "Repo Type"); SecurityValidator.validate_string(name, "Repo Name"); url = SecurityValidator.validate_url(url) if (url or "").strip() else ""
+        if not url and repo_type in ("flatpak", "pacman", "appimage"): raise ValueError("Repo URL cannot be empty")
         async with self:
             async def cb(m): await self._flutter_callback(m, json_mode)
             success = False
             if repo_type == "flatpak": success = await self.repo_manager.add_flatpak_remote(name, url, callback=cb)
             elif repo_type == "pacman": success = await self.repo_manager.add_pacman_repo(name, url, callback=cb)
             elif repo_type == "appimage": success = self.repo_manager.add_appimage_feed(url)
+            elif self.generic_repos.supports(repo_type): success = await self.generic_repos.add(repo_type, name, url, callback=cb)
             if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
             return success
 
@@ -803,6 +814,7 @@ class OmnistoreBackend:
             if repo_type == "flatpak": success = await self.repo_manager.remove_flatpak_remote(name, callback=cb)
             elif repo_type == "pacman": success = await self.repo_manager.remove_pacman_repo(name, callback=cb)
             elif repo_type == "appimage": success = self.repo_manager.remove_appimage_feed(name)
+            elif self.generic_repos.supports(repo_type): success = await self.generic_repos.remove(repo_type, name, callback=cb)
             if json_mode: sys.stdout.write(json.dumps({"status": "success" if success else "error"}) + "\n"); sys.stdout.flush()
             return success
 
