@@ -144,7 +144,11 @@ async def send_notification(summary: str, body: str):
     try:
         # Use notify-send which is standard on Linux desktops
         async with safe_subprocess(
-            "notify-send", "-a", "OmniStore", "-t", "5000", summary, body,
+            "notify-send", "-a", "OmniStore", "-t", "5000",
+            # Lets KDE Plasma attribute the notification to the installed app so
+            # it follows the per-app settings in System Settings > Notifications.
+            "--hint=string:desktop-entry:org.meo.OmniStore", "--icon=org.meo.OmniStore",
+            "--category=transfer", summary, body,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL
         ) as proc:

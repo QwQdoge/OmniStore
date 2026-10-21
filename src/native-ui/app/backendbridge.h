@@ -4,6 +4,7 @@
 #include <QProcess>
 #include <QQueue>
 #include <QStringList>
+#include <QTimer>
 #include <QVariantList>
 #include <QVariantMap>
 
@@ -119,10 +120,14 @@ private:
         QString label;
         QStringList arguments;
         bool mutating = false;
+        int attempt = 0;
     };
 
     void resolveBackend();
-    void enqueueRead(Operation operation, const QString &label, const QStringList &arguments);
+    void enqueueRead(Operation operation, const QString &label, const QStringList &arguments,
+                     int attempt = 0);
+    void scheduleRetry(const Request &failed);
+    void autoRefresh();
     void startMutation(Operation operation, const QString &label, const QStringList &arguments);
     void startRequest(const Request &request);
     void startNextQueued();
@@ -145,6 +150,8 @@ private:
 
     QProcess *m_process = nullptr;
     QQueue<Request> m_queue;
+    QTimer m_autoRefreshTimer;
+    bool m_readFailedSinceRefresh = false;
     Request m_current;
     QByteArray m_stdoutBuffer;
     QByteArray m_stderrBuffer;

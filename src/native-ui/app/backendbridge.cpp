@@ -35,6 +35,12 @@ BackendBridge::BackendBridge(QObject *parent)
     : QObject(parent)
 {
     resolveBackend();
+    // Read-only views are refreshed periodically so a backend that was briefly
+    // unavailable (starting up, package DB locked, bundle upgraded) recovers
+    // without the user having to reopen the app.
+    m_autoRefreshTimer.setInterval(5 * 60 * 1000);
+    connect(&m_autoRefreshTimer, &QTimer::timeout, this, &BackendBridge::autoRefresh);
+    m_autoRefreshTimer.start();
 }
 
 BackendBridge::~BackendBridge()
@@ -87,9 +93,9 @@ void BackendBridge::resolveBackend()
 }
 
 void BackendBridge::enqueueRead(Operation operation, const QString &label,
-                                const QStringList &arguments)
+                                const QStringList &arguments, int attempt)
 {
-    Request request{operation, label, arguments, false};
+    Request request{operation, label, arguments, false, attempt};
     if (m_process || !m_queue.isEmpty()) {
         for (Request &queued : m_queue) {
             if (queued.operation == operation) {
@@ -472,6 +478,13 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
     emit taskChanged();
     emit operationFinished(finished.label, success);
 
+    if (!success && !finished.mutating) {
+        m_readFailedSinceRefresh = true;
+        scheduleRetry(finished);
+    } else if (success && !finished.mutating) {
+        m_readFailedSinceRefresh = false;
+    }
+
     if (success) {
         if (finished.operation == Operation::Install || finished.operation == Operation::Remove) {
             enqueueRead(Operation::Installed, tr("installed apps"),
@@ -490,6 +503,40 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
         }
     }
     startNextQueued();
+}
+
+void BackendBridge::scheduleRetry(const Request &failed)
+{
+    // Bounded exponential backoff: 2s, 6s, 18s. Usage export is expensive and
+    // has its own timeout, so it is left to the periodic refresh.
+    constexpr int MaxAttempts = 3;
+    if (failed.attempt >= MaxAttempts || failed.operation == Operation::InstalledUsage ||
+        failed.operation == Operation::None)
+        return;
+    int delay = 2000;
+    for (int i = 0; i < failed.attempt; ++i)
+        delay *= 3;
+    QTimer::singleShot(delay, this, [this, failed] {
+        // A newer request for the same view supersedes the retry.
+        if (m_process && m_current.operation == failed.operation)
+            return;
+        for (const Request &queued : std::as_const(m_queue))
+            if (queued.operation == failed.operation)
+                return;
+        if (m_backendProgram.isEmpty())
+            resolveBackend();
+        enqueueRead(failed.operation, failed.label, failed.arguments, failed.attempt + 1);
+    });
+}
+
+void BackendBridge::autoRefresh()
+{
+    if (m_process || !m_queue.isEmpty())
+        return;
+    loadPlugins();
+    loadUpdates();
+    if (m_readFailedSinceRefresh)
+        loadConfig();
 }
 
 QString BackendBridge::operationName(Operation operation)

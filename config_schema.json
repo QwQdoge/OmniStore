@@ -42,9 +42,6 @@
             "brew": {
               "type": "boolean"
             },
-            "ai": {
-              "type": "boolean"
-            },
             "apt": {
               "type": "boolean"
             },
@@ -62,6 +59,9 @@
             },
             "fdroid": {
               "type": "boolean"
+            },
+            "ai": {
+              "type": "boolean"
             }
           },
           "required": [
@@ -72,12 +72,16 @@
             "snap",
             "github",
             "bitu",
+            "winget",
+            "scoop",
+            "brew",
             "apt",
             "dnf",
             "zypper",
             "apk",
             "chocolatey",
-            "fdroid"
+            "fdroid",
+            "ai"
           ]
         },
         "max_results": {
@@ -296,6 +300,134 @@
           }
         }
       }
+    },
+    "custom_repos": {
+      "type": "object",
+      "properties": {
+        "flatpak": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "pacman": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "appimage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "apt": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "dnf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "zypper": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "apk": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "chocolatey": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "fdroid": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "winget": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "scoop": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "brew": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "snap": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "github": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        },
+        "bitu": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/customRepoEntry"
+          }
+        }
+      }
+    },
+    "mirrors": {
+      "type": "object",
+      "properties": {
+        "pacman": {
+          "type": "string"
+        },
+        "flatpak_remotes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "daemon": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "check_interval_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168
+        },
+        "auto_update": {
+          "type": "boolean"
+        },
+        "notifications": {
+          "type": "boolean"
+        }
+      }
     }
   },
   "required": [
@@ -303,5 +435,28 @@
     "search",
     "ui",
     "ai"
-  ]
+  ],
+  "$defs": {
+    "customRepoEntry": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      ]
+    }
+  }
 }
