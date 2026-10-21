@@ -28,11 +28,44 @@ project before they are implemented here.
   `explicit_ai_consent_required`. `ai.api_key` is never written to `config.yaml`;
   `OMNISTORE_AI_API_KEY` is the only way to supply one to that legacy path.
 
-## Meo API
+## Meo API (reference received; client not implemented)
 
-**Not defined.** No endpoint, scope or capability for a "Meo API" exists in this
-repository. Add the capability to `data/meo-account/org.meo.OmniStore.json` and a
-bridge next to `accountaibridge.cpp` only once the API contract is published.
+Source: the meo-api Worker reference (`https://api.meoarch.org/v1`). When it and this
+section disagree, the Worker code wins.
+
+Facts that constrain OmniStore:
+
+* Native clients authenticate with a Meo Account OAuth 2.1 bearer token (authorization
+  code + S256 PKCE). `GET`/`HEAD` need scope `meo:read`; everything else `meo:write`.
+  `data/meo-account/org.meo.OmniStore.json` currently lists only `openid profile email`
+  and a placeholder `oauthClientId`, so it cannot obtain either scope yet.
+* Errors are contracts by code (`unauthenticated`, `insufficient_scope`,
+  `reauth_required`, `request_too_large` ...), not by message. Another user's IDs return
+  404, never 403.
+* Provider keys never leave the API: chat and images use a caller-owned `credentialId`
+  and a `consent` object. Sensitive account actions need a fresh purpose-scoped
+  reauthentication grant that OmniStore must not mint or cache.
+
+Routes OmniStore could use, and what is still missing before using them:
+
+| Need | Route | Status |
+| --- | --- | --- |
+| Settings backup / restore | `/v1/backups` (manifests, max 20) | Needs a manifest format and `meo:write`. Must exclude tokens and local paths. |
+| Settings sync notice | `GET /v1/realtime` (`settings.changed`) | Needs `meo:read`. |
+| Usage dashboard | `POST /v1/usage-events` (1–250 per batch, idempotent on `source`+`source_event_id`) | Could batch `org.meo.omnistore.installed-usage`; needs a source name and a privacy decision, because it uploads which apps are installed. |
+| AI | `POST /v1/chat/prepare`, `/v1/chat/stream` | Already reachable through the Meo Account broker. Direct use only if the broker cannot cover a case. |
+| Identity | `GET /v1/me` | Display only. |
+
+Open questions for the Meo Account / meo-api owners:
+
+1. Does Meo Account hand tokens to native clients over `org.meo.Accounts1`, or must
+   OmniStore run its own PKCE flow (needing a registered client id and the
+   `omnistore://auth/callback` redirect)?
+2. Which `source` value and event schema should OmniStore use for usage events?
+3. Should the API replace the Meo Account D-Bus AI broker, or stay as a fallback?
+
+Until these are answered, OmniStore makes no network call to meo-api and stores no Meo
+token. Billing, checkout and `/v1/sync` are not implemented on the API side either.
 
 ## Configuration
 
