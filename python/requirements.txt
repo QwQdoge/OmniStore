@@ -1,7 +1,7 @@
 # --- 核心后端 ---
-fastapi==0.156.2
+fastapi==0.162.0
 uvicorn[standard]==0.54.0
-websockets==17.1
+websockets==17.3
 python-multipart==0.0.32
 
 # --- 异步网络与并发 ---
@@ -19,7 +19,7 @@ requests==2.34.2
 rich==15.0.0
 
 # --- GUI ---  
-PySide6==6.11.2
+PySide6==6.12.0
 materialyoucolor==3.0.4
 
 # --- 测试 ---
