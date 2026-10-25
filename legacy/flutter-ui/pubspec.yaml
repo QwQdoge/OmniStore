@@ -24,19 +24,19 @@ dependencies:
 
   # State & Storage
   provider: ^6.1.5+1
-  shared_preferences: ^2.5.5
+  shared_preferences: ^2.5.6
 
   # UI & Media
   flutter_markdown_plus: ^1.0.12
-  cached_network_image: ^4.0.0
+  cached_network_image: ^4.0.5
   cupertino_icons: ^1.0.9
 
   # Desktop & OS Integration (Crucial for Arch Linux/Wayland compatibility)
   window_manager: ^0.5.2
   screen_retriever: ^0.2.2
   system_tray: ^2.0.3
-  flutter_local_notifications: ^22.3.1
-  file_picker: ^13.1.0
+  flutter_local_notifications: ^22.3.2
+  file_picker: ^13.2.0
 
   # Network & Core Utilities
   web_socket_channel: ^3.0.3
@@ -44,8 +44,8 @@ dependencies:
   http: ^1.6.0
   intl: any
   path: any
-  supabase_flutter: ^2.17.2
-  app_links: any
+  supabase_flutter: ^2.18.3
+  app_links: ^7.2.2
   crypto: ^3.0.7
   dbus: ^0.7.15
   flutter_secure_storage: ^11.2.0
