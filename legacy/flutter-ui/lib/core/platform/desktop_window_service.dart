@@ -39,36 +39,14 @@ abstract final class DesktopWindowService {
     if (!isSupported) return;
 
     await wm.windowManager.ensureInitialized();
-    final display = DisplayManager.instance.getPrimary();
-    final Size availableSize;
-    final String displayName;
-    final double scaleFactor;
-    if (display == null) {
-      availableSize = defaultWindowSize;
-      displayName = 'unknown';
-      scaleFactor = 1;
-    } else {
-      try {
-        final workAreaSize = display.workArea.toRect().size;
-        final displaySize = display.size.toSize();
-        availableSize = workAreaSize.width > 0 && workAreaSize.height > 0
-            ? workAreaSize
-            : (displaySize.width > 0 && displaySize.height > 0
-                ? displaySize
-                : defaultWindowSize);
-        displayName = display.name.toString();
-        scaleFactor = display.scaleFactor;
-      } finally {
-        display.dispose();
-      }
-    }
-
+    final display = await screenRetriever.getPrimaryDisplay();
+    final availableSize = display.visibleSize ?? display.size;
     final initialSize = initialSizeFor(availableSize);
     final adaptiveMinimumSize = minimumSizeFor(availableSize);
     debugPrint(
-      'OmniStore display=$displayName '
+      'OmniStore display=${display.name ?? display.id} '
       'logical=${availableSize.width}x${availableSize.height} '
-      'scale=$scaleFactor '
+      'scale=${display.scaleFactor ?? 1} '
       'window=${initialSize.width}x${initialSize.height}',
     );
 
