@@ -29,18 +29,18 @@ dependencies:
   # UI & Media
   flutter_markdown_plus: ^1.0.12
   cached_network_image: ^4.0.5
-  cupertino_icons: ^1.0.9
+  cupertino_icons: ^2.0.0
 
   # Desktop & OS Integration (Crucial for Arch Linux/Wayland compatibility)
   window_manager: ^0.5.2
-  screen_retriever: ^0.2.2
+  screen_retriever: ^0.3.0
   system_tray: ^2.0.3
   flutter_local_notifications: ^22.3.2
   file_picker: ^13.2.0
 
   # Network & Core Utilities
   web_socket_channel: ^3.0.3
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
   http: ^1.6.0
   intl: any
   path: any
