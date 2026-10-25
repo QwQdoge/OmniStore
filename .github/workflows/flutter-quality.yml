@@ -55,6 +55,19 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
+
+      - name: Export resolved lockfile and generated plugin registrants for review
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          for file in legacy/flutter-ui/pubspec.lock legacy/flutter-ui/linux/flutter/generated_plugin_registrant.cc legacy/flutter-ui/linux/flutter/generated_plugin_registrant.h legacy/flutter-ui/macos/Flutter/GeneratedPluginRegistrant.swift legacy/flutter-ui/windows/flutter/generated_plugin_registrant.cc legacy/flutter-ui/windows/flutter/generated_plugin_registrant.h; do
+            test -f "$file" || continue
+            printf '\nFILE_BEGIN:%s\n' "$file"
+            sed 's/^/FILECONTENT:/' "$file"
+            printf 'FILE_END:%s\n' "$file"
+          done
+
       - name: Analyze
         run: flutter analyze
 
