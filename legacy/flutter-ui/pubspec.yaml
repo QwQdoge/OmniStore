@@ -33,7 +33,7 @@ dependencies:
 
   # Desktop & OS Integration (Crucial for Arch Linux/Wayland compatibility)
   window_manager: ^0.5.2
-  screen_retriever: ^0.3.0
+  screen_retriever: ^0.2.2
   system_tray: ^2.0.3
   flutter_local_notifications: ^22.3.2
   file_picker: ^13.2.0
