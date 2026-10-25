@@ -52,11 +52,6 @@ jobs:
             ninja-build \
             pkg-config
 
-      - name: Resolve updated dbus dependency (temporary lockfile diagnostic)
-        run: |
-          flutter pub upgrade dbus
-          git diff -- pubspec.lock
-
       - name: Resolve dependencies
         run: flutter pub get
 
