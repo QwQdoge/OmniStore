@@ -8,6 +8,16 @@ and provenance; it is not part of the normal MeoArch graphical release path.
 It manages software-source discovery and package operations; a source toggle or
 manifest is not proof that every runtime action is supported.
 
+## 安装 / Install
+
+单独安装本组件（AUR）/ Install just this component from the AUR:
+
+```bash
+yay -Syu omnistore-bin
+```
+
+要一次装好全部 MeoArch 软件，请使用已签名的 Meo 软件源和 pacman，见[工作区说明](https://github.com/QwQdoge/MeoArch-os-workspace#install-meo-desktop-on-an-existing-arch-system)。To install the whole MeoArch software set, use the signed Meo repository with pacman; see the [workspace README](https://github.com/QwQdoge/MeoArch-os-workspace#install-meo-desktop-on-an-existing-arch-system).
+
 ## License
 
 OmniStore is licensed under the GNU General Public License v3.0 only
