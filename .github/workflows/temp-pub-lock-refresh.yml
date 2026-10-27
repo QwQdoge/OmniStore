@@ -1,0 +1,36 @@
+name: Temporary pub lock refresh
+
+on:
+  push:
+    branches:
+      - deps/temp-pub-lock-refresh-20261027
+
+permissions:
+  contents: read
+
+jobs:
+  refresh-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Upgrade only shared_preferences_foundation
+        working-directory: legacy/flutter-ui
+        run: flutter pub upgrade shared_preferences_foundation
+
+      - name: Upload generated lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refreshed-pubspec-lock
+          path: legacy/flutter-ui/pubspec.lock
+          if-no-files-found: error
