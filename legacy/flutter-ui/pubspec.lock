@@ -109,7 +109,7 @@ packages:
     dependency: transitive
     description:
       name: code_assets
-      sha256: 828110d598123b5ea96c00c9f3c72105bf79f8ee36c20a39b26209ade421ec57
+      sha256: "828110d598123b5ea96c00c9f3c72105bf79f8ee36c20a39b26209ade421ec57"
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
@@ -569,7 +569,7 @@ packages:
     dependency: transitive
     description:
       name: objective_c
-      sha256: 5c80c2ad6e2c0397de5db38c6d653e69616a3397e13aa7633bf39eb668f2041b
+      sha256: "5c80c2ad6e2c0397de5db38c6d653e69616a3397e13aa7633bf39eb668f2041b"
       url: "https://pub.dev"
     source: hosted
     version: "9.6.2"
