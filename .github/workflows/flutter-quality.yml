@@ -55,9 +55,6 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
-      - name: Print resolved pubspec.lock diff (temporary)
-        run: git diff -- pubspec.lock
-
       - name: Analyze
         run: flutter analyze
 
