@@ -37,7 +37,7 @@ dependencies:
   screen_retriever: ^0.2.2
   system_tray: ^2.0.3
   flutter_local_notifications: ^22.3.3
-  file_picker: ^13.3.0
+  file_picker: ^13.3.1
 
   # Network & Core Utilities
   web_socket_channel: ^3.0.3
