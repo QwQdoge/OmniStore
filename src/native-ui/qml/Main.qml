@@ -187,8 +187,11 @@ Window {
             Accessible.name: qsTr("More options")
             onClicked: overflowMenu.openFrom(overflowButton)
 
+            // Anchor to the button, but clamp inside the whole window.
             MeoMenu {
                 id: overflowMenu
+                parent: root.contentItem
+                placement: "auto"      // the default "manual" ignores openFrom()'s anchor
                 model: [
                     { "label": qsTr("Refresh"), "icon": "refresh", "action": function() { root.refreshPackageState() } },
                     { "type": "separator" },
