@@ -6,6 +6,12 @@
 - Do the whole task in one pass; do not stop to ask routine questions that have an obvious default.
 - Never put secrets, tokens or credentials in code, logs or commits.
 
+## MeoUI specification (read before UI work)
+
+- People: https://meoarch.org/docs/ . Agents: https://meoarch.org/llms.txt , then the Markdown pages it lists; start with https://meoarch.org/docs/meoui/for-agents.md (decision tables and checklists).
+- Window chrome and toolbar, where app settings live and their categories, About, and open-source credits: https://meoarch.org/docs/meoui/app-shell.md .
+- The canonical source is MeoUI `docs/design/`; the site is generated from it. If they disagree, MeoUI wins. Propose rule changes there, not in this repository.
+
 # OmniStore agent rules
 
 ## Start here
