@@ -55,7 +55,7 @@ jobs:
       - name: Resolve dependencies
         run: |
           flutter pub get
-          git diff -- legacy/flutter-ui/pubspec.lock
+          git diff -- pubspec.lock
 
       - name: Analyze
         run: flutter analyze
