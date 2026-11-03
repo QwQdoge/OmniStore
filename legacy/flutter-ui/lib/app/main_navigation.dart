@@ -17,7 +17,7 @@ import 'package:frontend/l10n/app_localizations.dart';
 import 'package:frontend/services/backend_service.dart';
 import 'package:frontend/services/update_service.dart';
 import 'package:provider/provider.dart';
-import 'package:window_manager/window_manager.dart' as wm;
+import 'package:window_manager/legacy.dart' as wm;
 import 'package:frontend/core/utils/toast.dart';
 
 /// Root shell after onboarding: adaptive nav + tray/window lifecycle.
