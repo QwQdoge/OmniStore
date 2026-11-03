@@ -53,7 +53,9 @@ jobs:
             pkg-config
 
       - name: Resolve dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          git diff -- legacy/flutter-ui/pubspec.lock
 
       - name: Analyze
         run: flutter analyze
