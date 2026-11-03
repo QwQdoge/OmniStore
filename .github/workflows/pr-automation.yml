@@ -1,0 +1,37 @@
+name: PR automation
+
+# Owner / agent PRs: auto-merge once checks pass.
+# External PRs: label only. Never merged automatically, no secrets, no checkout of PR code.
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  owner:
+    if: github.event.pull_request.user.login == github.repository_owner && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge (squash)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url="${{ github.event.pull_request.html_url }}"
+          # Wait for required checks when there are any; otherwise merge right away.
+          gh pr merge --auto --squash --delete-branch "$url" || gh pr merge --squash --delete-branch "$url"
+
+  external:
+    if: github.event.pull_request.user.login != github.repository_owner && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label and greet
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit "${{ github.event.pull_request.html_url }}" --add-label external
+          if [ "${{ github.event.action }}" = "opened" ]; then
+            gh pr comment "${{ github.event.pull_request.html_url }}" --body "Thanks for the contribution! The maintainer reviews external PRs manually, so please allow some time. Make sure CI passes and the PR checklist is filled in."
+          fi
