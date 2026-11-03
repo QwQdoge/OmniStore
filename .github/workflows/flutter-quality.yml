@@ -57,6 +57,9 @@ jobs:
           flutter pub get
           git diff -- pubspec.lock
 
+      - name: Check Dart formatting
+        run: dart format --output=none --set-exit-if-changed .
+
       - name: Analyze
         run: flutter analyze
 
