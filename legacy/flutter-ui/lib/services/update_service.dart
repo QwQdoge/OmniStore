@@ -6,7 +6,7 @@ import 'package:collection/collection.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
-import 'package:window_manager/window_manager.dart' as wm;
+import 'package:window_manager/legacy.dart' as wm;
 import '../l10n/app_localizations.dart';
 import 'backend_service.dart';
 import 'backend/platform_environment.dart';
