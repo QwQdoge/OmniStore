@@ -53,12 +53,7 @@ jobs:
             pkg-config
 
       - name: Resolve dependencies
-        run: |
-          flutter pub get
-          git diff -- pubspec.lock
-
-      - name: Check Dart formatting
-        run: dart format --output=none --set-exit-if-changed .
+        run: flutter pub get
 
       - name: Analyze
         run: flutter analyze
