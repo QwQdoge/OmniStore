@@ -210,6 +210,12 @@ EOF
   done
   install -Dm644 "$_src_dir/LICENSE" \
     "${pkgdir}/usr/share/licenses/$pkgname/LICENSE"
+  # Release bundles built before the notices existed do not carry the file;
+  # the About page then reports that license information is unavailable.
+  if [ -f "$_src_dir/THIRD_PARTY_NOTICES.md" ]; then
+    install -Dm644 "$_src_dir/THIRD_PARTY_NOTICES.md" \
+      "${pkgdir}/usr/share/licenses/$pkgname/THIRD_PARTY_NOTICES.md"
+  fi
 
   install -Dm644 "$_src_dir/omnistore.svg" \
     "${pkgdir}/usr/share/icons/hicolor/scalable/apps/org.meo.OmniStore.svg"

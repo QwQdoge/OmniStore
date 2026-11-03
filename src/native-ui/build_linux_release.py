@@ -186,6 +186,10 @@ def assemble_native_bundle(
     if not license_file.is_file():
         raise RuntimeError(f"required project license is missing: {license_file}")
     shutil.copy2(license_file, bundle / "LICENSE")
+    notices_file = REPO_ROOT / "THIRD_PARTY_NOTICES.md"
+    if not notices_file.is_file():
+        raise RuntimeError(f"required third-party notices are missing: {notices_file}")
+    shutil.copy2(notices_file, bundle / "THIRD_PARTY_NOTICES.md")
 
     icon = REPO_ROOT / "omnistore.svg"
     if icon.is_file():

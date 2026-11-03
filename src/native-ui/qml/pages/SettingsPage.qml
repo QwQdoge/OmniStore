@@ -11,15 +11,36 @@ Item {
 
     property string pendingPluginId: ""
     property string pendingPluginName: ""
+    // Stable stored values; the labels below are presentation only.
+    readonly property var themeValues: ["system", "light", "dark"]
+    property string themePreference: "system"
+
+    signal themePreferenceSelected(string value)
+    signal aboutRequested()
 
     function appearanceRows() {
         return [{
-            "title": qsTr("Dark mode"),
-            "subtitle": qsTr("Use a dark appearance in OmniStore."),
+            "objectName": "omnistoreThemeRow",
+            "title": qsTr("Theme"),
+            "subtitle": qsTr("Follow the system appearance, or override it for OmniStore only."),
             "leadingIcon": "dark_mode",
-            "trailingKind": "switch",
-            "checked": MeoTheme.isDarkMode,
-            "onToggled": function(value) { MeoTheme.isDarkMode = value }
+            "trailingKind": "segmented",
+            "segmentedModel": [qsTr("System"), qsTr("Light"), qsTr("Dark")],
+            "currentIndex": Math.max(0, root.themeValues.indexOf(root.themePreference)),
+            "onOptionSelected": function(optionIndex) {
+                root.themePreferenceSelected(root.themeValues[optionIndex])
+            }
+        }]
+    }
+
+    function aboutRows() {
+        return [{
+            "objectName": "omnistoreAboutRow",
+            "title": qsTr("About OmniStore"),
+            "subtitle": qsTr("Version %1, licenses and links").arg(Qt.application.version),
+            "leadingIcon": "info",
+            "trailingKind": "navigation",
+            "action": function() { root.aboutRequested() }
         }]
     }
 
@@ -220,10 +241,18 @@ Item {
                 icon: "settings"
             }
 
+            // Category order follows MeoUI APP_SHELL.md: Appearance, the
+            // product domain (Sources), Advanced, About.
             MeoSettingsGroup {
                 Layout.fillWidth: true
                 title: qsTr("Appearance")
                 model: root.appearanceRows()
+            }
+
+            MeoListHeader {
+                Layout.fillWidth: true
+                Layout.topMargin: MeoTheme.space16
+                text: qsTr("Sources")
             }
 
             Store.SystemStatusPanel {
@@ -266,6 +295,12 @@ Item {
                 Layout.fillWidth: true
             }
 
+            MeoListHeader {
+                Layout.fillWidth: true
+                Layout.topMargin: MeoTheme.space16
+                text: qsTr("Advanced")
+            }
+
             MeoSettingsGroup {
                 Layout.fillWidth: true
                 title: qsTr("Storage")
@@ -295,6 +330,12 @@ Item {
                         repoBridge.refresh()
                     }
                 }
+            }
+
+            MeoSettingsGroup {
+                Layout.fillWidth: true
+                Layout.topMargin: MeoTheme.space16
+                model: root.aboutRows()
             }
         }
     }

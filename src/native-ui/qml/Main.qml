@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import MeoUI 1.0
@@ -29,6 +30,26 @@ Window {
         detailSheet.isOpen || searchSheet.isOpen || tasksSheet.isOpen || aiSheet.isOpen
 
     SystemPalette { id: desktopPalette }
+
+    // App-local appearance override. "system" follows the desktop and is the
+    // default; the system-wide theme itself is owned by Meo Settings.
+    Settings {
+        id: appearancePreferences
+        category: "appearance"
+        property string theme: "system" // system | light | dark
+        onThemeChanged: root.applyThemePreference()
+    }
+
+    function applyThemePreference() {
+        const theme = appearancePreferences.theme
+        MeoTheme.isDarkMode = theme === "dark"
+            || (theme !== "light" && Application.styleHints.colorScheme === Qt.Dark)
+    }
+
+    Connections {
+        target: Application.styleHints
+        function onColorSchemeChanged() { root.applyThemePreference() }
+    }
     function syncDynamicColor() {
         const lightScheme = typeof MaterialColors.currentScheme === "function"
             ? MaterialColors.currentScheme(false) : MaterialColors.schemeFor(desktopPalette.highlight, false)
@@ -59,12 +80,44 @@ Window {
         tasksSheet.isOpen = true
     }
 
+    // App Shell routes after the primary navigation (MeoUI APP_SHELL.md):
+    // reached from the sidebar footer, the overflow menu and Ctrl+,.
+    readonly property int settingsIndex: 4
+    readonly property int aboutIndex: 5
+
+    function closeSheets() {
+        detailSheet.isOpen = false
+        searchSheet.isOpen = false
+        tasksSheet.isOpen = false
+        aiSheet.isOpen = false
+    }
+
+    function openSettings() {
+        root.closeSheets()
+        root.navigationIndex = root.settingsIndex
+    }
+
+    function openAbout() {
+        root.closeSheets()
+        root.navigationIndex = root.aboutIndex
+    }
+
+    Shortcut { sequence: "Ctrl+,"; onActivated: root.openSettings() }
+    Shortcut { sequences: [StandardKey.Find]; onActivated: root.openSearch("") }
+    Shortcut { sequences: [StandardKey.Quit]; onActivated: Qt.quit() }
+    Shortcut {
+        sequence: "Esc"
+        enabled: root.overlaySheetOpen
+        onActivated: root.closeSheets()
+    }
+
     function refreshPackageState() {
         backend.loadInstalled(true)
         backend.loadUpdates()
     }
 
     Component.onCompleted: {
+        applyThemePreference()
         syncDynamicColor()
         transactions.reconnect()
         // An external request only opens the current details/review flow.
@@ -125,6 +178,38 @@ Window {
         }
     }
 
+    Component {
+        id: overflowAction
+        MeoIconButton {
+            id: overflowButton
+            icon.name: "more_vert"
+            visible: !root.overlaySheetOpen
+            Accessible.name: qsTr("More options")
+            onClicked: overflowMenu.openFrom(overflowButton)
+
+            MeoMenu {
+                id: overflowMenu
+                model: [
+                    { "label": qsTr("Refresh"), "icon": "refresh", "action": function() { root.refreshPackageState() } },
+                    { "type": "separator" },
+                    { "label": qsTr("Settings"), "icon": "settings", "shortcut": "Ctrl+,", "action": function() { root.openSettings() } },
+                    { "label": qsTr("About OmniStore"), "icon": "info", "action": function() { root.openAbout() } }
+                ]
+            }
+        }
+    }
+
+    Component {
+        id: sidebarSettings
+        MeoSettingsRow {
+            width: parent ? parent.width : implicitWidth
+            title: qsTr("Settings")
+            leadingIcon: "settings"
+            selected: root.navigationIndex === root.settingsIndex || root.navigationIndex === root.aboutIndex
+            onActivated: root.openSettings()
+        }
+    }
+
     MeoAppLayout {
         id: appLayout
         anchors.fill: parent
@@ -133,15 +218,17 @@ Window {
             { "id": "home", "label": qsTr("Home"), "icon": "home" },
             { "id": "explore", "label": qsTr("Explore"), "icon": "explore" },
             { "id": "installed", "label": qsTr("Installed"), "icon": "apps" },
-            { "id": "updates", "label": qsTr("Updates"), "icon": "system_update" },
-            { "id": "settings", "label": qsTr("Settings"), "icon": "settings" }
+            { "id": "updates", "label": qsTr("Updates"), "icon": "system_update" }
         ]
-        pages: [homePage, explorePage, installedPage, updatesPage, settingsPage]
-        compactNavigationLimit: 5
+        pages: [homePage, explorePage, installedPage, updatesPage, settingsPage, aboutPage]
+        pageTitle: root.navigationIndex === root.settingsIndex ? qsTr("Settings")
+                   : (root.navigationIndex === root.aboutIndex ? qsTr("About OmniStore") : "")
+        compactNavigationLimit: 4
         sidebarTitle: qsTr("OmniStore")
+        sidebarFooter: sidebarSettings
         showSearch: false
         showTopAppBarOnExpanded: true
-        topAppBarActions: [searchAction, tasksAction]
+        topAppBarActions: [searchAction, tasksAction, overflowAction]
         onCurrentIndexChanged: root.navigationIndex = currentIndex
     }
 
@@ -167,7 +254,34 @@ Window {
         Store.InstalledPage { onDetailsRequested: function(app) { root.showDetails(app) } }
     }
     Component { id: updatesPage; Store.UpdatesPage { onTasksRequested: root.openTasks() } }
-    Component { id: settingsPage; Store.SettingsPage {} }
+    Component {
+        id: settingsPage
+        Store.SettingsPage {
+            themePreference: appearancePreferences.theme
+            onThemePreferenceSelected: function(value) { appearancePreferences.theme = value }
+            onAboutRequested: root.openAbout()
+        }
+    }
+    Component {
+        id: aboutPage
+        MeoAboutPage {
+            popupParent: root.contentItem
+            appName: qsTr("OmniStore")
+            appIcon: "storefront"
+            version: Qt.application.version
+            description: qsTr("Find software from every source on your system and keep it up to date.")
+            links: [
+                { "title": qsTr("Website"), "url": "https://meoarch.org/omnistore/", "icon": "language" },
+                { "title": qsTr("Source code"), "url": "https://github.com/QwQdoge/OmniStore", "icon": "code" },
+                { "title": qsTr("Report a problem"), "url": "https://github.com/QwQdoge/OmniStore/issues", "icon": "bug_report" }
+            ]
+            licenseName: "GPL-3.0-only"
+            licenseText: appLicenseText
+            noticesText: appNoticesText
+            sourceUrl: "https://github.com/QwQdoge/OmniStore/blob/main/THIRD_PARTY_NOTICES.md"
+            copyright: qsTr("© MeoArch contributors")
+        }
+    }
 
     MeoBanner {
         z: 130

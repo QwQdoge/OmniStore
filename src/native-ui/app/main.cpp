@@ -6,12 +6,14 @@
 #include "transactionclient.h"
 
 #include <QCoreApplication>
+#include <QFile>
 #include <QGuiApplication>
 #include <QLocale>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlComponent>
 #include <QQuickStyle>
+#include <QStandardPaths>
 #include <QTranslator>
 #include <QVariantMap>
 #include <cstdio>
@@ -19,6 +21,18 @@
 #ifndef OMNISTORE_RELEASE_VERSION
 #define OMNISTORE_RELEASE_VERSION "development"
 #endif
+
+// About reads the license files the package actually installed rather than a
+// list compiled into QML; an empty result is shown as "not available".
+static QString installedLicenseFile(const QString &name)
+{
+    const QString path = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
+                                                QStringLiteral("licenses/omnistore-bin/") + name);
+    QFile file(path);
+    if (path.isEmpty() || !file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+    return QString::fromUtf8(file.readAll());
+}
 
 int main(int argc, char *argv[])
 {
@@ -88,6 +102,10 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("repoBridge"), &repositoryBridge);
     engine.rootContext()->setContextProperty(QStringLiteral("systemBridge"), &systemBridge);
     engine.rootContext()->setContextProperty(QStringLiteral("transactions"), &transactions);
+    engine.rootContext()->setContextProperty(QStringLiteral("appLicenseText"),
+                                             installedLicenseFile(QStringLiteral("LICENSE")));
+    engine.rootContext()->setContextProperty(QStringLiteral("appNoticesText"),
+                                             installedLicenseFile(QStringLiteral("THIRD_PARTY_NOTICES.md")));
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);

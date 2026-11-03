@@ -15,7 +15,39 @@
     <message><source>App details</source><translation>应用详情</translation></message>
     <message><source>Dynamic color unavailable</source><translation>动态颜色不可用</translation></message>
     <message><source>OmniStore could not load the current Meo desktop color scheme. The interface is using the safe preview palette.</source><translation>OmniStore 无法加载当前 Meo 桌面配色，界面暂时使用安全预览色板。</translation></message>
-  </context>
+      <message>
+        <source>More options</source>
+        <translation>更多选项</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <source>About OmniStore</source>
+        <translation>关于 OmniStore</translation>
+    </message>
+    <message>
+        <source>Find software from every source on your system and keep it up to date.</source>
+        <translation>从系统的每个软件来源查找软件，并保持更新。</translation>
+    </message>
+    <message>
+        <source>Website</source>
+        <translation>网站</translation>
+    </message>
+    <message>
+        <source>Source code</source>
+        <translation>源代码</translation>
+    </message>
+    <message>
+        <source>Report a problem</source>
+        <translation>报告问题</translation>
+    </message>
+    <message>
+        <source>© MeoArch contributors</source>
+        <translation>© MeoArch 贡献者</translation>
+    </message>
+</context>
 
   <context>
     <name>HomePage</name>
@@ -165,7 +197,43 @@
     <message><source>The backend did not return any installed source plugins.</source><translation>后端没有返回已安装的软件源插件。</translation></message>
     <message><source>Runtime</source><translation>运行环境</translation></message>
     <message><source>Current state</source><translation>当前状态</translation></message>
-  </context>
+      <message>
+        <source>Theme</source>
+        <translation>主题</translation>
+    </message>
+    <message>
+        <source>Follow the system appearance, or override it for OmniStore only.</source>
+        <translation>跟随系统外观，或仅为 OmniStore 单独设置。</translation>
+    </message>
+    <message>
+        <source>System</source>
+        <translation>跟随系统</translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <translation>浅色</translation>
+    </message>
+    <message>
+        <source>Dark</source>
+        <translation>深色</translation>
+    </message>
+    <message>
+        <source>About OmniStore</source>
+        <translation>关于 OmniStore</translation>
+    </message>
+    <message>
+        <source>Version %1, licenses and links</source>
+        <translation>版本 %1、许可和链接</translation>
+    </message>
+    <message>
+        <source>Sources</source>
+        <translation>软件来源</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation>高级</translation>
+    </message>
+</context>
   <context>
     <name>BackendBridge</name>
     <message><source>installed app usage</source><translation>已安装应用容量</translation></message>
