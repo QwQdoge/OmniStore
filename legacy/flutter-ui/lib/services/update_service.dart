@@ -1,3 +1,8 @@
+// ignore_for_file: deprecated_member_use
+//
+// This file intentionally uses the documented legacy compatibility bridge.
+// Migrating to native window events also requires a separate desktop-runner
+// startup/lifecycle change, so keep that behavior change out of this patch.
 import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart' as p;
