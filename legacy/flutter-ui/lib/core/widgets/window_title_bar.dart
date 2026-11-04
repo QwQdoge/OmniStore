@@ -1,5 +1,10 @@
+// ignore_for_file: deprecated_member_use
+//
+// This file intentionally uses the documented legacy compatibility bridge.
+// Migrating to native window events also requires a separate desktop-runner
+// startup/lifecycle change, so keep that behavior change out of this patch.
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:window_manager/legacy.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:frontend/features/auth/presentation/pages/account_page.dart';

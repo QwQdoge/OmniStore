@@ -1,7 +1,12 @@
+// ignore_for_file: deprecated_member_use
+//
+// This file intentionally uses the documented legacy compatibility bridge.
+// Migrating to native window events also requires a separate desktop-runner
+// startup/lifecycle change, so keep that behavior change out of this patch.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart' as wm;
-import 'package:screen_retriever/screen_retriever.dart';
+import 'package:window_manager/legacy.dart' as wm;
+import 'package:screen_retriever/legacy.dart';
 
 /// Desktop-only window setup (not used in widget build trees).
 abstract final class DesktopWindowService {

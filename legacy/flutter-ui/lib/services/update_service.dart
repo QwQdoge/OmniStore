@@ -1,3 +1,8 @@
+// ignore_for_file: deprecated_member_use
+//
+// This file intentionally uses the documented legacy compatibility bridge.
+// Migrating to native window events also requires a separate desktop-runner
+// startup/lifecycle change, so keep that behavior change out of this patch.
 import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart' as p;
@@ -6,7 +11,7 @@ import 'package:collection/collection.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:system_tray/system_tray.dart';
-import 'package:window_manager/window_manager.dart' as wm;
+import 'package:window_manager/legacy.dart' as wm;
 import '../l10n/app_localizations.dart';
 import 'backend_service.dart';
 import 'backend/platform_environment.dart';
