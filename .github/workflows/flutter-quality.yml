@@ -55,21 +55,6 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
-      - name: Upgrade latest shared preferences Android implementation
-        run: flutter pub upgrade shared_preferences_android
-
-      - name: Resolve dependencies
-        run: flutter pub get
-
-      - name: Upgrade latest shared preferences Android implementation
-        run: flutter pub upgrade shared_preferences_android
-
-      - name: Inspect generated plugin and lockfile diff
-        if: always()
-        run: |
-          git status --short -- pubspec.lock linux/flutter windows/flutter macos/Flutter
-          git --no-pager diff --no-ext-diff -- pubspec.lock linux/flutter windows/flutter macos/Flutter
-
       - name: Analyze
         run: flutter analyze
 
