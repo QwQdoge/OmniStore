@@ -24,4 +24,4 @@ materialyoucolor==3.0.4
 
 # --- 测试 ---
 pytest==9.2.0
-pytest-asyncio==1.4.1
+pytest-asyncio==1.4.1.post1
