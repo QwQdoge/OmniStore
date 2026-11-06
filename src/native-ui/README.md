@@ -1,3 +1,5 @@
+> 📚 [MeoArch 主文档 / Master Doc](https://github.com/QwQdoge/MeoArch-os-workspace/blob/main/docs/MEOARCH_MASTER.md)：全部仓库地图、操作手册、Cloudflare 清单、全部文档链接。<!-- meoarch-master -->
+
 # OmniStore NativeUI
 
 `src/native-ui/` is the canonical Linux/MeoArch frontend for OmniStore. It uses Qt 6 + QML and the shared `MeoUI 1.0` design-system module. It does **not** reimplement package managers, source plugins, update rules, privilege handling, or AI policy.
