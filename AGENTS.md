@@ -74,7 +74,7 @@ Preserve unrelated dirty work. Never use `git reset`, `git clean`, or broad dele
 
 ## Shared workspace rules (owner)
 
-Source: the owner's `projects/agent.md` (Windows `C:SERSMINGYUEPROJECTSGENT.MD`), repeated here on purpose. These rules apply to every repository and win over generic caution in the rest of this file.
+Source: the owner's `projects/agent.md` (Windows `C:/Users/Mingyue/projects/agent.md`), repeated here on purpose. These rules apply to every repository and win over generic caution in the rest of this file.
 
 - "All repositories" means: the `projects` folder inside WSL Arch (`~/projects`), the Windows `projects` folder, and whatever `gh repo list QwQdoge` shows; confirm with `gh`.
 - Reading a repository: `git pull` and `git push` first so it matches the cloud. If there are open PRs/branches, merge all of them. If a branch is large or needs a decision, ask once, then merge everything without asking again before each merge; after merging, ask whether to run tests. Exceptions: old dependency-bump branches and branches that are clearly unneeded.
