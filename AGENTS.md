@@ -76,7 +76,7 @@ Preserve unrelated dirty work. Never use `git reset`, `git clean`, or broad dele
 
 ## Shared workspace rules (owner)
 
-Source: the owner's `projects/agent.md` (Windows `C:/Users/Mingyue/projects/agent.md`), repeated here on purpose. These rules apply to every repository and win over generic caution in the rest of this file.
+Source: the owner's local `projects/agent.md`, repeated here on purpose. These rules apply to every repository and win over generic caution in the rest of this file.
 
 - "All repositories" means: the `projects` folder inside WSL Arch (`~/projects`), the Windows `projects` folder, and whatever `gh repo list QwQdoge` shows; confirm with `gh`.
 - Reading a repository: `git pull` and `git push` first so it matches the cloud. If there are open PRs/branches, merge all of them. If a branch is large or needs a decision, ask once, then merge everything without asking again before each merge; after merging, ask whether to run tests. Exceptions: old dependency-bump branches and branches that are clearly unneeded.
@@ -84,3 +84,4 @@ Source: the owner's `projects/agent.md` (Windows `C:/Users/Mingyue/projects/agen
 - Ask the user as little as possible: anything solvable by a simple attempt, or that matches the user's stated wishes, is done without asking. Ask only after repeated real attempts show the goal cannot be reached.
 - Read every relevant document before working: local ones and https://meoarch.org/docs/ (agent entry: https://meoarch.org/llms.txt).
 - Releases the owner asks for are authorized end to end (tag, manifest, dispatch, approve via `gh api .../pending_deployments`); do not stop for extra approvals.
+- Never write personal or machine-specific details (usernames, absolute local paths, emails, VM or machine layout, secrets, resource ids) into repositories or published docs; keep them in local-only files (`~/.claude/CLAUDE.md`, the owner's local `projects/agent.md`).
