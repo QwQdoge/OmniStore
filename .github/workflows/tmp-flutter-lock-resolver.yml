@@ -1,0 +1,91 @@
+name: Temporary Flutter lock resolver
+
+on:
+  push:
+    branches:
+      - maintenance/omni-flutter-pub-lock-20261112
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omni-flutter-pub-lock-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: legacy/flutter-ui
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Upgrade compatible stable dependencies
+        run: flutter pub upgrade
+      - name: Verify the resolved lockfile
+        run: flutter pub get --enforce-lockfile
+      - name: Report remaining outdated packages
+        run: flutter pub outdated
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test --reporter expanded
+      - name: Build Linux release
+        run: flutter build linux --release
+      - name: Upload resolved lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: omni-flutter-pub-lock
+          path: legacy/flutter-ui/pubspec.lock
+          if-no-files-found: error
+          retention-days: 1
+
+  format-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: legacy/flutter-ui
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Check formatting without modifying files
+        run: dart format --output=none --set-exit-if-changed .
+
+  commit-lock:
+    needs: resolve-and-test
+    if: needs.resolve-and-test.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: maintenance/omni-flutter-pub-lock-20261112
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: omni-flutter-pub-lock
+          path: /tmp/omni-flutter-pub-lock
+      - name: Commit only the resolved lockfile to the maintenance branch
+        run: |
+          cp /tmp/omni-flutter-pub-lock/pubspec.lock legacy/flutter-ui/pubspec.lock
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add legacy/flutter-ui/pubspec.lock
+          if git diff --cached --quiet; then
+            echo "No lockfile changes"
+          else
+            git commit -m "chore(deps): refresh compatible Flutter lockfile"
+            git push origin HEAD:maintenance/omni-flutter-pub-lock-20261112
+          fi
