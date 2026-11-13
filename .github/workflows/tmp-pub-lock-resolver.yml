@@ -1,0 +1,118 @@
+name: Temporary Pub lock resolver
+
+on:
+  push:
+    branches:
+      - maintenance/flutter-local-notifications-23.0.1-20261113
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pub-lock-resolver-maintenance/flutter-local-notifications-23.0.1-20261113
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: legacy/flutter-ui
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Save baseline lockfile
+        run: cp pubspec.lock /tmp/pubspec.lock.before
+      - name: Upgrade notifications dependency
+        run: flutter pub upgrade flutter_local_notifications
+      - name: Resolve and stabilize lockfile
+        run: |
+          flutter pub get
+          cp pubspec.lock /tmp/pubspec.lock.after
+          flutter pub get
+          cmp /tmp/pubspec.lock.after pubspec.lock
+      - name: Reject downgrades and newly introduced prereleases
+        run: |
+          python3 - <<'PY'
+          import re
+          import sys
+
+          def parse(path):
+              result = {}
+              current = None
+              for line in open(path, encoding="utf-8"):
+                  match = re.match(r'^  ([A-Za-z0-9_]+):$', line)
+                  if match:
+                      current = match.group(1)
+                      continue
+                  match = re.match(r"^    version: [\"']?([^\"']+)[\"']?\\s*$", line)
+                  if match and current:
+                      result[current] = match.group(1)
+                      current = None
+              return result
+
+          def key(version):
+              value = version.split("+", 1)[0]
+              core, sep, pre = value.partition("-")
+              nums = tuple(int(part) if part.isdigit() else 0 for part in core.split("."))
+              return (nums, 0 if sep else 1, pre)
+
+          before = parse("/tmp/pubspec.lock.before")
+          after = parse("pubspec.lock")
+
+          for name, old in before.items():
+              new = after.get(name)
+              if new is None:
+                  continue
+              if key(new) < key(old):
+                  print(f"Dependency downgrade: {name} {old} -> {new}")
+                  sys.exit(1)
+              old_pre = "-" in old.split("+", 1)[0]
+              new_pre = "-" in new.split("+", 1)[0]
+              if new_pre and not old_pre:
+                  print(f"New prerelease dependency: {name} {old} -> {new}")
+                  sys.exit(1)
+
+          for name, expected in {
+              "flutter_local_notifications": "23.0.1",
+              "material_ui": "1.11.0",
+              "cupertino_ui": "1.1.6",
+              "shared_preferences_foundation": "2.6.2",
+              "objective_c": "9.6.4",
+              "material_color_utilities": "0.13.0",
+              "matcher": "0.12.20",
+              "meta": "1.19.0",
+              "test_api": "0.7.12",
+          }.items():
+              actual = after.get(name)
+              if actual != expected:
+                  print(f"Unexpected {name}: expected {expected}, got {actual}")
+                  sys.exit(1)
+          PY
+      - name: Ensure only the lockfile changed
+        run: |
+          test -z "$(git status --porcelain -- pubspec.yaml windows/CMakeLists.txt)"
+          changed="$(git status --porcelain)"
+          if [ "$changed" != " M pubspec.lock" ]; then
+            echo "Unexpected working tree changes:"
+            printf '%s\\n' "$changed"
+            exit 1
+          fi
+      - name: Commit only pubspec.lock
+        run: |
+          git add pubspec.lock
+          if git diff --cached --quiet; then
+            echo "Lockfile already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(deps): refresh Flutter notification lockfile"
+          git push origin "HEAD:${{ github.ref_name }}"
