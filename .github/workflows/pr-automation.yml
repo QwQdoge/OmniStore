@@ -1,6 +1,12 @@
 name: PR automation
 
-# Owner PRs require explicit opt-in and successful checks before squash merge.
+# Owner PRs are intentionally not auto-merged while the default-branch ruleset
+# lacks required status checks and a merge queue/up-to-date requirement.
+# GitHub's merge API pins the PR head but not the base SHA, so a separate
+# base check followed by merge has a TOCTOU window.
+# Re-enable owner auto-merge only after a merge queue and required checks are
+# enforced by the repository ruleset.
+#
 # External PRs are labeled and greeted only; no PR code is checked out.
 on:
   pull_request_target:
@@ -9,101 +15,6 @@ on:
 permissions: {}
 
 jobs:
-  owner:
-    if: >-
-      github.event.pull_request.user.login == github.repository_owner &&
-      !github.event.pull_request.draft &&
-      contains(github.event.pull_request.labels.*.name, 'automerge')
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      checks: read
-      contents: write
-      pull-requests: write
-      statuses: read
-    steps:
-      - name: Wait for checks and revalidate merge safety
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
-          EXPECTED_BASE: ${{ github.event.pull_request.base.ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-
-          checks='[]'
-          check_count=0
-          for attempt in {1..30}; do
-            if checks="$(gh pr checks "$PR_URL" --json name,state 2>/dev/null)"; then
-              check_count="$(jq 'length' <<< "$checks")"
-              if [[ "$check_count" -gt 0 ]]; then
-                break
-              fi
-            fi
-            sleep 10
-          done
-
-          if [[ "$check_count" -eq 0 ]]; then
-            echo "No CI workflow/status checks appeared; leaving PR open."
-            exit 0
-          fi
-
-          gh pr checks "$PR_URL" --watch --fail-fast
-
-          pr="$(gh pr view "$PR_URL" --json headRefOid,baseRefName,baseRefOid,mergeable,isDraft,reviewDecision)"
-          head="$(jq -r '.headRefOid' <<< "$pr")"
-          base="$(jq -r '.baseRefName' <<< "$pr")"
-          base_sha="$(jq -r '.baseRefOid' <<< "$pr")"
-          mergeable="$(jq -r '.mergeable' <<< "$pr")"
-          is_draft="$(jq -r '.isDraft' <<< "$pr")"
-          review_decision="$(jq -r '.reviewDecision // ""' <<< "$pr")"
-
-          if [[ "$head" != "$EXPECTED_HEAD" || "$base" != "$EXPECTED_BASE" || "$is_draft" == "true" ]]; then
-            echo "PR head/base changed or PR is draft; leaving open."
-            exit 0
-          fi
-
-          current_base="$(gh api "repos/$REPOSITORY/git/ref/heads/$base" --jq '.object.sha')"
-          if [[ "$base_sha" != "$current_base" ]]; then
-            echo "PR base is behind the current target branch; leaving open."
-            exit 0
-          fi
-
-          if [[ "$mergeable" != "MERGEABLE" || "$review_decision" == "CHANGES_REQUESTED" || "$review_decision" == "REVIEW_REQUIRED" ]]; then
-            echo "PR is conflicting, blocked, or has a review requirement; leaving open."
-            exit 0
-          fi
-
-          owner="${REPOSITORY%/*}"
-          name="${REPOSITORY#*/}"
-          threads="$(gh api graphql \
-            -f query='query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:100){nodes{isResolved} pageInfo{hasNextPage}}}}}' \
-            -F owner="$owner" -F name="$name" -F number="$PR_NUMBER")"
-          unresolved="$(jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length' <<< "$threads")"
-          has_more="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' <<< "$threads")"
-          if [[ "$unresolved" != "0" || "$has_more" == "true" ]]; then
-            echo "Unresolved or unexamined review threads remain; leaving PR open."
-            exit 0
-          fi
-
-          final_checks="$(gh pr checks "$PR_URL" --json name,state)"
-          non_success="$(jq '[.[] | select(.state != "SUCCESS")] | length' <<< "$final_checks")"
-          if [[ "$non_success" != "0" ]]; then
-            echo "Not all checks succeeded; leaving PR open."
-            exit 0
-          fi
-
-          # Reconfirm both refs and mergeability immediately before the merge.
-          pr="$(gh pr view "$PR_URL" --json headRefOid,baseRefOid,mergeable)"
-          latest_base="$(gh api "repos/$REPOSITORY/git/ref/heads/$base" --jq '.object.sha')"
-          [[ "$(jq -r '.headRefOid' <<< "$pr")" == "$EXPECTED_HEAD" ]] || exit 0
-          [[ "$(jq -r '.baseRefOid' <<< "$pr")" == "$latest_base" ]] || exit 0
-          [[ "$(jq -r '.mergeable' <<< "$pr")" == "MERGEABLE" ]] || exit 0
-
-          gh pr merge "$PR_URL" --squash --match-head-commit "$EXPECTED_HEAD"
-
   external:
     if: github.event.pull_request.user.login != github.repository_owner && github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
