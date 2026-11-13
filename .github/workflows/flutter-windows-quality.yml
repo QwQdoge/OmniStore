@@ -1,0 +1,42 @@
+name: Flutter Windows build
+
+on:
+  pull_request:
+    paths:
+      - "legacy/flutter-ui/**"
+      - ".github/workflows/flutter-windows-quality.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "legacy/flutter-ui/**"
+      - ".github/workflows/flutter-windows-quality.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-windows-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    name: Legacy Flutter Windows release build
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: legacy/flutter-ui
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Build Windows release
+        run: flutter build windows --release
