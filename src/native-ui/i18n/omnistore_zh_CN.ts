@@ -59,7 +59,8 @@
     <message><source>Refresh recommendations</source><translation>刷新推荐</translation></message>
     <message><source>No recommendations yet</source><translation>暂时没有推荐</translation></message>
     <message><source>Search for an app, or refresh after your enabled sources are available.</source><translation>可以搜索应用，或在软件源可用后刷新推荐。</translation></message>
-  </context>
+      <message><source>Start backend</source><translation>启动后端</translation></message>
+</context>
 
   <context>
     <name>ExplorePage</name>
@@ -80,7 +81,8 @@
     <message><source>Nothing found in this category</source><translation>此分类中没有找到内容</translation></message>
     <message><source>Nothing to explore yet</source><translation>暂时没有可浏览的内容</translation></message>
     <message><source>Check your enabled software sources or try again after refreshing metadata.</source><translation>请检查已启用的软件源，或刷新元数据后重试。</translation></message>
-  </context>
+      <message><source>Start backend</source><translation>启动后端</translation></message>
+</context>
 
   <context>
     <name>SearchPage</name>
@@ -92,7 +94,8 @@
     <message><source>Find an app</source><translation>查找应用</translation></message>
     <message><source>Try another name, or check enabled sources in Settings.</source><translation>尝试其他名称，或在设置中检查已启用的软件源。</translation></message>
     <message><source>Search Pacman, AUR, Flatpak and any other enabled OmniStore sources from one place.</source><translation>在一个地方搜索 Pacman、AUR、Flatpak 和其他已启用的 OmniStore 软件源。</translation></message>
-  </context>
+      <message><source>Start backend</source><translation>启动后端</translation></message>
+</context>
 
   <context>
     <name>InstalledPage</name>

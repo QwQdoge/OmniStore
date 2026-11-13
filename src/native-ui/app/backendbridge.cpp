@@ -727,6 +727,28 @@ void BackendBridge::clearTaskLog()
     emit taskChanged();
 }
 
+void BackendBridge::startBackend()
+{
+    if (m_process)
+        return;
+    m_backendProgram.clear();
+    m_backendPrefixArguments.clear();
+    m_workingDirectory.clear();
+    m_errorMessage.clear();
+    resolveBackend();
+    if (m_backendProgram.isEmpty()) {
+        emit stateChanged();
+        return;
+    }
+    m_statusMessage = tr("Starting the OmniStore backend…");
+    emit stateChanged();
+    loadRecommendations();
+    loadInstalled(true);
+    loadPlugins();
+    loadUpdates();
+    loadConfig();
+}
+
 void BackendBridge::clearError()
 {
     if (m_errorMessage.isEmpty())

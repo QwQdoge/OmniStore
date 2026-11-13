@@ -86,6 +86,9 @@ public:
     Q_INVOKABLE void cancelOperation();
     Q_INVOKABLE void clearTaskLog();
     Q_INVOKABLE void clearError();
+    // Re-resolves the backend, clears the last failure and reloads the
+    // read-only views. Backs the "Start backend" button.
+    Q_INVOKABLE void startBackend();
 
 signals:
     void stateChanged();

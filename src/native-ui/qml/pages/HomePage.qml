@@ -93,6 +93,14 @@ Item {
                 tone: "error"
             }
 
+            MeoButton {
+                visible: backend.errorMessage.length > 0 && !backend.busy
+                text: qsTr("Start backend")
+                icon.name: "play_arrow"
+                type: "tonal"
+                onClicked: backend.startBackend()
+            }
+
             GridLayout {
                 Layout.fillWidth: true
                 columns: width >= 760 * MeoTheme.globalScale ? 3 : 1
