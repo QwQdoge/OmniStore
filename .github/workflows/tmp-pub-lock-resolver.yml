@@ -96,23 +96,42 @@ jobs:
                   print(f"Unexpected {name}: expected {expected}, got {actual}")
                   sys.exit(1)
           PY
-      - name: Ensure only the lockfile changed
+      - name: Ensure only the lockfile and tracked generated plugin registrants changed
         run: |
-          test -z "$(git status --porcelain -- pubspec.yaml windows/CMakeLists.txt)"
-          changed="$(git status --porcelain)"
-          if [ "$changed" != " M pubspec.lock" ]; then
-            echo "Unexpected working tree changes:"
-            printf '%s\\n' "$changed"
+          set -euo pipefail
+          allowed=(
+            "legacy/flutter-ui/pubspec.lock"
+            "legacy/flutter-ui/linux/flutter/generated_plugin_registrant.cc"
+            "legacy/flutter-ui/linux/flutter/generated_plugins.cmake"
+            "legacy/flutter-ui/macos/Flutter/GeneratedPluginRegistrant.swift"
+            "legacy/flutter-ui/windows/flutter/generated_plugin_registrant.cc"
+            "legacy/flutter-ui/windows/flutter/generated_plugins.cmake"
+          )
+          changed="$(git status --porcelain=v1 --untracked-files=all | sed 's/^...//')"
+          while IFS= read -r path; do
+            [ -z "$path" ] && continue
+            if ! printf '%s\n' "${allowed[@]}" | grep -Fxq -- "$path"; then
+              echo "Unexpected working tree change: $path"
+              exit 1
+            fi
+          done <<< "$changed"
+          if ! printf '%s\n' "$changed" | grep -Fxq "legacy/flutter-ui/pubspec.lock"; then
+            echo "Expected pubspec.lock update is missing."
             exit 1
           fi
-      - name: Commit only pubspec.lock
+      - name: Commit lockfile and tracked generated plugin registrants
         run: |
-          git add pubspec.lock
+          git add pubspec.lock \
+            linux/flutter/generated_plugin_registrant.cc \
+            linux/flutter/generated_plugins.cmake \
+            macos/Flutter/GeneratedPluginRegistrant.swift \
+            windows/flutter/generated_plugin_registrant.cc \
+            windows/flutter/generated_plugins.cmake
           if git diff --cached --quiet; then
-            echo "Lockfile already current."
+            echo "No dependency or generated plugin changes."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore(deps): refresh Flutter notification lockfile"
+          git commit -m "chore(deps): refresh Flutter notification lockfile and registrants"
           git push origin "HEAD:${{ github.ref_name }}"
