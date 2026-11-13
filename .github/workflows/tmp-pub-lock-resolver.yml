@@ -52,7 +52,7 @@ jobs:
                   if match:
                       current = match.group(1)
                       continue
-                  match = re.match(r"^    version: [\"']?([^\"']+)[\"']?\\s*$", line)
+                  match = re.match(r"^    version: [\"']?([^\"']+)[\"']?\s*$", line)
                   if match and current:
                       result[current] = match.group(1)
                       current = None
