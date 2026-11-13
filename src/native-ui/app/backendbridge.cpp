@@ -456,6 +456,11 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
         m_errorMessage = exitStatus == QProcess::CrashExit
             ? tr("The OmniStore backend process crashed.")
             : tr("The OmniStore backend exited with code %1.").arg(exitCode);
+        // Show why, not only that: the last stderr line is usually the
+        // Python traceback's final message (missing module, bad path, ...).
+        const QString tail = m_taskLog.section(QLatin1Char('\n'), -1).trimmed();
+        if (!tail.isEmpty())
+            m_errorMessage += QLatin1Char(' ') + tail.left(300);
     }
 
     if (finished.mutating) {

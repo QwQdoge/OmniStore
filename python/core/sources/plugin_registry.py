@@ -117,7 +117,14 @@ class PluginRegistry:
         self.plugins = {}
         self.sources = {}
         self.errors = {}
-        self.package_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.package_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as error:
+            # An installed bundle under /opt is read-only for the user. The
+            # manifests are already there, so a failed mkdir must not take the
+            # whole backend down before any source is loaded.
+            if not self.package_dir.is_dir():
+                self.errors["plugins"] = f"Plugin directory unavailable: {error}"
         self._load_manifest_packages()
         self._load_legacy_plugins()
 
