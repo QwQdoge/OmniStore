@@ -36,7 +36,7 @@ dependencies:
   window_manager: ^0.6.0
   screen_retriever: ^0.3.1
   system_tray: ^2.0.3
-  flutter_local_notifications: ^22.3.3
+  flutter_local_notifications: ^23.0.1
   file_picker: ^13.3.2
 
   # Network & Core Utilities
