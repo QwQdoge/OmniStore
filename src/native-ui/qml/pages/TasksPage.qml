@@ -45,6 +45,11 @@ Item {
         return transactions.available ? "download_done" : "cloud_off"
     }
 
+    function logTail() {
+        const lines = String(transactions.log || "").split("\n").filter(l => l.trim().length > 0)
+        return lines.length > 0 ? "\n\n" + lines.slice(-5).join("\n") : ""
+    }
+
     Component.onCompleted: transactions.reconnect()
 
     ColumnLayout {
@@ -135,13 +140,21 @@ Item {
                     }
                 }
 
-                MeoProgressBar {
+                Store.PixelProgress {
                     Layout.fillWidth: true
                     visible: transactions.busy || transactions.progress >= 0
                     value: transactions.progress >= 0 ? transactions.progress : 0
                     indeterminate: transactions.busy && transactions.progress < 0
-                    linearStyle: "pill"
-                    wavy: transactions.busy
+                    failed: transactions.status === "failed"
+                    done: transactions.status === "succeeded"
+                }
+
+                MeoText {
+                    visible: transactions.progress >= 0
+                    text: qsTr("%1% · %2").arg(Math.round(transactions.progress * 100)).arg(root.statusLabel())
+                    typeRole: "label"
+                    typeSize: "medium"
+                    color: MeoTheme.contentOnSurfaceVariant
                 }
 
                 MeoText {
@@ -236,7 +249,7 @@ Item {
             Layout.fillWidth: true
             visible: transactions.errorMessage.length > 0 && transactions.available
             title: qsTr("Task error")
-            text: transactions.errorMessage
+            text: transactions.errorMessage + root.logTail()
             icon: "error"
             tone: "error"
             confirmText: qsTr("Dismiss")

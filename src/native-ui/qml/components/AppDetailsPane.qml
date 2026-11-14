@@ -33,6 +33,11 @@ Flickable {
     readonly property bool selectedInstalled: selectedVariant().installed === true
         || (selectedMatches && backend.selectedApp.installed === true)
     readonly property var screenshots: app.screenshots || []
+    function logTail() {
+        const lines = String(transactions.log || "").split("\n").filter(l => l.trim().length > 0)
+        return lines.length > 0 ? "\n\n" + lines.slice(-4).join("\n") : ""
+    }
+
     readonly property var currentPlan: transactions.installPlan || ({})
     readonly property var currentPlanRequest: currentPlan.request || ({})
     readonly property bool planMatches: String(currentPlanRequest.name || "") === root.packageIdentity()
@@ -328,17 +333,53 @@ Flickable {
             visible: transactions.available && transactions.errorMessage.length > 0
                      && !transactions.busy && !transactions.planning
             title: qsTr("Package action unavailable")
-            text: transactions.errorMessage
+            text: transactions.errorMessage + root.logTail()
             icon: "error"
             tone: "error"
         }
 
         MeoProgressBar {
             Layout.fillWidth: true
-            visible: (backend.busyAction === qsTr("app details") && !root.selectedMatches)
-                     || transactions.busy
-            indeterminate: transactions.busy ? transactions.progress < 0 : true
-            value: transactions.progress >= 0 ? transactions.progress : 0
+            visible: backend.busyAction === qsTr("app details") && !root.selectedMatches && !transactions.busy
+            indeterminate: true
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            visible: transactions.busy
+            spacing: 6 * MeoTheme.globalScale
+
+            Store.PixelProgress {
+                Layout.fillWidth: true
+                value: transactions.progress >= 0 ? transactions.progress : 0
+                indeterminate: transactions.progress < 0
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                MeoText {
+                    Layout.fillWidth: true
+                    text: transactions.stage.length > 0 ? transactions.stage : qsTr("Working…")
+                    typeRole: "label"
+                    typeSize: "medium"
+                    color: MeoTheme.contentOnSurfaceVariant
+                    elide: Text.ElideRight
+                }
+                MeoText {
+                    visible: transactions.progress >= 0
+                    text: qsTr("%1%").arg(Math.round(transactions.progress * 100))
+                    typeRole: "label"
+                    typeSize: "medium"
+                    emphasized: true
+                    color: MeoTheme.primary
+                }
+                MeoText {
+                    visible: transactions.speed.length > 0
+                    text: transactions.speed
+                    typeRole: "label"
+                    typeSize: "medium"
+                    color: MeoTheme.primary
+                }
+            }
         }
 
         ColumnLayout {
