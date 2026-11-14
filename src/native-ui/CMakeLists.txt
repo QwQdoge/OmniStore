@@ -55,7 +55,6 @@ qt_add_qml_module(omnistore-native
         qml/components/AppDetailsPane.qml
         qml/components/AppRow.qml
         qml/components/InstallPlanReview.qml
-        qml/components/PixelProgress.qml
         qml/components/StoreAppCard.qml
         qml/components/RepositoryManager.qml
         qml/components/SystemStatusPanel.qml

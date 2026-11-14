@@ -140,13 +140,13 @@ Item {
                     }
                 }
 
-                Store.PixelProgress {
+                MeoProgressBar {
                     Layout.fillWidth: true
                     visible: transactions.busy || transactions.progress >= 0
                     value: transactions.progress >= 0 ? transactions.progress : 0
                     indeterminate: transactions.busy && transactions.progress < 0
-                    failed: transactions.status === "failed"
-                    done: transactions.status === "succeeded"
+                    linearStyle: "pill"
+                    wavy: transactions.busy
                 }
 
                 MeoText {

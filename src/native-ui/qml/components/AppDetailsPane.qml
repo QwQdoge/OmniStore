@@ -351,10 +351,12 @@ Flickable {
             visible: transactions.busy
             spacing: 6 * MeoTheme.globalScale
 
-            Store.PixelProgress {
+            MeoProgressBar {
                 Layout.fillWidth: true
                 value: transactions.progress >= 0 ? transactions.progress : 0
                 indeterminate: transactions.progress < 0
+                linearStyle: "pill"
+                wavy: true
             }
             RowLayout {
                 Layout.fillWidth: true
