@@ -32,9 +32,10 @@ project before they are implemented here.
 
 ## Meo API
 
-Everything known about the API, the OAuth flow and the broker is in
-[`MEO_API_FACTS.md`](MEO_API_FACTS.md), read from the `meo-api` Worker (`8c75994`) and
-`MeoArch-account` (`bb38df3`) source. When it and this file disagree, the source wins.
+The public contract is on the MeoArch site: [Meo Account API](https://meoarch.org/docs/guide/account-api.html)
+and [Native App Integration](https://meoarch.org/docs/guide/account-native-apps.html).
+[`MEO_API_FACTS.md`](MEO_API_FACTS.md) records what it means for OmniStore. When they
+disagree with this file, the site pages and the running service win.
 
 Constraints that shape OmniStore:
 
@@ -56,9 +57,8 @@ and (later) backup traffic go through the Meo Account broker (`org.meo.Accounts1
 
 Why:
 
-* **No client is registered.** `meo-api` has native clients for Meo Account Desktop,
-  Meo Settings, Meo AI Desktop, Meo AI Android and Meo AI Web. None is OmniStore, and
-  clients are added by SQL migration only. Without a real `oauthClientId` the broker's
+* **No client is registered.** OAuth clients are registered by the Meo maintainers;
+  there is no self-service and OmniStore has none. Without a real `oauthClientId` the broker's
   `authorize_client` flow cannot start, so a direct call cannot authenticate at all.
 * The broker already holds the system session in KWallet and keeps provider keys,
   consent records and tokens away from OmniStore. A direct client would duplicate PKCE,
@@ -72,7 +72,7 @@ Answers to the earlier open questions:
    method returns one. If a feature ever needs a token of OmniStore's own, the route is
    the broker's `RequestAuthentication(..., "authorize_client", {state, codeChallenge})`
    with OmniStore's own PKCE, then `RegisterClientSession`. That needs the
-   registration in `MEO_API_FACTS.md` §1.5 and a matching manifest. OmniStore must not
+   registration of an OAuth client by the Meo maintainers and a matching manifest. OmniStore must not
    run its own browser/PKCE flow outside the broker.
 2. **Usage events.** `/v1/usage-events` carries **AI token usage**, not installed
    applications. OmniStore has no AI token counters of its own, so it sends nothing.
@@ -103,17 +103,17 @@ what a user installs, so any sharing needs an explicit user choice and `applicat
 
 ## Facts the old reference was missing
 
-These are now answered in `MEO_API_FACTS.md`:
+These are now answered on the public pages linked above:
 
 | Question | Answer | Section |
 | --- | --- | --- |
-| `/v1/chat/stream` format | SSE; events `delta`, `truncated`, `tool_calls`, `mcp_tool_proposal`, `work_agent_proposal`, `done`, `error`; requires a prepared consent | §2 |
-| Available models | The user's own provider catalogue per connection, up to 500, with `task` and modalities; no Meo-wide or per-plan list | §3 |
-| Plan quotas | None enforced; `free`/`plus`/`pro` have empty entitlements and no prices | §4 |
-| Client registration | Not registered; proposed SQL is given, not applied | §1.4, §1.5 |
-| Token delivery over D-Bus | Never; own-token flow via `authorize_client` | §1 |
+| `/v1/chat/stream` format | SSE; events `delta`, `truncated`, `tool_calls`, `mcp_tool_proposal`, `work_agent_proposal`, `done`, `error`; requires a prepared consent | site |
+| Available models | The user's own provider catalogue per connection, up to 500, with `task` and modalities; no Meo-wide or per-plan list | site |
+| Plan quotas | None enforced; `free`/`plus`/`pro` have empty entitlements and no prices | site |
+| Client registration | Not registered; proposed SQL is given, not applied | site |
+| Token delivery over D-Bus | Never; own-token flow via `authorize_client` | site |
 
-Still undefined (see `MEO_API_FACTS.md` §7): the final OmniStore client id and scopes, an
+Still undefined (see `MEO_API_FACTS.md`): the final OmniStore client id and scopes, an
 OmniStore backup schema, `/v1/me` and realtime payload fields, and a streaming broker
 method.
 
