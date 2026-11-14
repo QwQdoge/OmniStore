@@ -58,13 +58,26 @@ Routes OmniStore could use, and what is still missing before using them:
 | AI | `POST /v1/chat/prepare`, `/v1/chat/stream` | Already reachable through the Meo Account broker. Direct use only if the broker cannot cover a case. |
 | Identity | `GET /v1/me` | Display only. |
 
-Open questions for the Meo Account / meo-api owners:
+Confirmed by meo-api `docs/api-reference.md` (sections 7 and 8):
 
-1. Does Meo Account hand tokens to native clients over `org.meo.Accounts1`, or must
-   OmniStore run its own PKCE flow (needing a registered client id and the
-   `omnistore://auth/callback` redirect)?
-2. Which `source` value and event schema should OmniStore use for usage events?
-3. Should the API replace the Meo Account D-Bus AI broker, or stay as a fallback?
+* `POST /v1/chat/prepare` and `/v1/chat/stream` take `credentialId`, `model`,
+  `prompt` (<= 35 000 chars) and optional `conversationId`, `consent`, `skillId`,
+  `webResults`, `images`; unknown keys are rejected. `prepare` validates and
+  assembles the request without calling the provider.
+* Models for a connection come from `GET /v1/ai/credentials/:id/models`
+  (cached 5 minutes) or `POST /v1/ai/provider-broker` with `action: list_models`.
+* Provider keys never reach the client; chat needs `meo:write`.
+
+Still unanswered (the API docs do not say), so OmniStore keeps using the Meo
+Account D-Bus broker and makes no direct API call:
+
+1. How a native client obtains a token: the API docs describe OAuth 2.1 + S256 PKCE
+   but no client registration for OmniStore (client id, `omnistore://auth/callback`
+   redirect, `meo:read` / `meo:write` grant), and do not say whether Meo Account
+   hands tokens over `org.meo.Accounts1`.
+2. The `/v1/chat/stream` response framing (event types and fields).
+3. Which `source` value and event schema OmniStore should use for usage events.
+4. Whether the API should replace the D-Bus AI broker or stay a fallback.
 
 Until these are answered, OmniStore makes no network call to meo-api and stores no Meo
 token. Billing, checkout and `/v1/sync` are not implemented on the API side either.
