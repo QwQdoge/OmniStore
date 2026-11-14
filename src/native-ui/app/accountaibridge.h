@@ -29,6 +29,7 @@ public:
     QVariantList recommendedApps() const { return m_recommended; }
     QVariantMap features() const;
     Q_INVOKABLE bool rawFeature(const QString &key) const;
+    Q_INVOKABLE void resetFeatures();
     Q_INVOKABLE void setFeature(const QString &key, bool enabled);
     Q_INVOKABLE void refreshConnections();
     Q_INVOKABLE void clearPresentation();

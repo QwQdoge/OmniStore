@@ -263,3 +263,10 @@ def test_ai_features_are_optional_and_gated_in_ui_and_bridge():
         ("accountAi.features.safety", "components/AppDetailsPane.qml"),
     ):
         assert gate in read(QML_ROOT / path)
+
+
+def test_settings_follow_app_shell_category_order_and_reset_confirms():
+    s = read(QML_ROOT / "pages" / "SettingsPage.qml")
+    order = [s.index(f'text: qsTr("{name}")') for name in ("Sources", "AI assistance", "Privacy & data", "Advanced")]
+    assert order == sorted(order)
+    assert "resetDialog.open()" in s and "accountAi.resetFeatures()" in s

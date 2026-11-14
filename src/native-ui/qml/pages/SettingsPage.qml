@@ -56,6 +56,34 @@ Item {
         ]
     }
 
+    function privacyRows() {
+        return [{
+            "title": qsTr("Saved AI permission"),
+            "subtitle": accountAi.rememberedConsent
+                ? qsTr("OmniStore may send catalog advice requests to your selected AI connection without asking each time. Select to revoke.")
+                : qsTr("No saved permission. OmniStore asks before every AI request."),
+            "leadingIcon": "verified_user",
+            "trailingKind": accountAi.rememberedConsent ? "navigation" : "none",
+            "interactive": accountAi.rememberedConsent && !accountAi.busy,
+            "action": function() { accountAi.revokeRememberedConsent() }
+        }, {
+            "title": qsTr("Telemetry"),
+            "subtitle": qsTr("OmniStore does not send usage telemetry."),
+            "leadingIcon": "visibility_off",
+            "trailingKind": "none"
+        }]
+    }
+
+    function resetRows() {
+        return [{
+            "title": qsTr("Reset to defaults"),
+            "subtitle": qsTr("Turns AI assistance off and clears OmniStore preferences. Installed software is not changed."),
+            "leadingIcon": "restart_alt",
+            "trailingKind": "navigation",
+            "action": function() { resetDialog.open() }
+        }]
+    }
+
     function aboutRows() {
         return [{
             "objectName": "omnistoreAboutRow",
@@ -332,6 +360,17 @@ Item {
             MeoListHeader {
                 Layout.fillWidth: true
                 Layout.topMargin: MeoTheme.space16
+                text: qsTr("Privacy & data")
+            }
+
+            MeoSettingsGroup {
+                Layout.fillWidth: true
+                model: root.privacyRows()
+            }
+
+            MeoListHeader {
+                Layout.fillWidth: true
+                Layout.topMargin: MeoTheme.space16
                 text: qsTr("Advanced")
             }
 
@@ -368,9 +407,28 @@ Item {
 
             MeoSettingsGroup {
                 Layout.fillWidth: true
+                model: root.resetRows()
+            }
+
+            MeoSettingsGroup {
+                Layout.fillWidth: true
                 Layout.topMargin: MeoTheme.space16
                 model: root.aboutRows()
             }
+        }
+    }
+
+    MeoDialog {
+        id: resetDialog
+        parent: Overlay.overlay
+        title: qsTr("Reset OmniStore preferences?")
+        message: qsTr("AI assistance will be turned off and local preferences cleared. Installed software and sources are not changed.")
+        icon: "restart_alt"
+        confirmText: qsTr("Reset")
+        cancelText: qsTr("Cancel")
+        onConfirmed: {
+            accountAi.resetFeatures()
+            root.themePreferenceSelected("system")
         }
     }
 

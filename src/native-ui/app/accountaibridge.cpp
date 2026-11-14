@@ -53,6 +53,13 @@ bool AccountAiBridge::rawFeature(const QString &key) const {
     QSettings s = aiSettings();
     return s.value(QStringLiteral("ai/") + key, false).toBool();
 }
+void AccountAiBridge::resetFeatures() {
+    QSettings s = aiSettings();
+    s.remove(QStringLiteral("ai"));
+    s.sync();
+    clearPresentation();
+    emit featuresChanged();
+}
 void AccountAiBridge::setFeature(const QString &key, bool enabled) {
     if (key != QStringLiteral("enabled") && !featureKeys().contains(key)) return;
     QSettings s = aiSettings();
