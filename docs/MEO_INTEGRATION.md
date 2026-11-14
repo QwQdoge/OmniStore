@@ -30,86 +30,94 @@ project before they are implemented here.
   `explicit_ai_consent_required`. `ai.api_key` is never written to `config.yaml`;
   `OMNISTORE_AI_API_KEY` is the only way to supply one to that legacy path.
 
-## Meo API (reference received; client not implemented)
+## Meo API
 
-Source: the meo-api Worker reference (`https://api.meoarch.org/v1`). When it and this
-section disagree, the Worker code wins.
+Everything known about the API, the OAuth flow and the broker is in
+[`MEO_API_FACTS.md`](MEO_API_FACTS.md), read from the `meo-api` Worker (`8c75994`) and
+`MeoArch-account` (`bb38df3`) source. When it and this file disagree, the source wins.
 
-Facts that constrain OmniStore:
+Constraints that shape OmniStore:
 
 * Native clients authenticate with a Meo Account OAuth 2.1 bearer token (authorization
-  code + S256 PKCE). `GET`/`HEAD` need scope `meo:read`; everything else `meo:write`.
-  `data/meo-account/org.meo.OmniStore.json` currently lists only `openid profile email`
-  and a placeholder `oauthClientId`, so it cannot obtain either scope yet.
-* Errors are contracts by code (`unauthenticated`, `insufficient_scope`,
-  `reauth_required`, `request_too_large` ...), not by message. Another user's IDs return
-  404, never 403.
-* Provider keys never leave the API: chat and images use a caller-owned `credentialId`
-  and a `consent` object. Sensitive account actions need a fresh purpose-scoped
-  reauthentication grant that OmniStore must not mint or cache.
+  code + S256 PKCE, 15-minute access token). `GET`/`HEAD` need `meo:read`; every other
+  method needs `meo:write`.
+* The broker **never returns a token to an app**. An app either asks the broker to make
+  a call, or runs its own PKCE flow through the broker's `authorize_client` dialog.
+* Errors are contracts by code (`{"error":{"code":"…"}}`), not by message. Another
+  user's IDs return `404`, never `403`.
+* Provider keys never leave the API. Chat and images use a caller-owned `credentialId`
+  and a `consent` record bound to the OAuth client. Sensitive account actions need a
+  fresh purpose-scoped reauthentication grant that OmniStore must not mint or cache.
 
-Routes OmniStore could use, and what is still missing before using them:
+## Decision: stay on the D-Bus broker (2026-11-14, revised)
 
-| Need | Route | Status |
-| --- | --- | --- |
-| Settings backup / restore | `/v1/backups` (manifests, max 20) | Needs a manifest format and `meo:write`. Must exclude tokens and local paths. |
-| Settings sync notice | `GET /v1/realtime` (`settings.changed`) | Needs `meo:read`. |
-| Usage dashboard | `POST /v1/usage-events` (1–250 per batch, idempotent on `source`+`source_event_id`) | Could batch `org.meo.omnistore.installed-usage`; needs a source name and a privacy decision, because it uploads which apps are installed. |
-| AI | `POST /v1/chat/prepare`, `/v1/chat/stream` | Already reachable through the Meo Account broker. Direct use only if the broker cannot cover a case. |
-| Identity | `GET /v1/me` | Display only. |
-
-## Decision: stay on the D-Bus broker (2026-11-14)
-
-OmniStore does **not** call meo-api directly and holds no Meo token. All Meo identity
-and AI traffic goes through the Meo Account broker (`org.meo.Accounts1`).
+OmniStore does **not** call meo-api directly and holds no Meo token. Meo identity, AI
+and (later) backup traffic go through the Meo Account broker (`org.meo.Accounts1`).
 
 Why:
 
-* The third-party OAuth registration is not public. Without a real `oauthClientId` and
-  the `meo:read` / `meo:write` scopes, a direct call cannot authenticate at all.
-* The broker already keeps provider keys, consent grants and tokens out of OmniStore
-  (see "Meo Account AI"). A direct client would need its own PKCE flow, token storage
-  in KWallet, refresh and revocation handling, all duplicating what the broker owns.
-* The AI routes need a caller-owned `credentialId` and a `consent` object. The broker
-  already produces both; OmniStore would have to reimplement the consent UI.
+* **No client is registered.** `meo-api` has native clients for Meo Account Desktop,
+  Meo Settings, Meo AI Desktop, Meo AI Android and Meo AI Web. None is OmniStore, and
+  clients are added by SQL migration only. Without a real `oauthClientId` the broker's
+  `authorize_client` flow cannot start, so a direct call cannot authenticate at all.
+* The broker already holds the system session in KWallet and keeps provider keys,
+  consent records and tokens away from OmniStore. A direct client would duplicate PKCE,
+  token storage, refresh, revocation and the consent UI.
+* What OmniStore actually uses today (non-streaming package-metadata questions) is
+  fully covered by `StartLocalAiOperation`.
 
-Answers to the previous open questions:
+Answers to the earlier open questions:
 
-1. **Tokens:** OmniStore never runs its own PKCE flow. If a non-AI route is ever needed,
-   OmniStore asks the broker for a short-lived, scope-limited access token. That broker
-   method is **Not defined**; it must be specified by the Meo Account owner first.
-2. **Usage events:** not implemented, and off by default when it is. OmniStore must not
-   upload which apps are installed. A `source` name and event schema need the meo-api
-   owner and an explicit privacy decision before any code is written.
-3. **API vs broker:** the broker is the primary path, not a fallback. The API stays a
-   possible second path only for non-AI routes (backup, realtime notice), and only
-   after question 1 is answered.
+1. **Tokens.** Meo Account does *not* hand tokens to apps over `org.meo.Accounts1`; no
+   method returns one. If a feature ever needs a token of OmniStore's own, the route is
+   the broker's `RequestAuthentication(..., "authorize_client", {state, codeChallenge})`
+   with OmniStore's own PKCE, then `RegisterClientSession`. That needs the
+   registration in `MEO_API_FACTS.md` §1.5 and a matching manifest. OmniStore must not
+   run its own browser/PKCE flow outside the broker.
+2. **Usage events.** `/v1/usage-events` carries **AI token usage**, not installed
+   applications. OmniStore has no AI token counters of its own, so it sends nothing.
+   If that changes, it goes through the broker's `/org/meo/Accounts1/Usage` object with
+   the `ai_usage_sync` capability, never directly. A `source` name is not chosen yet.
+3. **API vs broker.** The broker is the primary path, not a fallback. The one thing it
+   cannot do is stream: its cloud AI operations (`prepare_inference`, `invoke`) return a
+   whole answer. `/v1/chat/stream` (SSE) is reachable only with a token OmniStore holds
+   itself.
 
-Revisit this decision when all of these are true: a client id is registered for
-`org.meo.OmniStore` with exact redirect `omnistore://auth/callback`; the Account owner
-defines the broker token method (or approves OmniStore's own PKCE); and a concrete
-feature needs a route the broker does not cover.
+Revisit this when one of these becomes true: a feature needs streamed answers; or a
+feature needs a route the broker has no method for; and, in both cases, a client id is
+registered for OmniStore with exact redirect `omnistore://auth/callback`.
 
 `data/meo-account/org.meo.OmniStore.json` keeps its placeholder `oauthClientId` and
-scopes `openid profile email` until then. Do not add `meo:read` / `meo:write` there
-before registration exists: the file would claim authority the client does not have.
+scopes `openid profile email` until registration exists. Do not add `meo:read` /
+`meo:write` there first: the broker would request scopes the client row does not grant,
+and the authorize request fails.
 
-## Facts missing from the meo-api reference
+## Backups and OmniStore's application list
 
-The reference received so far does not contain the following. They are **Not defined**
-for OmniStore; do not infer them from other clients, and do not hard-code guesses.
-Read them from the Worker code or ask its owner.
+`/v1/backups` accepts only the `org.meo.backup/v1` schema. Its `applications[]` is a list
+of `{id, sourceId, version?}`, so an installed-application inventory can travel inside a
+Meo Settings backup. Meo Settings builds that manifest; OmniStore may be asked for the
+inventory but does not upload it. The privacy decision stays open: the inventory reveals
+what a user installs, so any sharing needs an explicit user choice and `applicationsState`
+`unavailable` when declined. OmniStore's own settings are **not** accepted by the schema.
 
-| Missing | Why OmniStore cares | Handling until defined |
+## Facts the old reference was missing
+
+These are now answered in `MEO_API_FACTS.md`:
+
+| Question | Answer | Section |
 | --- | --- | --- |
-| Available model list (route, fields, per-plan differences) | Model picker for the AI assistant | The picker lists only what `ListAvailableLocalAiConnections` returns |
-| `/v1/chat/stream` framing and event fields (SSE or chunked, delta, finish, error, usage) | Rendering streamed answers | Use the broker's `invoke` result; no direct stream parsing |
-| Per-plan quotas (requests, tokens, rate limits, reset time) | Showing remaining quota, handling `429` | Show "unknown"; surface the error code the broker returns, never an invented limit |
+| `/v1/chat/stream` format | SSE; events `delta`, `truncated`, `tool_calls`, `mcp_tool_proposal`, `work_agent_proposal`, `done`, `error`; requires a prepared consent | §2 |
+| Available models | The user's own provider catalogue per connection, up to 500, with `task` and modalities; no Meo-wide or per-plan list | §3 |
+| Plan quotas | None enforced; `free`/`plus`/`pro` have empty entitlements and no prices | §4 |
+| Client registration | Not registered; proposed SQL is given, not applied | §1.4, §1.5 |
+| Token delivery over D-Bus | Never; own-token flow via `authorize_client` | §1 |
 
-When the owner supplies them, record them in this file with the Worker commit they
-were read from, and add the matching error-state wording to MeoUI `STORE_FEEDBACK.md`.
+Still undefined (see `MEO_API_FACTS.md` §7): the final OmniStore client id and scopes, an
+OmniStore backup schema, `/v1/me` and realtime payload fields, and a streaming broker
+method.
 
-Billing, checkout and `/v1/sync` are not implemented on the API side either.
+Billing, checkout and `/v1/sync` are not implemented on the API side.
 
 ## Configuration
 
