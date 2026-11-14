@@ -58,16 +58,58 @@ Routes OmniStore could use, and what is still missing before using them:
 | AI | `POST /v1/chat/prepare`, `/v1/chat/stream` | Already reachable through the Meo Account broker. Direct use only if the broker cannot cover a case. |
 | Identity | `GET /v1/me` | Display only. |
 
-Open questions for the Meo Account / meo-api owners:
+## Decision: stay on the D-Bus broker (2026-11-14)
 
-1. Does Meo Account hand tokens to native clients over `org.meo.Accounts1`, or must
-   OmniStore run its own PKCE flow (needing a registered client id and the
-   `omnistore://auth/callback` redirect)?
-2. Which `source` value and event schema should OmniStore use for usage events?
-3. Should the API replace the Meo Account D-Bus AI broker, or stay as a fallback?
+OmniStore does **not** call meo-api directly and holds no Meo token. All Meo identity
+and AI traffic goes through the Meo Account broker (`org.meo.Accounts1`).
 
-Until these are answered, OmniStore makes no network call to meo-api and stores no Meo
-token. Billing, checkout and `/v1/sync` are not implemented on the API side either.
+Why:
+
+* The third-party OAuth registration is not public. Without a real `oauthClientId` and
+  the `meo:read` / `meo:write` scopes, a direct call cannot authenticate at all.
+* The broker already keeps provider keys, consent grants and tokens out of OmniStore
+  (see "Meo Account AI"). A direct client would need its own PKCE flow, token storage
+  in KWallet, refresh and revocation handling, all duplicating what the broker owns.
+* The AI routes need a caller-owned `credentialId` and a `consent` object. The broker
+  already produces both; OmniStore would have to reimplement the consent UI.
+
+Answers to the previous open questions:
+
+1. **Tokens:** OmniStore never runs its own PKCE flow. If a non-AI route is ever needed,
+   OmniStore asks the broker for a short-lived, scope-limited access token. That broker
+   method is **Not defined**; it must be specified by the Meo Account owner first.
+2. **Usage events:** not implemented, and off by default when it is. OmniStore must not
+   upload which apps are installed. A `source` name and event schema need the meo-api
+   owner and an explicit privacy decision before any code is written.
+3. **API vs broker:** the broker is the primary path, not a fallback. The API stays a
+   possible second path only for non-AI routes (backup, realtime notice), and only
+   after question 1 is answered.
+
+Revisit this decision when all of these are true: a client id is registered for
+`org.meo.OmniStore` with exact redirect `omnistore://auth/callback`; the Account owner
+defines the broker token method (or approves OmniStore's own PKCE); and a concrete
+feature needs a route the broker does not cover.
+
+`data/meo-account/org.meo.OmniStore.json` keeps its placeholder `oauthClientId` and
+scopes `openid profile email` until then. Do not add `meo:read` / `meo:write` there
+before registration exists: the file would claim authority the client does not have.
+
+## Facts missing from the meo-api reference
+
+The reference received so far does not contain the following. They are **Not defined**
+for OmniStore; do not infer them from other clients, and do not hard-code guesses.
+Read them from the Worker code or ask its owner.
+
+| Missing | Why OmniStore cares | Handling until defined |
+| --- | --- | --- |
+| Available model list (route, fields, per-plan differences) | Model picker for the AI assistant | The picker lists only what `ListAvailableLocalAiConnections` returns |
+| `/v1/chat/stream` framing and event fields (SSE or chunked, delta, finish, error, usage) | Rendering streamed answers | Use the broker's `invoke` result; no direct stream parsing |
+| Per-plan quotas (requests, tokens, rate limits, reset time) | Showing remaining quota, handling `429` | Show "unknown"; surface the error code the broker returns, never an invented limit |
+
+When the owner supplies them, record them in this file with the Worker commit they
+were read from, and add the matching error-state wording to MeoUI `STORE_FEEDBACK.md`.
+
+Billing, checkout and `/v1/sync` are not implemented on the API side either.
 
 ## Configuration
 
