@@ -331,10 +331,22 @@ async def handle_cli(backend: OmnistoreBackend, args):
         sys.stdout.flush()
 
     async def _handle_background_update_check():
+        from core import app_preferences
         from core.update_state import read_state
 
+        preferences = app_preferences.read_preferences(backend.config)
         updates = await backend.updater.check_all_updates()
-        if updates and shutil.which("notify-send"):
+        if updates and preferences["autoUpdate"]:
+            # Per-user Flatpak apps only; system packages keep needing an
+            # authorized transaction started by the user.
+            if await app_preferences.auto_update_user_apps(updates):
+                updates = await backend.updater.check_all_updates()
+        if preferences["cacheLimitMb"] > 0:
+            try:
+                await app_preferences.trim_caches_for_backend(backend, preferences["cacheLimitMb"])
+            except Exception:
+                logging.getLogger("omnistore").warning("Automatic cache cleanup failed")
+        if updates and preferences["notifyUpdates"] and shutil.which("notify-send"):
             try:
                 async with safe_subprocess(
                     "notify-send",

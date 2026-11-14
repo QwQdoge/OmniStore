@@ -143,8 +143,20 @@ case "$command" in
     [ "$#" -eq 2 ] || { echo "omnistore-apps $command requires APP_ID SOURCE" >&2; exit 64; }
     exec /opt/omnistore/backends/python_server --app-action "$command" --app-id "$1" --source "$2" --json
     ;;
+  preferences)
+    [ "$#" -eq 0 ] || { echo "omnistore-apps preferences takes no arguments" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --app-preferences --json
+    ;;
+  set-preferences)
+    [ "$#" -eq 1 ] || { echo "omnistore-apps set-preferences requires one JSON object" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --set-app-preferences "$1" --json
+    ;;
+  trim-cache)
+    [ "$#" -eq 0 ] || { echo "omnistore-apps trim-cache takes no arguments" >&2; exit 64; }
+    exec /opt/omnistore/backends/python_server --trim-app-caches --json
+    ;;
   *)
-    echo "usage: omnistore-apps export | {clear-cache|reset-settings|clear-data|uninstall} APP_ID SOURCE" >&2
+    echo "usage: omnistore-apps export | preferences | set-preferences JSON | trim-cache | {clear-cache|reset-settings|clear-data|uninstall} APP_ID SOURCE" >&2
     exit 64
     ;;
 esac

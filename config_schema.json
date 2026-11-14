@@ -211,6 +211,13 @@
         "remind_updates": {
           "type": "boolean"
         },
+        "auto_update_apps": {
+          "type": "boolean"
+        },
+        "app_cache_limit_mb": {
+          "type": "integer",
+          "enum": [0, 256, 512, 1024, 2048, 5120, 10240]
+        },
         "include_aur_in_update_all": {
           "type": "boolean"
         },

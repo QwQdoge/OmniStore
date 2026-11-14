@@ -78,6 +78,9 @@ async def main():
     cmd.add_argument("--export-installed-usage", action="store_true")
     cmd.add_argument("--export-app-management", action="store_true")
     cmd.add_argument("--app-action", choices=("clear-cache", "reset-settings", "clear-data", "uninstall"))
+    cmd.add_argument("--app-preferences", action="store_true")
+    cmd.add_argument("--set-app-preferences")
+    cmd.add_argument("--trim-app-caches", action="store_true")
     cmd.add_argument("--meo-channel", choices=("status", "beta", "stable"))
     cmd.add_argument("--update-status", action="store_true")
     cmd.add_argument("--update-plan", action="store_true")
@@ -100,7 +103,9 @@ async def main():
 
     # The cross-application export is intentionally always machine-readable:
     # Meo Settings must never parse Rich UI output or daemon traffic.
-    json_mode = args.json or args.export_installed_usage or args.export_app_management or bool(args.app_action)
+    json_mode = (args.json or args.export_installed_usage or args.export_app_management
+                 or bool(args.app_action) or args.app_preferences
+                 or args.set_app_preferences is not None or args.trim_app_caches)
     setattr(hijacked_print, "json_mode_active", json_mode)
     setup_stdout_hijack()
 
@@ -126,6 +131,31 @@ async def main():
             raise SystemExit(1)
         sys.stdout.write(json.dumps(snapshot, ensure_ascii=False) + "\n")
         sys.stdout.flush()
+        return
+
+    if args.app_preferences or args.set_app_preferences is not None or args.trim_app_caches:
+        from core import app_preferences
+
+        def emit(payload, code=0):
+            sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+            if code:
+                raise SystemExit(code)
+
+        try:
+            if args.app_preferences:
+                emit(app_preferences.read_preferences(backend.config))
+            elif args.set_app_preferences is not None:
+                emit(app_preferences.apply_preferences(
+                    backend.config, json.loads(args.set_app_preferences)))
+            else:
+                emit(await app_preferences.trim_caches_for_backend(backend))
+        except (ValueError, RuntimeError) as exc:
+            reason = str(exc) if str(exc) in {"invalid_preferences", "preferences_not_saved"} else "app_preferences_failed"
+            if isinstance(exc, json.JSONDecodeError):
+                reason = "invalid_preferences"
+            emit({"schema": app_preferences.SCHEMA, "version": app_preferences.SCHEMA_VERSION,
+                  "status": "error", "error": reason}, 1)
         return
 
     if args.app_action:
