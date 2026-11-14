@@ -15,6 +15,8 @@ class AccountAiBridge final : public QObject {
     Q_PROPERTY(QVariantMap requestSummary READ requestSummary NOTIFY changed)
     Q_PROPERTY(QVariantMap consent READ consent NOTIFY changed)
     Q_PROPERTY(QVariantList recommendedApps READ recommendedApps NOTIFY changed)
+    // Effective optional-AI switches: {enabled, search, recommend, summary, safety}.
+    Q_PROPERTY(QVariantMap features READ features NOTIFY featuresChanged)
 public:
     explicit AccountAiBridge(QObject *parent = nullptr);
     QVariantList connections() const { return m_connections; }
@@ -25,6 +27,9 @@ public:
     QVariantMap requestSummary() const { return m_arguments; }
     QVariantMap consent() const { return m_consent; }
     QVariantList recommendedApps() const { return m_recommended; }
+    QVariantMap features() const;
+    Q_INVOKABLE bool rawFeature(const QString &key) const;
+    Q_INVOKABLE void setFeature(const QString &key, bool enabled);
     Q_INVOKABLE void refreshConnections();
     Q_INVOKABLE void clearPresentation();
     Q_INVOKABLE void prepare(const QString &mode, const QString &query, const QVariantList &candidates);
@@ -33,8 +38,10 @@ public:
     static QVariantList groundedRecommendations(const QString &text, const QVariantList &candidates);
 signals:
     void changed();
+    void featuresChanged();
     void searchSuggested(const QString &query);
 private:
+    bool featureAllowed(const QString &mode) const;
     void start(const QString &action);
     void poll();
     void fail(const QString &message);

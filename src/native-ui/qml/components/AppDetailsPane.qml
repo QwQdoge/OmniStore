@@ -294,12 +294,14 @@ Flickable {
 
         RowLayout {
             MeoButton {
+                visible: !!accountAi.features.summary
                 text: qsTr("What is this package?")
                 icon.name: "auto_awesome"; type: "tonal"
                 enabled: !backend.busy && !accountAi.busy
                 onClicked: root.aiRequested("explain", root.appName(), [root.app])
             }
             MeoButton {
+                visible: !!accountAi.features.safety
                 text: qsTr("AI safety analysis")
                 icon.name: "shield"; type: "outlined"
                 enabled: !backend.busy && !accountAi.busy

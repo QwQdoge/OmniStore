@@ -36,7 +36,7 @@ def test_native_ui_uses_meoui_adaptive_shell():
         assert primary in main
     assert 'id: searchSheet' in main
     assert 'id: tasksSheet' in main
-    assert "topAppBarActions: [searchAction, tasksAction]" in main
+    assert "topAppBarActions: [searchAction, tasksAction, overflowAction]" in main
 
 
 def test_native_ui_requires_shared_kde_dynamic_color_contract():
@@ -248,3 +248,18 @@ def test_native_release_builder_does_not_build_flutter():
     assert "assemble_native_bundle(" in release
     assert "build_flutter(" not in release
     assert "FlutterUI" not in release
+
+
+def test_ai_features_are_optional_and_gated_in_ui_and_bridge():
+    bridge = read(NATIVE / "app" / "accountaibridge.cpp")
+    settings = read(QML_ROOT / "pages" / "SettingsPage.qml")
+    assert 'value(QStringLiteral("ai/enabled"), false)' in bridge
+    assert "featureAllowed(mode)" in bridge
+    assert "accountAi.setFeature" in settings
+    for gate, path in (
+        ("accountAi.features.search", "pages/SearchPage.qml"),
+        ("accountAi.features.recommend", "pages/HomePage.qml"),
+        ("accountAi.features.summary", "components/AppDetailsPane.qml"),
+        ("accountAi.features.safety", "components/AppDetailsPane.qml"),
+    ):
+        assert gate in read(QML_ROOT / path)

@@ -1,3 +1,5 @@
+#include <QSettings>
+#include <QStringList>
 #include "accountaibridge.h"
 #include <QDBusArgument>
 #include <QDBusConnection>
@@ -31,6 +33,41 @@ QJsonObject responseObject(QString text) {
     }
     return QJsonDocument::fromJson(text.toUtf8()).object();
 }
+}
+namespace {
+const QStringList &featureKeys() {
+    static const QStringList keys{"search", "recommend", "summary", "safety"};
+    return keys;
+}
+QSettings aiSettings() { return QSettings(QStringLiteral("MeoArch"), QStringLiteral("OmniStore")); }
+}
+QVariantMap AccountAiBridge::features() const {
+    QSettings s = aiSettings();
+    const bool master = s.value(QStringLiteral("ai/enabled"), false).toBool();
+    QVariantMap out{{QStringLiteral("enabled"), master}};
+    for (const QString &key : featureKeys())
+        out.insert(key, master && s.value(QStringLiteral("ai/") + key, false).toBool());
+    return out;
+}
+bool AccountAiBridge::rawFeature(const QString &key) const {
+    QSettings s = aiSettings();
+    return s.value(QStringLiteral("ai/") + key, false).toBool();
+}
+void AccountAiBridge::setFeature(const QString &key, bool enabled) {
+    if (key != QStringLiteral("enabled") && !featureKeys().contains(key)) return;
+    QSettings s = aiSettings();
+    s.setValue(QStringLiteral("ai/") + key, enabled);
+    s.sync();
+    if (!features().value(QStringLiteral("enabled")).toBool()) clearPresentation();
+    emit featuresChanged();
+}
+bool AccountAiBridge::featureAllowed(const QString &mode) const {
+    const QVariantMap f = features();
+    if (mode == QStringLiteral("search") || mode == QStringLiteral("rank")) return f.value("search").toBool();
+    if (mode == QStringLiteral("daily")) return f.value("recommend").toBool();
+    if (mode == QStringLiteral("explain")) return f.value("summary").toBool();
+    if (mode == QStringLiteral("safety")) return f.value("safety").toBool();
+    return false;
 }
 AccountAiBridge::AccountAiBridge(QObject *parent) : QObject(parent) {
     m_poll.setInterval(500);
@@ -79,6 +116,7 @@ void AccountAiBridge::refreshConnections() {
     });
 }
 void AccountAiBridge::prepare(const QString &mode, const QString &query, const QVariantList &candidates) {
+    if (!featureAllowed(mode)) { fail(tr("This AI feature is turned off in OmniStore settings.")); return; }
     if (m_busy || !m_consent.isEmpty()) return;
     if (!QStringList{"daily", "explain", "safety", "rank", "search"}.contains(mode)) return;
     QVariantMap connection;

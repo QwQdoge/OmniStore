@@ -33,6 +33,29 @@ Item {
         }]
     }
 
+    function aiRows() {
+        const f = accountAi.features
+        const master = !!f.enabled
+        const row = (key, icon, title, subtitle) => ({
+            "title": title,
+            "subtitle": subtitle,
+            "leadingIcon": icon,
+            "trailingKind": "switch",
+            "checked": key === "enabled" ? master : !!accountAi.rawFeature(key),
+            "enabled": key === "enabled" || master,
+            "interactive": key === "enabled" || master,
+            "onToggled": function(value) { accountAi.setFeature(key, value) }
+        })
+        return [
+            row("enabled", "auto_awesome", qsTr("Use AI assistance"),
+                qsTr("Off by default. Uses the AI connection saved in Meo Settings; every request is shown to you before it is sent.")),
+            row("search", "search", qsTr("AI search"), qsTr("Find software from a description of what you need.")),
+            row("recommend", "recommend", qsTr("AI recommendations"), qsTr("Suggest apps on Home and rank search results.")),
+            row("summary", "summarize", qsTr("AI summaries"), qsTr("Explain what a package is and does.")),
+            row("safety", "shield", qsTr("AI safety check"), qsTr("Advisory risk assessment of a package. It is not a security guarantee."))
+        ]
+    }
+
     function aboutRows() {
         return [{
             "objectName": "omnistoreAboutRow",
@@ -293,6 +316,17 @@ Item {
 
             Store.RepositoryManager {
                 Layout.fillWidth: true
+            }
+
+            MeoListHeader {
+                Layout.fillWidth: true
+                Layout.topMargin: MeoTheme.space16
+                text: qsTr("AI assistance")
+            }
+
+            MeoSettingsGroup {
+                Layout.fillWidth: true
+                model: root.aiRows()
             }
 
             MeoListHeader {
