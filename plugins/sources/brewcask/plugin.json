@@ -1,0 +1,18 @@
+{
+  "id": "builtin.brewcask",
+  "kind": "source",
+  "name": "Homebrew Cask",
+  "version": "1.0.0",
+  "entry": "",
+  "platforms": ["macos"],
+  "capabilities": ["search", "install", "uninstall", "update", "details", "list_installed", "launch"],
+  "permissions": ["subprocess", "filesystem", "system_package_manager"],
+  "builtin": true,
+  "trusted": true,
+  "default_enabled": false,
+  "requires_review": true,
+  "offer": "on_detect",
+  "detect": {"commands": ["brew"]},
+  "app_class": "native",
+  "experimental": true
+}

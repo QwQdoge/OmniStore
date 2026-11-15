@@ -70,27 +70,11 @@ pip-delete-this-directory.txt
 daemon/target/
 *.rs.bk
 
-# --- Flutter / Dart Frontend ---
-# Flutter build and tool directories
 .dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
 .packages
 .pub-cache/
 .pub/
-FlutterUI/.dart_tool/
-FlutterUI/.flutter-plugins
-FlutterUI/.flutter-plugins-dependencies
-FlutterUI/.packages
-FlutterUI/build/
 
-# Ephemeral Flutter files
-**/flutter/ephemeral/
-**/Flutter/ephemeral/
-FlutterUI/linux/flutter/ephemeral/
-FlutterUI/windows/flutter/ephemeral/
-FlutterUI/macos/Flutter/ephemeral/
-flutter_export_environment.sh
 
 # Android specific (if any)
 **/android/app/src/main/res/drawable-*/
@@ -111,7 +95,6 @@ bin/
 *.dylib
 
 # --- Offline Build & Packaging Artifacts ---
-/flutter_sdk/
 /home/
 /pkg/
 /src/

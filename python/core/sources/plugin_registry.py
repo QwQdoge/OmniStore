@@ -42,6 +42,15 @@ class PluginInfo:
     trusted: bool = False
     default_enabled: bool = False
     requires_review: bool = True
+    # Manifest v2
+    type: str = ""            # "" (builtin/entry code) or "catalog"
+    offer: str = "default"    # "default" | "on_detect" | "manual"
+    detect: Dict[str, Any] = field(default_factory=dict)  # {"commands": [...], "paths": [...]}
+    index: str = ""           # third-party catalog URL
+    experimental: bool = False
+    app_class: str = "native"  # "native" | "wrapped" (runs through a runtime like Wine)
+    detected: bool = False
+    offered: bool = False
 
     @classmethod
     def from_manifest(cls, data: Dict[str, Any], path: Path) -> "PluginInfo":
@@ -58,6 +67,12 @@ class PluginInfo:
             trusted=bool(data.get("trusted", False)),
             default_enabled=bool(data.get("default_enabled", False)),
             requires_review=bool(data.get("requires_review", True)),
+            type=str(data.get("type") or ""),
+            offer=str(data.get("offer") or "default"),
+            detect=dict(data.get("detect") or {}),
+            index=str(data.get("index") or ""),
+            experimental=bool(data.get("experimental", False)),
+            app_class=str(data.get("app_class") or "native"),
             path=str(path.parent),
         )
 
@@ -81,6 +96,14 @@ class PluginInfo:
             "trusted": self.trusted,
             "default_enabled": self.default_enabled,
             "requires_review": self.requires_review,
+            "type": self.type,
+            "offer": self.offer,
+            "detect": self.detect,
+            "index": self.index,
+            "experimental": self.experimental,
+            "app_class": self.app_class,
+            "detected": self.detected,
+            "offered": self.offered,
         }
 
 
@@ -92,9 +115,15 @@ class PluginRegistry:
         self.root = self._find_project_root()
         self.package_dir = self.root / "plugins" / "sources"
         self.legacy_dir = self.root / "plugins"
+        self.user_dir = self._user_sources_dir()
         self.plugins: Dict[str, PluginInfo] = {}
         self.sources: Dict[str, UnifiedSource] = {}
         self.errors: Dict[str, str] = {}
+
+    @staticmethod
+    def _user_sources_dir() -> Path:
+        base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
+        return Path(base) / "omnistore" / "sources"
 
     def _find_project_root(self) -> Path:
         if getattr(sys, "frozen", False):
@@ -151,7 +180,7 @@ class PluginRegistry:
         if info.builtin:
             return self.enable(plugin_id, False)
         path = Path(info.path)
-        if path.exists() and self.package_dir in path.parents:
+        if path.exists() and (self.package_dir in path.parents or self.user_dir in path.parents):
             shutil.rmtree(path)
         config = dict(self.cm.get("plugins.config", {}) or {})
         config.pop(plugin_id, None)
@@ -162,12 +191,19 @@ class PluginRegistry:
         return True
 
     def _load_manifest_packages(self) -> None:
-        for manifest_path in sorted(self.package_dir.glob("*/plugin.json")):
+        manifests = sorted(self.package_dir.glob("*/plugin.json"))
+        try:
+            manifests += sorted(self.user_dir.glob("*/plugin.json"))
+        except OSError:
+            pass
+        for manifest_path in manifests:
             try:
                 data = json.loads(manifest_path.read_text(encoding="utf-8"))
                 info = PluginInfo.from_manifest(data, manifest_path)
                 info.enabled = self._is_enabled(info)
                 info.available = self._is_platform_available(info)
+                info.detected = self._detect(info)
+                info.offered = self._is_offered(info)
                 schema_path = manifest_path.parent / "schema.json"
                 if schema_path.exists():
                     info.config_schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -194,6 +230,9 @@ class PluginRegistry:
     def _instantiate_manifest_source(self, info: PluginInfo, plugin_dir: Path) -> Optional[UnifiedSource]:
         try:
             source = self._builtin_source(info)
+            if source is None and info.type == "catalog":
+                from core.sources.catalog import CatalogSource
+                source = CatalogSource.from_dir(info.id, info.name, plugin_dir, self._resolve_source)
             if source is None:
                 source = self._load_entry_source(info, plugin_dir)
             if source is None:
@@ -223,6 +262,8 @@ class PluginRegistry:
             ApkSource, ChocolateySource, FdroidSource,
         )
 
+        from core.sources.bottles import BottlesSource
+        from core.sources.brew_cask import BrewCaskSource
         from core.sources.linux_native import (
             PrivilegedAptSource, PrivilegedDnfSource, PrivilegedZypperSource, PrivilegedApkSource,
         )
@@ -242,6 +283,8 @@ class PluginRegistry:
             "builtin.apk": PrivilegedApkSource,
             "builtin.chocolatey": ChocolateySource,
             "builtin.fdroid": FdroidSource,
+            "builtin.bottles": lambda: BottlesSource(self.cm),
+            "builtin.brewcask": BrewCaskSource,
         }
         factory = factories.get(info.id)
         return factory() if factory else None
@@ -346,6 +389,37 @@ class PluginRegistry:
             if any(name in properties for name in ("repositories", "remotes", "feeds", "buckets", "taps")):
                 implemented.append("repositories")
         return implemented
+
+    def _resolve_source(self, source_key: str) -> Optional[UnifiedSource]:
+        return self.sources.get(source_key)
+
+    def _detect(self, info: PluginInfo) -> bool:
+        """True when this machine has what the source needs (commands/paths)."""
+        if not info.available:
+            return False
+        spec = info.detect or {}
+        commands = [str(c) for c in spec.get("commands", [])]
+        paths = [os.path.expanduser(str(p)) for p in spec.get("paths", [])]
+        if not commands and not paths:
+            return True
+        return any(shutil.which(c) for c in commands) or any(os.path.exists(p) for p in paths)
+
+    def _is_offered(self, info: PluginInfo) -> bool:
+        """Detected, opt-in, and not yet decided by the user: show as 'available to add'."""
+        return bool(
+            info.offer == "on_detect" and info.detected
+            and info.id not in self._enabled_map()
+        )
+
+    def list_offers(self) -> List[Dict[str, Any]]:
+        return [info.to_dict() for info in self.plugins.values() if info.offered]
+
+    def add_catalog(self, url: str, opener=None) -> str:
+        """Add a third-party catalog by index URL. It starts disabled (needs review)."""
+        from core.sources.catalog import install_catalog
+        plugin_id = install_catalog(url, self.user_dir, opener)
+        self.enable(plugin_id, False)
+        return plugin_id
 
     def _is_platform_available(self, info: PluginInfo) -> bool:
         if info.platforms and _platform_key() not in info.platforms:

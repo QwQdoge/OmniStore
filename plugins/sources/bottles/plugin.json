@@ -1,0 +1,18 @@
+{
+  "id": "builtin.bottles",
+  "kind": "source",
+  "name": "Bottles",
+  "version": "1.0.0",
+  "entry": "",
+  "platforms": ["linux"],
+  "capabilities": ["search", "install", "details", "list_installed", "launch"],
+  "permissions": ["subprocess", "filesystem"],
+  "builtin": true,
+  "trusted": true,
+  "default_enabled": false,
+  "requires_review": true,
+  "offer": "on_detect",
+  "detect": {"commands": ["bottles-cli"], "paths": ["~/.var/app/com.usebottles.bottles"]},
+  "app_class": "wrapped",
+  "experimental": true
+}

@@ -12,7 +12,6 @@ DEFAULT_OUTPUT_ROOT = BASE_DIR.parent / "outputs"
 
 RUST_PROJECT_DIR = BASE_DIR / "daemon"
 PYTHON_PROJECT_DIR = BASE_DIR / "python"
-FLUTTER_PROJECT_DIR = BASE_DIR / "FlutterUI"
 
 # Built-in sources are loaded lazily from reviewed runtime manifests.
 # PyInstaller cannot discover those imports by tracing main.py, and several
@@ -187,56 +186,6 @@ def build_python(build_dir):
     subprocess.run(cmd, check=True, cwd=str(PYTHON_PROJECT_DIR))
     print("✅ Python Server Build 成功！")
 
-def account_dart_defines(allow_disabled):
-    """Return the public Account configuration required by a release build.
-
-    The publishable key is designed to be embedded in a client, but a provider
-    credential is never accepted here. Requiring both values prevents a release
-    that presents Account UI while silently compiling it into a disabled state.
-    """
-    url = os.environ.get("MEO_ACCOUNT_SUPABASE_URL", "").strip()
-    publishable_key = os.environ.get(
-        "MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY", ""
-    ).strip()
-    if bool(url) != bool(publishable_key):
-        raise RuntimeError(
-            "Set both MEO_ACCOUNT_SUPABASE_URL and "
-            "MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY, or neither."
-        )
-    if not url:
-        if allow_disabled:
-            return []
-        raise RuntimeError(
-            "Meo Account is required for release builds. Set "
-            "MEO_ACCOUNT_SUPABASE_URL and MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY. "
-            "For an intentionally offline developer build, pass "
-            "--allow-account-disabled."
-        )
-    if not url.startswith("https://") or any(ch.isspace() for ch in url):
-        raise RuntimeError("MEO_ACCOUNT_SUPABASE_URL must be a clean HTTPS URL.")
-    if any(ch.isspace() for ch in publishable_key):
-        raise RuntimeError(
-            "MEO_ACCOUNT_SUPABASE_PUBLISHABLE_KEY must not contain whitespace."
-        )
-    return [
-        f"--dart-define=SUPABASE_URL={url}",
-        f"--dart-define=SUPABASE_PUBLISHABLE_KEY={publishable_key}",
-    ]
-
-
-def build_flutter(platform, account_defines):
-    cmd = ["flutter", "build", platform, "--release", *account_defines]
-    state = "enabled" if account_defines else "intentionally disabled"
-    print(f"\n🚀 [正在执行] Flutter {platform} Release build (Meo Account {state})...")
-    # Do not echo dart-defines: even publishable client values should not be
-    # unnecessarily copied into build logs.
-    result = subprocess.run(cmd, cwd=FLUTTER_PROJECT_DIR)
-    if result.returncode != 0:
-        print(f"❌ Flutter {platform} Release build 失败，程序终止！")
-        sys.exit(1)
-    print(f"✅ Flutter {platform} Release build 成功！")
-
-
 def copy_builtin_source_manifests(bundle_dir):
     """Ship the manifest layer that the frozen backend resolves at runtime.
 
@@ -260,188 +209,23 @@ def copy_builtin_source_manifests(bundle_dir):
     return True
 
 
-def assemble(platform, output_dir, build_dir):
-    print("\n📦 [assemble] assembling Flutter Bundle...")
-
-    if platform == "windows":
-        flutter_bundle_dir = FLUTTER_PROJECT_DIR / "build/windows/x64/runner/Release"
-        binary_ext = ".exe"
-    elif platform == "macos":
-        flutter_bundle_dir = FLUTTER_PROJECT_DIR / "build/macos/Build/Products/Release"
-        binary_ext = ""
-    elif platform == "apk":
-        flutter_bundle_dir = FLUTTER_PROJECT_DIR / "build/app/outputs/flutter-apk"
-        binary_ext = ""
-    else:
-        flutter_bundle_dir = FLUTTER_PROJECT_DIR / "build/linux/x64/release/bundle"
-        binary_ext = ""
-
-    out_path = Path(output_dir).resolve()
-    out_path.mkdir(parents=True, exist_ok=True)
-
-    if platform == "apk":
-        # APK 只有单个文件，没有 backend，直接拷贝
-        apk_src = flutter_bundle_dir / "app-release.apk"
-        if apk_src.exists():
-            shutil.copy2(apk_src, out_path / "omnistore.apk")
-            print(f"✅ copy apk artifacts: omnistore.apk")
-        else:
-            print(f"⚠️ can not find apk artifacts: {apk_src}")
-        print(f"\n🎉 🎉 🎉 all done!")
-        print(f"📁 final bundle directory: {out_path}")
-        return
-
-    # 对于非 APK，我们要组装 backend
-    target_backend_dir = flutter_bundle_dir / "backends"
-    target_backend_dir.mkdir(parents=True, exist_ok=True)
-
-    # 复制 Rust 产物
-    rust_bin_name = "omnistore-daemon" + binary_ext
-    rust_src = pyinstaller_paths(build_dir, "omnistore-daemon")["dist"] / rust_bin_name
-    if rust_src.exists():
-        shutil.copy2(rust_src, target_backend_dir / rust_bin_name)
-        print(f"✅ copy rust artifacts: {rust_bin_name}")
-    else:
-        print(f"⚠️ can not find rust artifacts: {rust_src}")
-
-    # 复制 Python 产物
-    python_bin_name = "python_server" + binary_ext
-    python_src = pyinstaller_paths(build_dir, "python_server")["dist"] / python_bin_name
-    if python_src.exists():
-        shutil.copy2(python_src, target_backend_dir / python_bin_name)
-        print(f"✅ copy python artifacts: {python_bin_name}")
-    else:
-        print(f"⚠️ can not find python artifacts: {python_src}")
-
-    rollback_helper = BASE_DIR / "python" / "helpers" / "meo_stable_rollback.py"
-    if rollback_helper.is_file():
-        shutil.copy2(rollback_helper, target_backend_dir / "meo_stable_rollback.py")
-        os.chmod(target_backend_dir / "meo_stable_rollback.py", 0o755)
-        print("✅ copy Stable rollback helper")
-    else:
-        print(f"⚠️ can not find Stable rollback helper: {rollback_helper}")
-
-    repository_helper = BASE_DIR / "python" / "helpers" / "meo_repository_helper.py"
-    if repository_helper.is_file():
-        shutil.copy2(repository_helper, target_backend_dir / "meo_repository_helper.py")
-        os.chmod(target_backend_dir / "meo_repository_helper.py", 0o755)
-        print("✅ copy Pacman repository helper")
-    else:
-        print(f"⚠️ can not find Pacman repository helper: {repository_helper}")
-
-    app_manifests_source = BASE_DIR / "data" / "app-manifests"
-    if app_manifests_source.is_dir():
-        shutil.copytree(
-            app_manifests_source,
-            flutter_bundle_dir / "data" / "app-manifests",
-            dirs_exist_ok=True,
-        )
-        print("✅ copy app-management manifest contract")
-
-    systemd_source = BASE_DIR / "data" / "systemd" / "user"
-    if systemd_source.is_dir():
-        shutil.copytree(
-            systemd_source,
-            flutter_bundle_dir / "data" / "systemd" / "user",
-            dirs_exist_ok=True,
-        )
-        print("✅ copy packaged update-check systemd units")
-
-    update_contract = BASE_DIR / "docs" / "UNIFIED_UPDATES.md"
-    if update_contract.is_file():
-        update_docs_dir = flutter_bundle_dir / "data" / "docs"
-        update_docs_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(update_contract, update_docs_dir / update_contract.name)
-        print("✅ copy unified update contract and attribution")
-
-    project_license = BASE_DIR / "LICENSE"
-    if not project_license.is_file():
-        raise RuntimeError(f"required project license is missing: {project_license}")
-    shutil.copy2(project_license, flutter_bundle_dir / "LICENSE")
-    print("✅ copy GPL-3.0-only license")
-
-    copy_builtin_source_manifests(flutter_bundle_dir)
-
-    icon_src = BASE_DIR / "omnistore.svg"
-    if icon_src.exists():
-        shutil.copy2(icon_src, flutter_bundle_dir / "omnistore.svg")
-        print("✅ copy icon artifact: omnistore.svg")
-    else:
-        print(f"⚠️ can not find icon artifact: {icon_src}")
-
-    # 最后，将整个 flutter_bundle_dir 复制到 output_dir
-    print(f"📦 Copying full bundle to {out_path} ...")
-    if flutter_bundle_dir.exists():
-        # 如果目标目录不为空，先清空或使用 dirs_exist_ok=True
-        shutil.copytree(flutter_bundle_dir, out_path, dirs_exist_ok=True)
-        print(f"✅ copy bundle to output directory")
-    else:
-        print(f"⚠️ flutter bundle directory not found: {flutter_bundle_dir}")
-
-    print(f"\n🎉 🎉 🎉 all done!")
-    print(f"📁 final bundle directory: {out_path}")
-
 def main():
-    parser = argparse.ArgumentParser(description="OmniStore auto build script")
-    parser.add_argument("--all", action="store_true", help="build everything (Rust + Python + Flutter)")
+    parser = argparse.ArgumentParser(description="OmniStore backend build helper (the native bundle is built by src/native-ui/build_linux_release.py)")
     parser.add_argument("--rust", action="store_true", help="only build Rust daemon")
     parser.add_argument("--python", action="store_true", help="only build Python backend")
-    parser.add_argument("--flutter", action="store_true", help="only build Flutter frontend")
-    parser.add_argument("--assemble", action="store_true", help="only execute assembly step (copy binaries into Flutter bundle)")
-    parser.add_argument("--platform", type=str, default="linux", choices=["linux", "windows", "macos", "apk"], help="target platform (default: linux)")
-    parser.add_argument(
-        "--output-dir",
-        type=str,
-        default=None,
-        help="exact assembled-bundle directory; takes priority over environment/default paths",
-    )
-    parser.add_argument(
-        "--output-root",
-        type=str,
-        default=None,
-        help="shared Projects output root (overrides MEO_OUTPUT_ROOT)",
-    )
-    parser.add_argument(
-        "--build-dir",
-        type=str,
-        default=None,
-        help="PyInstaller build/spec/work root (overrides MEO_OMNISTORE_BUILD_DIR)",
-    )
-    parser.add_argument(
-        "--allow-account-disabled",
-        action="store_true",
-        help="permit an explicitly offline developer build without Meo Account",
-    )
-
+    parser.add_argument("--build-dir", type=str, default=None, help="PyInstaller build/spec/work root (overrides MEO_OMNISTORE_BUILD_DIR)")
+    parser.add_argument("--output-dir", type=str, default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--output-root", type=str, default=None, help="shared Projects output root (overrides MEO_OUTPUT_ROOT)")
     args = parser.parse_args()
-
-    # 如果没有任何参数，默认显示帮助
-    if not any([args.all, args.rust, args.python, args.flutter, args.assemble]):
+    if not (args.rust or args.python):
         parser.print_help()
         return
-
-    build_dir, output_dir = resolve_output_paths(args)
-    account_defines = account_dart_defines(args.allow_account_disabled)
-
-    # APK 不需要 Python 和 Rust 后端
-    if args.platform == "apk":
-        if args.all or args.flutter:
-            build_flutter("apk", account_defines)
-        if args.all or args.assemble:
-            assemble("apk", output_dir, build_dir)
-        return
-
-    if args.all or args.rust:
+    build_dir, _ = resolve_output_paths(args)
+    if args.rust:
         build_rust(build_dir)
-
-    if args.all or args.python:
+    if args.python:
         build_python(build_dir)
 
-    if args.all or args.flutter:
-        build_flutter(args.platform, account_defines)
-
-    if args.all or args.rust or args.python or args.flutter or args.assemble:
-        assemble(args.platform, output_dir, build_dir)
 
 if __name__ == "__main__":
     main()

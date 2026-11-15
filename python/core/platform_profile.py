@@ -126,6 +126,10 @@ def source_is_relevant(source_id: str, profile: Optional[SystemProfile] = None) 
 
     if source_id in {"github", "bitu", "fdroid"}:
         return True
+    if source_id == "bottles":
+        return profile.platform == "linux"
+    if source_id == "brewcask":
+        return profile.platform == "macos"
     if profile.platform == "linux" and source_id in {"flatpak", "appimage"}:
         return True
     if profile.platform == "windows":

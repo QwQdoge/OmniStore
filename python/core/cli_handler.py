@@ -31,6 +31,8 @@ class CLIArguments(BaseModel):
     list_plugins: bool = False
     set_plugin_enabled: Optional[str] = None
     remove_plugin: Optional[str] = None
+    list_offers: bool = False
+    add_catalog: Optional[str] = None
     add_custom_repo: Optional[str] = None
     remove_custom_repo: Optional[str] = None
     ai_explain: Optional[str] = None
@@ -384,6 +386,8 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "list_custom_repos": lambda: backend.run_list_custom_repos(),
         "list_plugins": lambda: backend.run_list_plugins(validated_args.json_mode),
         "set_plugin_enabled": lambda: _handle_set_plugin_enabled(validated_args.set_plugin_enabled),
+        "list_offers": lambda: backend.run_list_offers(validated_args.json_mode),
+        "add_catalog": lambda: backend.run_add_catalog(validated_args.add_catalog, validated_args.json_mode),
         "remove_plugin": lambda: backend.run_remove_plugin(validated_args.remove_plugin, validated_args.json_mode),
         "ai_explain": lambda: backend.run_ai_explain(validated_args.ai_explain, validated_args.ai_desc or "", validated_args.json_mode),
         "ai_recommend": lambda: backend.run_ai_recommend(validated_args.ai_recommend, validated_args.json_mode),

@@ -20,28 +20,24 @@
 
 Work only in the owning layer for the task. Inspect `git status`, the affected files, and the nearest relevant tests/contracts before editing; do not scan the whole repository or read every document by default.
 
-Read `docs/architecture-migration.md` before work that touches client architecture, directory layout, Flutter/Native parity, or packaging paths.
+Read `docs/architecture-migration.md` before work that touches client architecture, directory layout, or packaging paths.
 
 ## Ownership
 
 - `python/`: **current backend authority** for Python backend, source/plugin logic, daemon mode, and Python tests.
-- `src/native-ui/`: **current desktop client direction**. New OmniStore desktop UI/product work should target the native client unless the task explicitly concerns legacy compatibility.
-- `legacy/flutter-ui/`: **legacy compatibility client**. Keep it buildable where compatibility contracts still require it, but do not add new desktop product features here by default.
+- `src/native-ui/`: **the desktop client**. OmniStore desktop UI/product work targets the native client. The Flutter client has been removed.
 - `plugins/sources/`: source manifests. A manifest or toggle alone does not prove search/install/update support.
 - `PKGBUILD`, `auto_build.py`, release/export scripts: packaging and release contracts.
 - This repository has Python daemon code; it does **not** contain a Rust daemon/Cargo workspace. Do not invent or describe one.
 
 Shared OS/Plasma UI belongs in MeoUI or meo-kde rather than being copied here.
 
-The client layout has crossed the structural migration boundary: native code is under `src/`, legacy Flutter is under `legacy/`. Do not recreate top-level `NativeUI/` or `FlutterUI/` compatibility copies. If a maintained tool still references those paths, fix the tool instead of restoring duplicate trees.
+The client layout has crossed the structural migration boundary: native code is under `src/`. Flutter is gone: do not recreate `legacy/`, `FlutterUI/` or `NativeUI/`. If a tool still references those paths, fix the tool.
 
 ## Validation matrix
 
 Run the narrowest matching checks first.
 
-- Flutter compatibility change:
-  `cd legacy/flutter-ui && flutter pub get && flutter analyze && flutter test --reporter expanded`
-  Add `flutter build linux --release` when Linux integration, dependencies, packaging, or compatibility behavior changed.
 - Python/backend change:
   `cd python && python -m pytest -q`
   If dependencies changed, also install/check `requirements.txt` in an isolated environment.

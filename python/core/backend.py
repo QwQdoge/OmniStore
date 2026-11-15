@@ -753,6 +753,30 @@ class OmnistoreBackend:
             return ok
 
     @safe_command
+    async def run_list_offers(self, json_mode: bool = False):
+        """Sources this machine supports that the user has not enabled or dismissed."""
+        async with self:
+            registry = self.manager.plugin_registry if self.manager else None
+            offers = registry.list_offers() if registry else []
+            if json_mode: sys.stdout.write(json.dumps(offers, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            else:
+                for o in offers: console.print(f"{o['id']}  {o['name']}" + ("  (experimental)" if o.get("experimental") else ""))
+            return offers
+
+    @safe_command
+    async def run_add_catalog(self, url: str, json_mode: bool = False) -> bool:
+        """Add a third-party catalog by https index URL; it stays disabled until enabled."""
+        async with self:
+            registry = self.manager.plugin_registry if self.manager else None
+            try:
+                plugin_id = await asyncio.to_thread(registry.add_catalog, url) if registry else ""
+                ok, error = bool(plugin_id), ""
+            except Exception as exc:
+                plugin_id, ok, error = "", False, str(exc)
+            if json_mode: sys.stdout.write(json.dumps({"status": "success" if ok else "error", "plugin_id": plugin_id, "error": error}) + "\n"); sys.stdout.flush()
+            return ok
+
+    @safe_command
     async def run_remove_plugin(self, plugin_id: str, json_mode: bool = False) -> bool:
         SecurityValidator.validate_string(plugin_id, "Plugin ID")
         async with self:

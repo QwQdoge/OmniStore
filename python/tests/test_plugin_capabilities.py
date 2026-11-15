@@ -19,6 +19,8 @@ from core.sources.flatpak.flatpak import FlatpakSource
 from core.sources.appimage.appimage import AppImageSource
 from core.config_loader import ConfigManager
 from core.sources.plugin_registry import PluginRegistry
+from core.sources.bottles import BottlesSource
+from core.sources.brew_cask import BrewCaskSource
 
 
 class DummySession:
@@ -56,6 +58,8 @@ CLASS_BY_PLUGIN = {
     "builtin.aur": lambda: AurSource(DummySession()),
     "builtin.bitu": lambda: BituSource(DummySession(), DummyConfig()),
     "builtin.brew": BrewSource,
+    "builtin.bottles": lambda: BottlesSource(DummyConfig()),
+    "builtin.brewcask": BrewCaskSource,
     "builtin.apt": AptSource,
     "builtin.dnf": DnfSource,
     "builtin.zypper": ZypperSource,
