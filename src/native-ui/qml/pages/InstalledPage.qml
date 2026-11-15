@@ -50,9 +50,15 @@ Item {
             }
         }
 
+        Store.ListSkeleton {
+            Layout.fillWidth: true
+            active: backend.busyOperation === "installed" && backend.installedApps.length === 0
+            rows: 5
+        }
+
         MeoProgressBar {
             Layout.fillWidth: true
-            visible: backend.busyAction === qsTr("installed apps")
+            visible: backend.busyOperation === "installed" && backend.installedApps.length > 0
             indeterminate: true
         }
 

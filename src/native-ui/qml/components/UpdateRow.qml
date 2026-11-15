@@ -48,15 +48,20 @@ MeoCard {
                 color: MeoTheme.contentOnSurface
                 elide: Text.ElideRight
             }
-            MeoText {
+            RowLayout {
                 Layout.fillWidth: true
-                text: root.sourceName() + " · "
-                      + String(root.update.current_version || qsTr("Unknown"))
-                      + " → " + String(root.update.new_version || qsTr("Unknown"))
-                typeRole: "body"
-                typeSize: "small"
-                color: MeoTheme.contentOnSurfaceVariant
-                elide: Text.ElideRight
+                spacing: 8 * MeoTheme.globalScale
+                MeoText {
+                    Layout.fillWidth: true
+                    text: root.sourceName() + " · "
+                          + String(root.update.current_version || qsTr("Unknown"))
+                          + " → " + String(root.update.new_version || qsTr("Unknown"))
+                    typeRole: "body"
+                    typeSize: "small"
+                    color: MeoTheme.contentOnSurfaceVariant
+                    elide: Text.ElideRight
+                }
+                Store.SourceBadge { source: root.sourceName() }
             }
         }
 

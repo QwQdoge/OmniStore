@@ -204,7 +204,7 @@ Item {
                 }
                 Item { Layout.fillWidth: true }
                 MeoLoadingIndicator {
-                    visible: backend.busyAction === qsTr("recommendations")
+                    visible: backend.busyOperation === "recommendations"
                     size: "s"
                 }
                 MeoIconButton {

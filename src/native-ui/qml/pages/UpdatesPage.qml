@@ -94,9 +94,15 @@ Item {
             }
         }
 
+        Store.ListSkeleton {
+            Layout.fillWidth: true
+            active: backend.busyOperation === "updates" && backend.updates.length === 0
+            rows: 5
+        }
+
         MeoProgressBar {
             Layout.fillWidth: true
-            visible: backend.busyAction === qsTr("updates") || transactions.busy
+            visible: (backend.busyOperation === "updates" && backend.updates.length > 0) || transactions.busy
             indeterminate: transactions.busy ? transactions.progress < 0 : true
             value: transactions.progress >= 0 ? transactions.progress : 0
         }

@@ -65,9 +65,15 @@ Item {
             }
         }
 
+        Store.ListSkeleton {
+            Layout.fillWidth: true
+            active: backend.busyOperation === "search" && backend.searchResults.length === 0
+            rows: 5
+        }
+
         MeoProgressBar {
             Layout.fillWidth: true
-            visible: backend.busyAction === qsTr("search")
+            visible: backend.busyOperation === "search" && backend.searchResults.length > 0
             indeterminate: true
         }
 

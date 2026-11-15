@@ -14,6 +14,7 @@ class BackendBridge final : public QObject
 
     Q_PROPERTY(bool busy READ busy NOTIFY stateChanged)
     Q_PROPERTY(QString busyAction READ busyAction NOTIFY stateChanged)
+    Q_PROPERTY(QString busyOperation READ busyOperation NOTIFY stateChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY stateChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
     Q_PROPERTY(QString errorDetail READ errorDetail NOTIFY stateChanged)
@@ -44,6 +45,9 @@ public:
 
     bool busy() const { return m_process != nullptr; }
     QString busyAction() const { return m_busyAction; }
+    // Stable machine name of the running read/mutation ("installed", "search", ...);
+    // pages compare this, never the translated busyAction label.
+    QString busyOperation() const { return busy() ? operationName(m_current.operation) : QString{}; }
     QString statusMessage() const { return m_statusMessage; }
     QString errorMessage() const { return m_errorMessage; }
     QString errorDetail() const { return m_errorDetail; }

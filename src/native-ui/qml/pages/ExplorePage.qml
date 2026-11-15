@@ -68,7 +68,7 @@ Item {
 
             MeoProgressBar {
                 Layout.fillWidth: true
-                visible: backend.busyAction === qsTr("category")
+                visible: backend.busyOperation === "category"
                 indeterminate: true
             }
 

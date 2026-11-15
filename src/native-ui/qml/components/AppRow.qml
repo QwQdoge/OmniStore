@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 MeoCard {
     id: root
@@ -53,13 +54,18 @@ MeoCard {
                 color: MeoTheme.contentOnSurface
                 elide: Text.ElideRight
             }
-            MeoText {
+            RowLayout {
                 Layout.fillWidth: true
-                text: root.sourceName() + (root.versionText().length > 0 ? " · " + root.versionText() : "")
-                typeRole: "label"
-                typeSize: "small"
-                color: MeoTheme.primary
-                elide: Text.ElideRight
+                spacing: 8 * MeoTheme.globalScale
+                MeoText {
+                    Layout.fillWidth: true
+                    text: root.sourceName() + (root.versionText().length > 0 ? " · " + root.versionText() : "")
+                    typeRole: "label"
+                    typeSize: "small"
+                    color: MeoTheme.primary
+                    elide: Text.ElideRight
+                }
+                Store.SourceBadge { source: root.sourceName() }
             }
             MeoText {
                 Layout.fillWidth: true

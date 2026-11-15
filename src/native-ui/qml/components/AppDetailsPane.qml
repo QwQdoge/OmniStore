@@ -169,13 +169,18 @@ Flickable {
                     color: MeoTheme.contentOnSurface
                     wrapMode: Text.WordWrap
                 }
-                MeoText {
+                RowLayout {
                     Layout.fillWidth: true
-                    text: root.sourceName() + (root.versionText().length > 0 ? " · " + root.versionText() : "")
-                    typeRole: "label"
-                    typeSize: "medium"
-                    color: MeoTheme.primary
-                    elide: Text.ElideRight
+                    spacing: 8 * MeoTheme.globalScale
+                    MeoText {
+                        Layout.fillWidth: true
+                        text: root.sourceName() + (root.versionText().length > 0 ? " · " + root.versionText() : "")
+                        typeRole: "label"
+                        typeSize: "medium"
+                        color: MeoTheme.primary
+                        elide: Text.ElideRight
+                    }
+                    Store.SourceBadge { source: root.sourceName() }
                 }
                 MeoText {
                     Layout.fillWidth: true
@@ -347,7 +352,7 @@ Flickable {
 
         MeoProgressBar {
             Layout.fillWidth: true
-            visible: backend.busyAction === qsTr("app details") && !root.selectedMatches && !transactions.busy
+            visible: backend.busyOperation === "details" && !root.selectedMatches && !transactions.busy
             indeterminate: true
         }
 
