@@ -33,6 +33,8 @@ class CLIArguments(BaseModel):
     remove_plugin: Optional[str] = None
     list_offers: bool = False
     add_catalog: Optional[str] = None
+    bottles_status: bool = False
+    set_bottle_listed: Optional[str] = None
     add_custom_repo: Optional[str] = None
     remove_custom_repo: Optional[str] = None
     ai_explain: Optional[str] = None
@@ -139,6 +141,16 @@ class CLIArguments(BaseModel):
             v_stripped = v.strip()
             if not re.match(r'^[a-zA-Z0-9._-]+=(true|false|1|0|yes|no)$', v_stripped, re.IGNORECASE):
                 raise ValueError("Plugin enabled format: plugin.id=true|false")
+            return v_stripped
+        return v
+
+    @field_validator("set_bottle_listed")
+    @classmethod
+    def validate_set_bottle_listed(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v_stripped = v.strip()
+            if not re.match(r'^[A-Za-z0-9._ \-]{1,64}=(true|false|1|0|yes|no)$', v_stripped, re.IGNORECASE):
+                raise ValueError("Bottle listed format: name=true|false")
             return v_stripped
         return v
 
@@ -289,6 +301,10 @@ async def handle_cli(backend: OmnistoreBackend, args):
         enabled = raw_enabled.lower() in ("true", "1", "yes")
         await backend.run_set_plugin_enabled(plugin_id, enabled, validated_args.json_mode)
 
+    async def _handle_set_bottle_listed(raw_value):
+        bottle, _, raw = raw_value.rpartition("=")
+        await backend.run_set_bottle_listed(bottle.strip(), raw.strip().lower() in ("true", "1", "yes"), validated_args.json_mode)
+
     async def _handle_meo_channel(action: str):
         from core.meo_channel import MeoChannelError, MeoChannelManager
 
@@ -386,6 +402,8 @@ async def handle_cli(backend: OmnistoreBackend, args):
         "list_custom_repos": lambda: backend.run_list_custom_repos(),
         "list_plugins": lambda: backend.run_list_plugins(validated_args.json_mode),
         "set_plugin_enabled": lambda: _handle_set_plugin_enabled(validated_args.set_plugin_enabled),
+        "bottles_status": lambda: backend.run_bottles_status(validated_args.json_mode),
+        "set_bottle_listed": lambda: _handle_set_bottle_listed(validated_args.set_bottle_listed),
         "list_offers": lambda: backend.run_list_offers(validated_args.json_mode),
         "add_catalog": lambda: backend.run_add_catalog(validated_args.add_catalog, validated_args.json_mode),
         "remove_plugin": lambda: backend.run_remove_plugin(validated_args.remove_plugin, validated_args.json_mode),

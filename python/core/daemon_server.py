@@ -54,6 +54,7 @@ class DaemonRequest(BaseModel):
             "run_remove_custom_repo", "run_launch", "run_locate",
             "run_list_installed_sources", "run_list_plugins",
             "run_set_plugin_enabled", "run_remove_plugin",
+            "run_list_offers", "run_bottles_status", "run_set_bottle_listed",
             "run_get_storage_info", "run_clean_system", "run_get_essentials",
             "run_import_packages", "run_export_packages",
             "run_update_env", "run_save_config", "config.data", "run_check_env", "env.check_env",

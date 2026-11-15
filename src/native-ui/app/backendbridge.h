@@ -32,6 +32,7 @@ class BackendBridge final : public QObject
     Q_PROPERTY(QVariantMap installedUsage READ installedUsage NOTIFY dataChanged)
     Q_PROPERTY(QVariantList updates READ updates NOTIFY dataChanged)
     Q_PROPERTY(QVariantList plugins READ plugins NOTIFY dataChanged)
+    Q_PROPERTY(QVariantMap bottles READ bottles NOTIFY dataChanged)
     Q_PROPERTY(QVariantMap config READ config NOTIFY dataChanged)
     Q_PROPERTY(QVariantMap storageInfo READ storageInfo NOTIFY dataChanged)
     Q_PROPERTY(QVariantMap selectedApp READ selectedApp NOTIFY dataChanged)
@@ -60,6 +61,7 @@ public:
     QVariantMap installedUsage() const { return m_installedUsage; }
     QVariantList updates() const { return m_updates; }
     QVariantList plugins() const { return m_plugins; }
+    QVariantMap bottles() const { return m_bottles; }
     QVariantMap config() const { return m_config; }
     QVariantMap storageInfo() const { return m_storageInfo; }
     QVariantMap selectedApp() const { return m_selectedApp; }
@@ -72,6 +74,7 @@ public:
     Q_INVOKABLE void loadInstalledUsage();
     Q_INVOKABLE void loadUpdates();
     Q_INVOKABLE void loadPlugins();
+    Q_INVOKABLE void loadBottles();
     Q_INVOKABLE void loadConfig();
     Q_INVOKABLE void loadStorageInfo();
     Q_INVOKABLE void loadDetails(const QString &appId, const QString &source = {});
@@ -83,6 +86,7 @@ public:
     Q_INVOKABLE void updateAll();
     Q_INVOKABLE void launchApp(const QString &name, const QString &source);
     Q_INVOKABLE void setPluginEnabled(const QString &pluginId, bool enabled);
+    Q_INVOKABLE void setBottleListed(const QString &bottle, bool listed);
     Q_INVOKABLE void cancelOperation();
     Q_INVOKABLE void clearTaskLog();
     Q_INVOKABLE void clearError();
@@ -106,6 +110,7 @@ private:
         InstalledUsage,
         Updates,
         Plugins,
+        Bottles,
         Config,
         Storage,
         Details,
@@ -116,6 +121,7 @@ private:
         Launch,
         Locate,
         PluginToggle,
+        BottleListed,
     };
 
     struct Request {
@@ -178,6 +184,7 @@ private:
     QVariantMap m_installedUsage;
     QVariantList m_updates;
     QVariantList m_plugins;
+    QVariantMap m_bottles;
     QVariantMap m_config;
     QVariantMap m_storageInfo;
     QVariantMap m_selectedApp;

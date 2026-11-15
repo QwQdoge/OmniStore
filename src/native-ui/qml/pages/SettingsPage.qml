@@ -128,6 +128,10 @@ Item {
                 labels.push(root.capabilityLabel(capabilities[index]))
             parts.push(labels.join(" · "))
         }
+        if (plugin.offered)
+            parts.unshift(qsTr("Found on this computer"))
+        if (plugin.experimental)
+            parts.push(qsTr("Experimental"))
         if (String(plugin.error || "").length > 0)
             parts.push(String(plugin.error))
         return parts.join("  •  ")
@@ -135,6 +139,8 @@ Item {
 
     function sourceGroup(plugin) {
         const id = String(plugin.id || "").toLowerCase()
+        if (plugin.offered)
+            return "offers"
         if (id === "builtin.pacman")
             return "system"
         if (id === "builtin.flatpak")
@@ -180,6 +186,34 @@ Item {
             "interactive": available,
             "onToggled": function(value) { root.requestPluginToggle(plugin, value) }
         }
+    }
+
+    function bottleRows() {
+        const info = backend.bottles || {}
+        const rows = []
+        if (!info.enabled)
+            return rows
+        const bottles = Array.isArray(info.bottles) ? info.bottles : []
+        for (let index = 0; index < bottles.length; ++index) {
+            const bottle = bottles[index]
+            const name = String(bottle.name || "")
+            if (name.length === 0)
+                continue
+            const decided = bottle.listed === true || bottle.listed === false
+            rows.push({
+                "title": name,
+                "subtitle": decided
+                    ? (bottle.listed ? qsTr("Programs appear in Installed") : qsTr("Programs are hidden"))
+                    : qsTr("Not decided yet. Programs stay hidden until you choose."),
+                "leadingIcon": "wine_bar",
+                "trailingKind": "switch",
+                "checked": bottle.listed === true,
+                "enabled": !backend.busy,
+                "interactive": true,
+                "onToggled": function(value) { backend.setBottleListed(name, value) }
+            })
+        }
+        return rows
     }
 
     function sourceRows(group) {
@@ -308,6 +342,22 @@ Item {
 
             Store.SystemStatusPanel {
                 Layout.fillWidth: true
+            }
+
+            MeoSettingsGroup {
+                Layout.fillWidth: true
+                visible: root.sourceRows("offers").length > 0
+                title: qsTr("Available to add")
+                subtitle: qsTr("Found on this computer. Nothing is added until you turn it on.")
+                model: root.sourceRows("offers")
+            }
+
+            MeoSettingsGroup {
+                Layout.fillWidth: true
+                visible: root.bottleRows().length > 0
+                title: qsTr("Windows app containers")
+                subtitle: qsTr("Choose which Bottles containers show their programs as normal apps.")
+                model: root.bottleRows()
             }
 
             MeoSettingsGroup {

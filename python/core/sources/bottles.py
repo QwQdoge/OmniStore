@@ -2,7 +2,7 @@
 
 A bottle is a container, not an app. The programs registered inside a bottle
 are the apps. They stay out of the normal installed list until the user decides
-per bottle (``bottles.listed``), so a fresh Bottles setup never floods the list.
+per bottle (``plugins.config.builtin.bottles.listed``), so a fresh Bottles setup never floods the list.
 
 Command syntax follows ``bottles-cli``. It has not been exercised against a live
 Bottles install from this repository's tests; those use a fake command runner.
@@ -18,6 +18,7 @@ from core.subprocess_utils import safe_subprocess
 
 FLATPAK_APP_ID = "com.usebottles.bottles"
 SOURCE_NAME = "Bottles"
+PLUGIN_ID = "builtin.bottles"
 
 
 def _decode(data: bytes) -> str:
@@ -98,14 +99,17 @@ class BottlesSource(UnifiedSource):
     def _listed_map(self) -> Dict[str, bool]:
         if self.cm is None:
             return {}
-        return dict(self.cm.get("bottles.listed", {}) or {})
+        config = self.cm.get("plugins.config", {}) or {}
+        return dict((config.get(PLUGIN_ID) or {}).get("listed", {}) or {})
 
     def set_listed(self, bottle: str, listed: bool) -> None:
         if self.cm is None:
             return
         mapping = self._listed_map()
         mapping[bottle] = bool(listed)
-        self.cm.set("bottles.listed", mapping)
+        config = dict(self.cm.get("plugins.config", {}) or {})
+        config[PLUGIN_ID] = {**(config.get(PLUGIN_ID) or {}), "listed": mapping}
+        self.cm.set("plugins.config", config)
 
     async def pending_bottles(self) -> List[str]:
         """Bottles the user has not decided about yet (ask once, not every time)."""

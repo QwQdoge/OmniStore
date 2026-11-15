@@ -764,6 +764,30 @@ class OmnistoreBackend:
             return offers
 
     @safe_command
+    async def run_bottles_status(self, json_mode: bool = False):
+        """Bottles and whether the user listed them as normal apps (None = undecided)."""
+        async with self:
+            registry = self.manager.plugin_registry if self.manager else None
+            source = registry.sources.get("bottles") if registry else None
+            status = {"enabled": bool(source and source.enabled), "bottles": []}
+            if status["enabled"]:
+                listed = source._listed_map()
+                status["bottles"] = [{"name": b, "listed": listed.get(b)} for b in await source.bottles()]
+            if json_mode: sys.stdout.write(json.dumps(status, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            return status
+
+    @safe_command
+    async def run_set_bottle_listed(self, bottle: str, listed: bool, json_mode: bool = False) -> bool:
+        async with self:
+            registry = self.manager.plugin_registry if self.manager else None
+            source = registry.sources.get("bottles") if registry else None
+            ok = bool(source and source.enabled and bottle in await source.bottles())
+            if ok: source.set_listed(bottle, listed)
+            self.cache.invalidate_installed_cache()
+            if json_mode: sys.stdout.write(json.dumps({"status": "success" if ok else "error", "bottle": bottle, "listed": listed}) + "\n"); sys.stdout.flush()
+            return ok
+
+    @safe_command
     async def run_add_catalog(self, url: str, json_mode: bool = False) -> bool:
         """Add a third-party catalog by https index URL; it stays disabled until enabled."""
         async with self:

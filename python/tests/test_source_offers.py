@@ -14,10 +14,17 @@ class Config:
         self.data = {}
 
     def get(self, key, default=None):
-        return self.data.get(key, default)
+        if key in self.data:
+            return self.data[key]
+        value = self.data
+        for part in key.split("."):
+            if not isinstance(value, dict) or part not in value:
+                return default
+            value = value[part]
+        return value
 
     def set(self, key, value):
-        self.data[key] = value
+        self.data[key] = value  # flat keys; get() resolves dotted paths over nested dicts too
 
 
 def make_registry(tmp_path, monkeypatch):

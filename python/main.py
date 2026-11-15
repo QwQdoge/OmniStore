@@ -57,6 +57,8 @@ async def main():
     cmd.add_argument("--remove-plugin")
     cmd.add_argument("--list-offers", action="store_true")
     cmd.add_argument("--add-catalog")
+    cmd.add_argument("--bottles-status", action="store_true")
+    cmd.add_argument("--set-bottle-listed")
     cmd.add_argument("--add-custom-repo")
     cmd.add_argument("--remove-custom-repo")
     cmd.add_argument("--ai-explain")
