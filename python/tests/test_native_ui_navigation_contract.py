@@ -31,7 +31,7 @@ def test_search_and_tasks_are_store_level_utility_sheets():
     assert "SearchPage {" in main
     assert "id: tasksSheet" in main
     assert "TasksPage {}" in main
-    assert 'Accessible.name: qsTr("Search packages")' in main
+    assert 'toolTipText: qsTr("Search packages")' in main
     assert 'qsTr("Active package task") : qsTr("Tasks")' in main
     assert "topAppBarActions: [searchAction, tasksAction, overflowAction]" in main
 
