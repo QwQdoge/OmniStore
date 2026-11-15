@@ -69,6 +69,15 @@ MeoCard {
             }
             MeoText {
                 Layout.fillWidth: true
+                visible: String(root.app.app_class || "") === "wrapped"
+                text: qsTr("Windows app · runs through Wine")
+                typeRole: "label"
+                typeSize: "small"
+                color: MeoTheme.contentOnSurfaceVariant
+                elide: Text.ElideRight
+            }
+            MeoText {
+                Layout.fillWidth: true
                 visible: String(root.app.description || "").length > 0
                 text: String(root.app.description || "")
                 typeRole: "body"
@@ -102,7 +111,7 @@ MeoCard {
             MeoIconButton {
                 icon.name: "chevron_right"
                 type: "standard"
-                Accessible.name: qsTr("App details")
+                toolTipText: qsTr("App details")
                 onClicked: root.detailsRequested(root.app)
             }
         }

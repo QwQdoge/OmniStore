@@ -14,6 +14,8 @@ class BackendBridge final : public QObject
 
     Q_PROPERTY(bool busy READ busy NOTIFY stateChanged)
     Q_PROPERTY(QString busyAction READ busyAction NOTIFY stateChanged)
+    Q_PROPERTY(bool offline READ offline NOTIFY stateChanged)
+    Q_PROPERTY(QString lastUpdated READ lastUpdated NOTIFY stateChanged)
     Q_PROPERTY(QString busyOperation READ busyOperation NOTIFY stateChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY stateChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
@@ -44,6 +46,8 @@ public:
     ~BackendBridge() override;
 
     bool busy() const { return m_process != nullptr; }
+    bool offline() const { return m_offline; }
+    QString lastUpdated() const { return m_lastUpdated; }
     QString busyAction() const { return m_busyAction; }
     // Stable machine name of the running read/mutation ("installed", "search", ...);
     // pages compare this, never the translated busyAction label.
@@ -192,6 +196,8 @@ private:
     QVariantMap m_installedUsage;
     QVariantList m_updates;
     QString m_errorDetail;
+    bool m_offline = false;
+    QString m_lastUpdated;  // localized time of the last successful read
     QVariantList m_plugins;
     QVariantMap m_bottles;
     QVariantMap m_config;

@@ -7,6 +7,7 @@ import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width; maxColumns: 3 }
     property string initialQuery: ""
     signal detailsRequested(var app)
     signal aiRequested(string mode, string query, var candidates)
@@ -77,21 +78,10 @@ Item {
             indeterminate: true
         }
 
-        MeoBanner {
+        Store.LoadStateBanner {
             Layout.fillWidth: true
-            visible: backend.errorMessage.length > 0 && !backend.busy
-            title: qsTr("Search failed")
-            text: backend.errorMessage
-            icon: "error"
-            tone: "error"
-        }
-
-        MeoButton {
-            visible: backend.errorMessage.length > 0 && !backend.busy
-            text: qsTr("Start backend")
-            icon.name: "play_arrow"
-            type: "tonal"
-            onClicked: backend.startBackend()
+            hasData: backend.searchResults.length > 0
+            onRetryRequested: backend.search(searchBar.text.trim())
         }
 
         GridView {
@@ -102,7 +92,7 @@ Item {
             clip: true
             model: backend.searchResults
             boundsBehavior: Flickable.StopAtBounds
-            cellWidth: width >= 680 * MeoTheme.globalScale ? width / 2 : width
+            cellWidth: root.metrics.isCompactWidth ? width : width / 2
             cellHeight: 238 * MeoTheme.globalScale
 
             delegate: Item {

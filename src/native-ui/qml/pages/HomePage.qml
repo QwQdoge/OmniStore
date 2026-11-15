@@ -3,9 +3,11 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width; maxColumns: 3 }
     signal searchRequested(string query)
     signal aiRequested(string mode, string query, var candidates)
     signal exploreRequested()
@@ -85,26 +87,15 @@ Item {
                 }
             }
 
-            MeoBanner {
+            Store.LoadStateBanner {
                 Layout.fillWidth: true
-                visible: backend.errorMessage.length > 0
-                title: qsTr("OmniStore needs attention")
-                text: backend.errorMessage
-                icon: "error"
-                tone: "error"
-            }
-
-            MeoButton {
-                visible: backend.errorMessage.length > 0 && !backend.busy
-                text: qsTr("Start backend")
-                icon.name: "play_arrow"
-                type: "tonal"
-                onClicked: backend.startBackend()
+                hasData: backend.featuredApps.length > 0 || backend.trendingApps.length > 0
+                onRetryRequested: backend.loadRecommendations()
             }
 
             GridLayout {
                 Layout.fillWidth: true
-                columns: width >= 760 * MeoTheme.globalScale ? 3 : 1
+                columns: root.metrics.isCompactWidth || root.metrics.isMediumWidth ? 1 : 3
                 columnSpacing: 10 * MeoTheme.globalScale
                 rowSpacing: 10 * MeoTheme.globalScale
 
@@ -210,15 +201,21 @@ Item {
                 MeoIconButton {
                     icon.name: "refresh"
                     type: "tonal"
-                    Accessible.name: qsTr("Refresh recommendations")
+                    toolTipText: qsTr("Refresh recommendations")
                     enabled: !backend.busy
                     onClicked: backend.loadRecommendations()
                 }
             }
 
+            Store.ListSkeleton {
+                Layout.fillWidth: true
+                active: backend.busyOperation === "recommendations" && root.featuredModel().length === 0
+                rows: 3
+            }
+
             GridLayout {
                 Layout.fillWidth: true
-                columns: width >= 820 * MeoTheme.globalScale ? 2 : 1
+                columns: root.metrics.supportsTwoPane ? 2 : 1
                 columnSpacing: 14 * MeoTheme.globalScale
                 rowSpacing: 14 * MeoTheme.globalScale
 
@@ -262,8 +259,7 @@ Item {
 
             GridLayout {
                 Layout.fillWidth: true
-                columns: width >= 1040 * MeoTheme.globalScale ? 3
-                         : width >= 700 * MeoTheme.globalScale ? 2 : 1
+                columns: root.metrics.preferredColumns
                 columnSpacing: 12 * MeoTheme.globalScale
                 rowSpacing: 12 * MeoTheme.globalScale
 
@@ -293,8 +289,7 @@ Item {
 
                 GridLayout {
                     Layout.fillWidth: true
-                    columns: width >= 1040 * MeoTheme.globalScale ? 3
-                             : width >= 700 * MeoTheme.globalScale ? 2 : 1
+                    columns: root.metrics.preferredColumns
                     columnSpacing: 12 * MeoTheme.globalScale
                     rowSpacing: 12 * MeoTheme.globalScale
 

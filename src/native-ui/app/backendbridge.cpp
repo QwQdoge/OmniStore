@@ -2,7 +2,9 @@
 #include "friendlyerror.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDir>
+#include <QLocale>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -460,14 +462,11 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
 
     bool success = processSucceeded && !m_callbackError && m_errorMessage.isEmpty();
     if (!processSucceeded && m_errorMessage.isEmpty()) {
-        m_errorMessage = exitStatus == QProcess::CrashExit
-            ? tr("The OmniStore backend process crashed.")
-            : tr("The OmniStore backend exited with code %1.").arg(exitCode);
-        // Show why, not only that: the last stderr line is usually the
-        // Python traceback's final message (missing module, bad path, ...).
-        const QString tail = m_taskLog.section(QLatin1Char('\n'), -1).trimmed();
-        if (!tail.isEmpty())
-            m_errorMessage += QLatin1Char(' ') + tail.left(300);
+        m_errorMessage = tr("The store service stopped unexpectedly.");
+        // The reason stays in the log (errorDetail), not in the message.
+        m_errorDetail = (exitStatus == QProcess::CrashExit ? tr("The backend process crashed.")
+                                                           : tr("The backend exited with code %1.").arg(exitCode))
+            + QLatin1Char(' ') + m_taskLog.section(QLatin1Char('\n'), -1).trimmed().left(300);
     }
 
     if (finished.mutating) {
@@ -489,6 +488,16 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
     emit stateChanged();
     emit taskChanged();
     emit operationFinished(finished.label, success);
+
+    if (!finished.mutating) {
+        if (success) {
+            m_offline = false;
+            m_lastUpdated = QLocale().toString(QDateTime::currentDateTime(), QLocale::ShortFormat);
+        } else {
+            m_offline = FriendlyError::isNetwork(m_errorDetail);
+        }
+        emit stateChanged();
+    }
 
     if (!success && !finished.mutating) {
         m_readFailedSinceRefresh = true;

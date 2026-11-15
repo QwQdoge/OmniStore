@@ -7,6 +7,7 @@ import MeoUI 1.0
 
 ColumnLayout {
     id: root
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width; maxColumns: 3 }
     spacing: 12 * MeoTheme.globalScale
 
     function channelName() {
@@ -91,7 +92,7 @@ ColumnLayout {
         MeoIconButton {
             icon.name: "refresh"
             type: "tonal"
-            Accessible.name: qsTr("Refresh system status")
+            toolTipText: qsTr("Refresh system status")
             enabled: !systemBridge.busy
             onClicked: systemBridge.refreshAll()
         }
@@ -116,7 +117,7 @@ ColumnLayout {
 
     GridLayout {
         Layout.fillWidth: true
-        columns: width >= 820 * MeoTheme.globalScale ? 3 : 1
+        columns: root.metrics.supportsTwoPane ? 3 : 1
         uniformCellWidths: true
         columnSpacing: 10 * MeoTheme.globalScale
         rowSpacing: 10 * MeoTheme.globalScale

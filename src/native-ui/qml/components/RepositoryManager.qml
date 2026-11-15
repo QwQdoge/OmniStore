@@ -79,7 +79,7 @@ ColumnLayout {
         MeoIconButton {
             icon.name: "refresh"
             type: "tonal"
-            Accessible.name: qsTr("Refresh custom repositories")
+            toolTipText: qsTr("Refresh custom repositories")
             enabled: !repoBridge.busy
             onClicked: repoBridge.refresh()
         }

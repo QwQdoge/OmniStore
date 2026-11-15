@@ -100,6 +100,13 @@ Item {
             rows: 5
         }
 
+        Store.LoadStateBanner {
+            Layout.fillWidth: true
+            hasData: backend.updates.length > 0
+            failureTitle: qsTr("Couldn't check for updates.")
+            onRetryRequested: backend.loadUpdates()
+        }
+
         MeoProgressBar {
             Layout.fillWidth: true
             visible: (backend.busyOperation === "updates" && backend.updates.length > 0) || transactions.busy

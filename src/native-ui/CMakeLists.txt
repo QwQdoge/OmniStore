@@ -57,6 +57,7 @@ qt_add_qml_module(omnistore-native
         qml/components/AppRow.qml
         qml/components/InstallButton.qml
         qml/components/ListSkeleton.qml
+        qml/components/LoadStateBanner.qml
         qml/components/SourceBadge.qml
         qml/components/InstallPlanReview.qml
         qml/components/StoreAppCard.qml

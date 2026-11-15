@@ -6,6 +6,7 @@ import MeoUI 1.0
 
 MeoCard {
     id: root
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width; maxColumns: 3 }
 
     required property var plan
     property bool planning: false
@@ -138,7 +139,7 @@ MeoCard {
         GridLayout {
             Layout.fillWidth: true
             visible: root.hasPlan && !root.planning
-            columns: width >= 460 * MeoTheme.globalScale ? 2 : 1
+            columns: root.metrics.isCompactWidth ? 1 : 2
             columnSpacing: 10 * MeoTheme.globalScale
             rowSpacing: 10 * MeoTheme.globalScale
 

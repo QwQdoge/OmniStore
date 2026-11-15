@@ -7,6 +7,7 @@ import OmniStore.Native 1.0 as Store
 
 Item {
     id: root
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width; maxColumns: 3 }
     signal detailsRequested(var app)
 
     property string activeCategory: ""
@@ -52,7 +53,7 @@ Item {
 
             GridLayout {
                 Layout.fillWidth: true
-                columns: width >= 820 * MeoTheme.globalScale ? 4 : 2
+                columns: root.metrics.supportsTwoPane ? 4 : 2
                 columnSpacing: 10 * MeoTheme.globalScale
                 rowSpacing: 10 * MeoTheme.globalScale
 
@@ -72,21 +73,10 @@ Item {
                 indeterminate: true
             }
 
-            MeoBanner {
+            Store.LoadStateBanner {
                 Layout.fillWidth: true
-                visible: backend.errorMessage.length > 0 && !backend.busy
-                title: qsTr("Could not load software")
-                text: backend.errorMessage
-                icon: "error"
-                tone: "error"
-            }
-
-            MeoButton {
-                visible: backend.errorMessage.length > 0 && !backend.busy
-                text: qsTr("Start backend")
-                icon.name: "play_arrow"
-                type: "tonal"
-                onClicked: backend.startBackend()
+                hasData: backend.categoryResults.length > 0 || backend.trendingApps.length > 0 || backend.featuredApps.length > 0
+                onRetryRequested: backend.loadRecommendations()
             }
 
             RowLayout {
@@ -102,7 +92,7 @@ Item {
                 MeoIconButton {
                     icon.name: "refresh"
                     type: "tonal"
-                    Accessible.name: qsTr("Refresh")
+                    toolTipText: qsTr("Refresh")
                     enabled: !backend.busy
                     onClicked: {
                         if (root.activeCategoryQuery.length > 0)
@@ -113,10 +103,16 @@ Item {
                 }
             }
 
+            Store.ListSkeleton {
+                Layout.fillWidth: true
+                active: (backend.busyOperation === "category" && backend.categoryResults.length === 0)
+                        || (backend.busyOperation === "recommendations" && backend.featuredApps.length === 0)
+                rows: 4
+            }
+
             GridLayout {
                 Layout.fillWidth: true
-                columns: width >= 980 * MeoTheme.globalScale ? 3
-                         : width >= 620 * MeoTheme.globalScale ? 2 : 1
+                columns: root.metrics.preferredColumns
                 columnSpacing: 12 * MeoTheme.globalScale
                 rowSpacing: 12 * MeoTheme.globalScale
 

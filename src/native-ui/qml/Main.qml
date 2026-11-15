@@ -9,6 +9,7 @@ import Meo.System 1.0
 
 Window {
     id: root
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width }
     width: 1360
     height: 860
     minimumWidth: 900
@@ -102,7 +103,13 @@ Window {
         root.navigationIndex = root.aboutIndex
     }
 
+    function openHelp() {
+        Qt.openUrlExternally("https://meoarch.org/docs/guide/omnistore.html")
+    }
+
     Shortcut { sequence: "Ctrl+,"; onActivated: root.openSettings() }
+    Shortcut { sequences: ["Ctrl+?", "Ctrl+Shift+/"]; onActivated: shortcutsDialog.open() }
+    Shortcut { sequences: [StandardKey.HelpContents]; onActivated: root.openHelp() }
     Shortcut { sequences: [StandardKey.Find]; onActivated: root.openSearch("") }
     Shortcut { sequences: [StandardKey.Quit]; onActivated: Qt.quit() }
     Shortcut {
@@ -171,7 +178,7 @@ Window {
             icon.name: "search"
             type: "tonal"
             visible: !root.overlaySheetOpen
-            Accessible.name: qsTr("Search packages")
+            toolTipText: qsTr("Search packages")
             onClicked: root.openSearch("")
         }
     }
@@ -182,7 +189,7 @@ Window {
             icon.name: transactions.busy ? "sync" : "download"
             type: transactions.busy ? "filled" : "tonal"
             visible: !root.overlaySheetOpen
-            Accessible.name: transactions.busy ? qsTr("Active package task") : qsTr("Tasks")
+            toolTipText: transactions.busy ? qsTr("Active package task") : qsTr("Tasks")
             onClicked: root.openTasks()
         }
     }
@@ -193,7 +200,7 @@ Window {
             id: overflowButton
             icon.name: "more_vert"
             visible: !root.overlaySheetOpen
-            Accessible.name: qsTr("More options")
+            toolTipText: qsTr("More options")
             onClicked: overflowMenu.openFrom(overflowButton)
 
             // Anchor to the button, but clamp inside the whole window.
@@ -205,6 +212,8 @@ Window {
                     { "label": qsTr("Refresh"), "icon": "refresh", "action": function() { root.refreshPackageState() } },
                     { "type": "separator" },
                     { "label": qsTr("Settings"), "icon": "settings", "shortcut": "Ctrl+,", "action": function() { root.openSettings() } },
+                    { "label": qsTr("Keyboard shortcuts"), "icon": "keyboard", "shortcut": "Ctrl+?", "action": function() { shortcutsDialog.open() } },
+                    { "label": qsTr("Help"), "icon": "help", "shortcut": "F1", "action": function() { root.openHelp() } },
                     { "label": qsTr("About OmniStore"), "icon": "info", "action": function() { root.openAbout() } }
                 ]
             }
@@ -293,6 +302,16 @@ Window {
             sourceUrl: "https://github.com/QwQdoge/OmniStore/blob/main/THIRD_PARTY_NOTICES.md"
             copyright: qsTr("© MeoArch contributors")
         }
+    }
+
+    MeoDialog {
+        id: shortcutsDialog
+        parent: Overlay.overlay
+        title: qsTr("Keyboard shortcuts")
+        message: qsTr("Ctrl+F  Search\nCtrl+,  Settings\nCtrl+?  Keyboard shortcuts\nF1  Help\nEsc  Close the open panel\nCtrl+Q  Quit")
+        icon: "keyboard"
+        confirmText: qsTr("Close")
+        cancelText: ""
     }
 
     MeoSnackbar {
@@ -388,8 +407,8 @@ Window {
     Rectangle {
         anchors.fill: parent
         z: 90
-        visible: root.overlaySheetOpen && root.width < 1180 * MeoTheme.globalScale
-        color: Qt.rgba(0, 0, 0, 0.30)
+        visible: root.overlaySheetOpen && !root.metrics.isLargeWidth && !root.metrics.isExtraLargeWidth
+        color: Qt.alpha(MeoTheme.scrim, 0.30)
         TapHandler {
             onTapped: {
                 detailSheet.isOpen = false

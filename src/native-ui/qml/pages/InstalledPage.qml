@@ -97,13 +97,10 @@ Item {
             }
         }
 
-        MeoBanner {
+        Store.LoadStateBanner {
             Layout.fillWidth: true
-            visible: backend.errorMessage.length > 0 && !backend.busy
-            title: qsTr("Installed apps could not be refreshed")
-            text: backend.errorMessage
-            icon: "error"
-            tone: "error"
+            hasData: backend.installedApps.length > 0
+            onRetryRequested: backend.loadInstalled(true)
         }
 
         ListView {

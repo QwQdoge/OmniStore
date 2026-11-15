@@ -8,6 +8,7 @@ import OmniStore.Native 1.0 as Store
 
 Flickable {
     id: root
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width; maxColumns: 3 }
     property var fallbackApp: ({})
     property string selectedSource: ""
     property string selectedPackageId: ""
@@ -459,7 +460,7 @@ Flickable {
 
         GridLayout {
             Layout.fillWidth: true
-            columns: width >= 500 * MeoTheme.globalScale ? 2 : 1
+            columns: root.metrics.isCompactWidth ? 1 : 2
             columnSpacing: 10 * MeoTheme.globalScale
             rowSpacing: 10 * MeoTheme.globalScale
 
