@@ -28,6 +28,7 @@ class TransactionClient final : public QObject
     Q_PROPERTY(QString log READ log NOTIFY taskChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
     Q_PROPERTY(QString errorDetail READ errorDetail NOTIFY stateChanged)
+    Q_PROPERTY(QString errorCategory READ errorCategory NOTIFY stateChanged)
     Q_PROPERTY(QString taskName READ taskName NOTIFY taskChanged)
     Q_PROPERTY(QString taskKind READ taskKind NOTIFY taskChanged)
     Q_PROPERTY(double progress READ progress NOTIFY taskChanged)
@@ -51,6 +52,7 @@ public:
     QString log() const { return m_log; }
     QString errorMessage() const { return m_errorMessage; }
     QString errorDetail() const { return m_errorDetail; }
+    QString errorCategory() const;
     QString taskName() const { return m_taskName; }
     QString taskKind() const { return m_taskKind; }
     double progress() const { return m_progress; }

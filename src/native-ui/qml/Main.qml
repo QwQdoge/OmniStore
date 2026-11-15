@@ -157,7 +157,9 @@ Window {
                 ? qsTr("%1 finished.").arg(action)
                 : (transactions.errorMessage.length > 0 ? transactions.errorMessage
                                                          : qsTr("%1 didn't finish.").arg(action))
-            outcomeSnackbar.actionText = success ? "" : qsTr("View log")
+            outcomeSnackbar.openStorage = !success && transactions.errorCategory === "space"
+            outcomeSnackbar.actionText = success ? ""
+                : (outcomeSnackbar.openStorage ? qsTr("Open storage") : qsTr("View log"))
             outcomeSnackbar.open()
         }
     }
@@ -317,6 +319,7 @@ Window {
     MeoSnackbar {
         id: outcomeSnackbar
         property bool failed: false
+        property bool openStorage: false
         parent: Overlay.overlay
         x: Math.round((parent.width - width) / 2)
         y: parent.height - height - edgeMargin
@@ -325,7 +328,10 @@ Window {
         duration: failed ? 8000 : 4000
         onActionClicked: {
             outcomeSnackbar.close()
-            root.openTasks()
+            if (outcomeSnackbar.openStorage)
+                root.openSettings()   // Storage lives under Advanced
+            else
+                root.openTasks()
         }
     }
 

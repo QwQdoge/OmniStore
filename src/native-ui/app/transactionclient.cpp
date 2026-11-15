@@ -289,6 +289,11 @@ void TransactionClient::handleResponse(RequestKind kind, const QJsonObject &resp
     }
 }
 
+QString TransactionClient::errorCategory() const
+{
+    return m_errorDetail.isEmpty() ? QString{} : FriendlyError::category(m_errorDetail);
+}
+
 void TransactionClient::applyTask(const QJsonObject &task)
 {
     const QString previousStatus = m_status;
