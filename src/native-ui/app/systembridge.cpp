@@ -6,6 +6,8 @@
 #include <QJsonObject>
 #include <QProcessEnvironment>
 #include <QRegularExpression>
+#include <QSettings>
+#include <QStandardPaths>
 
 namespace {
 constexpr qsizetype MaxOutput = 8 * 1024 * 1024;
@@ -343,4 +345,41 @@ void SystemBridge::clearError()
         return;
     m_errorMessage.clear();
     emit stateChanged();
+}
+
+
+bool SystemBridge::taskNotifications() const
+{
+    QSettings settings(QStringLiteral("MeoArch"), QStringLiteral("OmniStore"));
+    return settings.value(QStringLiteral("notifications/taskcompletion"), true).toBool();
+}
+
+void SystemBridge::setTaskNotifications(bool enabled)
+{
+    if (taskNotifications() == enabled)
+        return;
+    QSettings settings(QStringLiteral("MeoArch"), QStringLiteral("OmniStore"));
+    settings.setValue(QStringLiteral("notifications/taskcompletion"), enabled);
+    emit taskNotificationsChanged();
+}
+
+bool SystemBridge::notify(const QString &title, const QString &body)
+{
+    const QString program = QStandardPaths::findExecutable(QStringLiteral("notify-send"));
+    if (program.isEmpty() || title.trimmed().isEmpty())
+        return false;
+    return QProcess::startDetached(program, {
+        QStringLiteral("--app-name=OmniStore"),
+        QStringLiteral("--icon=org.meo.OmniStore"),
+        QStringLiteral("--hint=string:desktop-entry:org.meo.OmniStore"),
+        QStringLiteral("--"), title.left(120), body.left(300)});
+}
+
+bool SystemBridge::openMeoSettings(const QString &route)
+{
+    static const QRegularExpression valid(QStringLiteral("^[a-z][a-z0-9-]{0,40}$"));
+    const QString program = QStandardPaths::findExecutable(QStringLiteral("meo-settings"));
+    if (program.isEmpty() || !valid.match(route).hasMatch())
+        return false;
+    return QProcess::startDetached(program, {QStringLiteral("--route"), route});
 }

@@ -267,6 +267,9 @@ def test_ai_features_are_optional_and_gated_in_ui_and_bridge():
 
 def test_settings_follow_app_shell_category_order_and_reset_confirms():
     s = read(QML_ROOT / "pages" / "SettingsPage.qml")
-    order = [s.index(f'text: qsTr("{name}")') for name in ("Sources", "AI assistance", "Privacy & data", "Advanced")]
+    names = ("Appearance", "Sources", "Updates", "AI assistance", "Notifications", "Privacy & data", "Advanced")
+    order = [s.index(f'"title": qsTr("{name}")') for name in names]
     assert order == sorted(order)
+    # About is last in the category list and opens the About route.
+    assert s.index('title: qsTr("About OmniStore")') > order[-1]
     assert "resetDialog.open()" in s and "accountAi.resetFeatures()" in s

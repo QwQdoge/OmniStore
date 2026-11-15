@@ -32,5 +32,5 @@ async def test_existing_paru_helper_reuses_current_graphical_authorization(monke
 
     monkeypatch.setattr('core.sources.aur.aur.safe_subprocess', process)
     assert await source.install({'name': 'yay-bin'})
-    assert calls[0][0] == ('paru', '--sudoflags', '-A', '-S', '--noconfirm', 'yay-bin')
+    assert calls[0][0] == ('paru', '--sudoflags', '-A', '-S', '--noconfirm', '--needed', 'yay-bin')
     assert calls[0][1]['env']['SUDO_ASKPASS'] == '/test/helper'

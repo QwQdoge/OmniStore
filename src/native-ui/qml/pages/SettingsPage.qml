@@ -97,6 +97,72 @@ Item {
         }]
     }
 
+    readonly property var cacheChoicesMb: [0, 1024, 2048, 5120]
+    property bool meoSettingsMissing: false
+
+    function preference(key, fallback) {
+        const prefs = backend.appPreferences || ({})
+        return prefs[key] === undefined ? fallback : prefs[key]
+    }
+
+    function updatePreferenceRows() {
+        const limit = Number(root.preference("cacheLimitMb", 0))
+        const index = root.cacheChoicesMb.indexOf(limit)
+        return [{
+            "title": qsTr("Update Flatpak apps automatically"),
+            "subtitle": qsTr("Installs updates for apps you installed for your own account in the background. System packages always need your authorization."),
+            "leadingIcon": "update",
+            "trailingKind": "switch",
+            "checked": !!root.preference("autoUpdate", false),
+            "enabled": !backend.busy,
+            "interactive": true,
+            "onToggled": function(value) { backend.setAppPreference("autoUpdate", value) }
+        }, {
+            "title": qsTr("Limit app caches"),
+            "subtitle": index >= 0
+                ? qsTr("When app caches together grow past the limit, the largest are cleared. Settings and data are never removed.")
+                : qsTr("Custom limit: %1 MB. Choose a value to replace it.").arg(limit),
+            "leadingIcon": "cleaning_services",
+            "trailingKind": "segmented",
+            "segmentedModel": [qsTr("Off"), qsTr("1 GB"), qsTr("2 GB"), qsTr("5 GB")],
+            "currentIndex": Math.max(0, index),
+            "enabled": !backend.busy,
+            "onOptionSelected": function(optionIndex) {
+                backend.setAppPreference("cacheLimitMb", root.cacheChoicesMb[optionIndex])
+            }
+        }]
+    }
+
+    function notificationRows() {
+        return [{
+            "title": qsTr("Notify when updates are available"),
+            "subtitle": qsTr("Sent by the background update check. Delivery follows your desktop's notification rules."),
+            "leadingIcon": "notifications_active",
+            "trailingKind": "switch",
+            "checked": !!root.preference("notifyUpdates", true),
+            "enabled": !backend.busy,
+            "interactive": true,
+            "onToggled": function(value) { backend.setAppPreference("notifyUpdates", value) }
+        }, {
+            "title": qsTr("Notify when a task finishes in the background"),
+            "subtitle": qsTr("Only when the OmniStore window is not in front. An install or update keeps running either way."),
+            "leadingIcon": "task_alt",
+            "trailingKind": "switch",
+            "checked": systemBridge.taskNotifications,
+            "interactive": true,
+            "onToggled": function(value) { systemBridge.taskNotifications = value }
+        }, {
+            "title": qsTr("Open notification settings in Meo Settings"),
+            "subtitle": root.meoSettingsMissing
+                ? qsTr("Meo Settings isn't installed on this computer.")
+                : qsTr("Do Not Disturb, popups and history for OmniStore are managed there."),
+            "leadingIcon": "settings_applications",
+            "trailingKind": "navigation",
+            "interactive": true,
+            "action": function() { root.meoSettingsMissing = !systemBridge.openMeoSettings("notifications") }
+        }]
+    }
+
     function capabilityLabel(capability) {
         const key = String(capability || "")
         if (key === "search") return qsTr("Search")
@@ -301,224 +367,373 @@ Item {
     }
 
     Component.onCompleted: {
-        backend.loadPlugins()
+        if (root.twoPane && root.category === "")
+            root.category = "appearance"
+        backend.loadSettingsSnapshot()
         backend.loadConfig()
         backend.loadStorageInfo()
         repoBridge.refresh()
     }
 
-    ScrollView {
-        id: settingsScroll
+    // Two-level settings (MeoUI PAGE_TYPES.md): a category list selects a domain,
+    // the content area shows that domain. On narrow windows they replace each other.
+    readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width }
+    readonly property bool twoPane: metrics.supportsTwoPane
+    property string category: ""
+    readonly property var categories: [
+        { "id": "appearance", "title": qsTr("Appearance"), "icon": "palette" },
+        { "id": "sources", "title": qsTr("Sources"), "icon": "extension" },
+        { "id": "updates", "title": qsTr("Updates"), "icon": "system_update" },
+        { "id": "ai", "title": qsTr("AI assistance"), "icon": "auto_awesome" },
+        { "id": "notifications", "title": qsTr("Notifications"), "icon": "notifications" },
+        { "id": "privacy", "title": qsTr("Privacy & data"), "icon": "shield" },
+        { "id": "advanced", "title": qsTr("Advanced"), "icon": "tune" }
+    ]
+    function categoryTitle(id) {
+        for (let i = 0; i < categories.length; ++i)
+            if (categories[i].id === id) return categories[i].title
+        return qsTr("Settings")
+    }
+    onTwoPaneChanged: if (twoPane && category === "") category = "appearance"
+
+    RowLayout {
         anchors.fill: parent
-        clip: true
-        contentWidth: availableWidth
-        contentHeight: settingsColumn.implicitHeight + 64 * MeoTheme.globalScale
-        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+        spacing: 0
 
-        ColumnLayout {
-            id: settingsColumn
-            width: Math.min(settingsScroll.availableWidth - 56 * MeoTheme.globalScale,
-                            980 * MeoTheme.globalScale)
-            x: (settingsScroll.availableWidth - width) / 2
-            y: 28 * MeoTheme.globalScale
-            spacing: 18 * MeoTheme.globalScale
+        // Category list (level one).
+        ScrollView {
+            id: indexScroll
+            visible: root.twoPane || root.category === ""
+            Layout.fillHeight: true
+            Layout.fillWidth: !root.twoPane
+            Layout.preferredWidth: root.twoPane ? 300 * MeoTheme.globalScale : -1
+            clip: true
+            contentWidth: availableWidth
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            Store.PageHeading {
-                Layout.fillWidth: true
-                title: qsTr("Settings")
-                subtitle: qsTr("Manage appearance, software sources and updates.")
-                icon: "settings"
-            }
+            ColumnLayout {
+                width: indexScroll.availableWidth - 24 * MeoTheme.globalScale
+                x: 12 * MeoTheme.globalScale
+                y: 20 * MeoTheme.globalScale
+                spacing: 4 * MeoTheme.globalScale
 
-            // Category order follows MeoUI APP_SHELL.md: Appearance, the
-            // product domain (Sources), Advanced, About.
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                title: qsTr("Appearance")
-                model: root.appearanceRows()
-            }
-
-            MeoListHeader {
-                Layout.fillWidth: true
-                Layout.topMargin: MeoTheme.space16
-                text: qsTr("Sources")
-            }
-
-            Store.SystemStatusPanel {
-                Layout.fillWidth: true
-            }
-
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                visible: root.sourceRows("offers").length > 0
-                title: qsTr("Available to add")
-                subtitle: qsTr("Found on this computer. Nothing is added until you turn it on.")
-                model: root.sourceRows("offers")
-            }
-
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                visible: root.bottleRows().length > 0
-                title: qsTr("Windows app containers")
-                subtitle: qsTr("Choose which Bottles containers show their programs as normal apps.")
-                model: root.bottleRows()
-            }
-
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                visible: root.sourceRows("system").length > 0
-                title: qsTr("System source")
-                subtitle: qsTr("Packages integrated with the MeoArch and Arch system package stack.")
-                model: root.sourceRows("system")
-            }
-
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                visible: root.sourceRows("apps").length > 0
-                title: qsTr("App sources")
-                subtitle: qsTr("Application-focused sources detected on this system.")
-                model: root.sourceRows("apps")
-            }
-
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                visible: root.sourceRows("community").length > 0
-                title: qsTr("Community sources")
-                subtitle: qsTr("Community-maintained software requires explicit review before it is enabled.")
-                model: root.sourceRows("community")
-            }
-
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                visible: root.sourceRows("advanced").length > 0
-                title: qsTr("Advanced sources")
-                subtitle: qsTr("Additional integrations appear here only when their runtime backend is available on this system.")
-                model: root.sourceRows("advanced")
-            }
-
-            MeoCard {
-                Layout.fillWidth: true
-                type: "filled"
-                padding: 18 * MeoTheme.globalScale
-
-                ColumnLayout {
-                    width: parent.width
-                    spacing: 10 * MeoTheme.globalScale
-
-                    MeoText {
-                        text: qsTr("Add a third-party source")
-                        typeRole: "title"
-                        typeSize: "small"
-                        emphasized: true
-                        color: MeoTheme.contentOnSurface
-                    }
-                    MeoText {
+                Store.PageHeading {
+                    visible: !root.twoPane
+                    Layout.fillWidth: true
+                    title: qsTr("Settings")
+                    subtitle: qsTr("Manage appearance, software sources and updates.")
+                    icon: "settings"
+                }
+                Repeater {
+                    model: root.categories
+                    delegate: MeoSettingsRow {
+                        id: categoryRow
+                        required property var modelData
                         Layout.fillWidth: true
-                        text: qsTr("A source list is a public file that points to apps your installed sources can install. It runs no code and stays off until you review and turn it on.")
-                        typeRole: "body"
-                        typeSize: "small"
-                        color: MeoTheme.contentOnSurfaceVariant
-                        wrapMode: Text.WordWrap
+                        title: modelData.title
+                        leadingIcon: modelData.icon
+                        trailingKind: root.twoPane ? "none" : "navigation"
+                        selected: root.twoPane && root.category === modelData.id
+                        onActivated: root.category = modelData.id
                     }
-                    MeoTextField {
-                        id: catalogUrl
-                        Layout.fillWidth: true
-                        label: qsTr("Source list address")
-                        placeholder: "https://example.org/apps/index.json"
-                        leadingIcon: "link"
-                        maxLength: 2048
-                        supportingText: qsTr("Must start with https://")
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Item { Layout.fillWidth: true }
-                        MeoButton {
-                            text: qsTr("Add source list")
-                            type: "filled"
-                            icon.name: "add"
-                            enabled: !backend.busy && catalogUrl.text.trim().indexOf("https://") === 0
-                            onClicked: {
-                                backend.addCatalog(catalogUrl.text.trim())
-                                catalogUrl.text = ""
+                }
+                MeoSettingsRow {
+                    Layout.fillWidth: true
+                    title: qsTr("About OmniStore")
+                    leadingIcon: "info"
+                    trailingKind: root.twoPane ? "none" : "navigation"
+                    onActivated: root.aboutRequested()
+                }
+            }
+        }
+
+        // Selected category (level two).
+        ScrollView {
+            id: settingsScroll
+            visible: root.twoPane || root.category !== ""
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            contentWidth: availableWidth
+            contentHeight: settingsColumn.implicitHeight + 64 * MeoTheme.globalScale
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+            ColumnLayout {
+                id: settingsColumn
+                width: Math.min(settingsScroll.availableWidth - 56 * MeoTheme.globalScale,
+                                980 * MeoTheme.globalScale)
+                x: (settingsScroll.availableWidth - width) / 2
+                y: 28 * MeoTheme.globalScale
+                spacing: 18 * MeoTheme.globalScale
+
+                MeoButton {
+                    visible: !root.twoPane
+                    text: qsTr("All settings")
+                    type: "text"
+                    icon.name: "arrow_back"
+                    onClicked: root.category = ""
+                }
+
+                Store.PageHeading {
+                    Layout.fillWidth: true
+                    title: root.categoryTitle(root.category)
+                    subtitle: ""
+                    icon: "settings"
+                }
+
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.category === "appearance"
+                    visible: active
+                    sourceComponent: Component {
+                        ColumnLayout {
+                            width: parent ? parent.width : 0
+                            spacing: 18 * MeoTheme.globalScale
+
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                title: qsTr("Appearance")
+                                model: root.appearanceRows()
                             }
                         }
                     }
                 }
-            }
 
-            Store.RepositoryManager {
-                Layout.fillWidth: true
-            }
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.category === "sources"
+                    visible: active
+                    sourceComponent: Component {
+                        ColumnLayout {
+                            width: parent ? parent.width : 0
+                            spacing: 18 * MeoTheme.globalScale
 
-            MeoListHeader {
-                Layout.fillWidth: true
-                Layout.topMargin: MeoTheme.space16
-                text: qsTr("AI assistance")
-            }
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                visible: root.sourceRows("offers").length > 0
+                                title: qsTr("Available to add")
+                                subtitle: qsTr("Found on this computer. Nothing is added until you turn it on.")
+                                model: root.sourceRows("offers")
+                            }
 
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                model: root.aiRows()
-            }
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                visible: root.bottleRows().length > 0
+                                title: qsTr("Windows app containers")
+                                subtitle: qsTr("Choose which Bottles containers show their programs as normal apps.")
+                                model: root.bottleRows()
+                            }
 
-            MeoListHeader {
-                Layout.fillWidth: true
-                Layout.topMargin: MeoTheme.space16
-                text: qsTr("Privacy & data")
-            }
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                visible: root.sourceRows("system").length > 0
+                                title: qsTr("System source")
+                                subtitle: qsTr("Packages integrated with the MeoArch and Arch system package stack.")
+                                model: root.sourceRows("system")
+                            }
 
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                model: root.privacyRows()
-            }
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                visible: root.sourceRows("apps").length > 0
+                                title: qsTr("App sources")
+                                subtitle: qsTr("Application-focused sources detected on this system.")
+                                model: root.sourceRows("apps")
+                            }
 
-            MeoListHeader {
-                Layout.fillWidth: true
-                Layout.topMargin: MeoTheme.space16
-                text: qsTr("Advanced")
-            }
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                visible: root.sourceRows("community").length > 0
+                                title: qsTr("Community sources")
+                                subtitle: qsTr("Community-maintained software requires explicit review before it is enabled.")
+                                model: root.sourceRows("community")
+                            }
 
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                title: qsTr("Storage")
-                subtitle: qsTr("Values are read from the current system at runtime.")
-                model: root.storageRows()
-            }
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                visible: root.sourceRows("advanced").length > 0
+                                title: qsTr("Advanced sources")
+                                subtitle: qsTr("Additional integrations appear here only when their runtime backend is available on this system.")
+                                model: root.sourceRows("advanced")
+                            }
 
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                title: qsTr("Backend")
-                subtitle: qsTr("Runtime status for OmniStore's existing package authority.")
-                model: root.backendRows()
-            }
+                            MeoCard {
+                                Layout.fillWidth: true
+                                type: "filled"
+                                padding: 18 * MeoTheme.globalScale
 
-            RowLayout {
-                Layout.fillWidth: true
-                Item { Layout.fillWidth: true }
-                MeoButton {
-                    text: qsTr("Refresh settings")
-                    type: "tonal"
-                    icon.name: "refresh"
-                    enabled: !backend.busy && !repoBridge.busy
-                    onClicked: {
-                        backend.loadPlugins()
-                        backend.loadConfig()
-                        backend.loadStorageInfo()
-                        repoBridge.refresh()
+                                ColumnLayout {
+                                    width: parent.width
+                                    spacing: 10 * MeoTheme.globalScale
+
+                                    MeoText {
+                                        text: qsTr("Add a third-party source")
+                                        typeRole: "title"
+                                        typeSize: "small"
+                                        emphasized: true
+                                        color: MeoTheme.contentOnSurface
+                                    }
+                                    MeoText {
+                                        Layout.fillWidth: true
+                                        text: qsTr("A source list is a public file that points to apps your installed sources can install. It runs no code and stays off until you review and turn it on.")
+                                        typeRole: "body"
+                                        typeSize: "small"
+                                        color: MeoTheme.contentOnSurfaceVariant
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    MeoTextField {
+                                        id: catalogUrl
+                                        Layout.fillWidth: true
+                                        label: qsTr("Source list address")
+                                        placeholder: "https://example.org/apps/index.json"
+                                        leadingIcon: "link"
+                                        maxLength: 2048
+                                        supportingText: qsTr("Must start with https://")
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Item { Layout.fillWidth: true }
+                                        MeoButton {
+                                            text: qsTr("Add source list")
+                                            type: "filled"
+                                            icon.name: "add"
+                                            enabled: !backend.busy && catalogUrl.text.trim().indexOf("https://") === 0
+                                            onClicked: {
+                                                backend.addCatalog(catalogUrl.text.trim())
+                                                catalogUrl.text = ""
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Store.RepositoryManager {
+                                Layout.fillWidth: true
+                            }
+                        }
                     }
                 }
-            }
 
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                model: root.resetRows()
-            }
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.category === "updates"
+                    visible: active
+                    sourceComponent: Component {
+                        ColumnLayout {
+                            width: parent ? parent.width : 0
+                            spacing: 18 * MeoTheme.globalScale
 
-            MeoSettingsGroup {
-                Layout.fillWidth: true
-                Layout.topMargin: MeoTheme.space16
-                model: root.aboutRows()
+                            Store.SystemStatusPanel {
+                                Layout.fillWidth: true
+                            }
+
+                MeoSettingsGroup {
+                    Layout.fillWidth: true
+                    title: qsTr("Background updates")
+                    model: root.updatePreferenceRows()
+                }
+                        }
+                    }
+                }
+
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.category === "ai"
+                    visible: active
+                    sourceComponent: Component {
+                        ColumnLayout {
+                            width: parent ? parent.width : 0
+                            spacing: 18 * MeoTheme.globalScale
+
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                model: root.aiRows()
+                            }
+                        }
+                    }
+                }
+
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.category === "notifications"
+                    visible: active
+                    sourceComponent: Component {
+                        ColumnLayout {
+                            width: parent ? parent.width : 0
+                            spacing: 18 * MeoTheme.globalScale
+
+                MeoSettingsGroup {
+                    Layout.fillWidth: true
+                    model: root.notificationRows()
+                }
+                        }
+                    }
+                }
+
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.category === "privacy"
+                    visible: active
+                    sourceComponent: Component {
+                        ColumnLayout {
+                            width: parent ? parent.width : 0
+                            spacing: 18 * MeoTheme.globalScale
+
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                model: root.privacyRows()
+                            }
+                        }
+                    }
+                }
+
+                Loader {
+                    Layout.fillWidth: true
+                    active: root.category === "advanced"
+                    visible: active
+                    sourceComponent: Component {
+                        ColumnLayout {
+                            width: parent ? parent.width : 0
+                            spacing: 18 * MeoTheme.globalScale
+
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                title: qsTr("Storage")
+                                subtitle: qsTr("Values are read from the current system at runtime.")
+                                model: root.storageRows()
+                            }
+
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                title: qsTr("Backend")
+                                subtitle: qsTr("Runtime status for OmniStore's existing package authority.")
+                                model: root.backendRows()
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Item { Layout.fillWidth: true }
+                                MeoButton {
+                                    text: qsTr("Refresh settings")
+                                    type: "tonal"
+                                    icon.name: "refresh"
+                                    enabled: !backend.busy && !repoBridge.busy
+                                    onClicked: {
+                                        backend.loadPlugins()
+                                        backend.loadConfig()
+                                        backend.loadStorageInfo()
+                                        repoBridge.refresh()
+                                    }
+                                }
+                            }
+
+                            MeoSettingsGroup {
+                                Layout.fillWidth: true
+                                model: root.resetRows()
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -4,10 +4,41 @@ import aiohttp
 import subprocess
 import os
 import re
+from pathlib import Path
 import shutil
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
 from core.sources.utils import PrivilegeManager
+
+def _makepkg_sets_makeflags(paths=None) -> bool:
+    """True when makepkg's configuration already chooses MAKEFLAGS."""
+    candidates = list(paths) if paths is not None else [
+        Path("/etc/makepkg.conf"), Path.home() / ".makepkg.conf",
+        *sorted(Path("/etc/makepkg.conf.d").glob("*.conf")),
+    ]
+    for path in candidates:
+        try:
+            for line in Path(path).read_text(encoding="utf-8", errors="replace").splitlines():
+                if line.strip().startswith("MAKEFLAGS="):
+                    return True
+        except OSError:
+            continue
+    return False
+
+
+def build_environment(env, cpu_count=None, conf_paths=None):
+    """AUR builds compile with one job unless MAKEFLAGS is set; use every core by default.
+
+    Leaves a user's own choice (environment or makepkg.conf) alone.
+    """
+    result = dict(env)
+    if "MAKEFLAGS" in result or _makepkg_sets_makeflags(conf_paths):
+        return result
+    jobs = cpu_count if cpu_count else (os.cpu_count() or 1)
+    if jobs > 1:
+        result["MAKEFLAGS"] = f"-j{jobs}"
+    return result
+
 
 class AurSource(UnifiedSource):
     def __init__(self, session: aiohttp.ClientSession, weight: float = 1.0):
@@ -89,7 +120,7 @@ class AurSource(UnifiedSource):
         try:
             if not await self.privilege.ensure_privileged(callback):
                 return False
-            privilege_env = await self.privilege.subprocess_environment()
+            privilege_env = build_environment(await self.privilege.subprocess_environment())
 
             name = package.get("name")
             if not name:
@@ -100,9 +131,9 @@ class AurSource(UnifiedSource):
 
             if helper:
                 if callback:
-                    await callback(f"[INFO] Running: {helper} -S --noconfirm {name}")
+                    await callback(f"[INFO] Running: {helper} -S --noconfirm --needed {name}")
                 async with safe_subprocess(
-                    helper, "--sudoflags", "-A", "-S", "--noconfirm", name,
+                    helper, "--sudoflags", "-A", "-S", "--noconfirm", "--needed", name,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT,
                     env=privilege_env,

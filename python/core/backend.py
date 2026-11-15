@@ -775,18 +775,37 @@ class OmnistoreBackend:
                 for o in offers: console.print(f"{o['id']}  {o['name']}" + ("  (experimental)" if o.get("experimental") else ""))
             return offers
 
+    async def _bottles_status(self, registry) -> dict:
+        source = registry.sources.get("bottles") if registry else None
+        status = {"enabled": bool(source and source.enabled), "bottles": []}
+        if status["enabled"]:
+            listed = source._listed_map()
+            status["bottles"] = [{"name": b, "listed": listed.get(b)} for b in await source.bottles()]
+        return status
+
     @safe_command
     async def run_bottles_status(self, json_mode: bool = False):
         """Bottles and whether the user listed them as normal apps (None = undecided)."""
         async with self:
             registry = self.manager.plugin_registry if self.manager else None
-            source = registry.sources.get("bottles") if registry else None
-            status = {"enabled": bool(source and source.enabled), "bottles": []}
-            if status["enabled"]:
-                listed = source._listed_map()
-                status["bottles"] = [{"name": b, "listed": listed.get(b)} for b in await source.bottles()]
+            status = await self._bottles_status(registry)
             if json_mode: sys.stdout.write(json.dumps(status, ensure_ascii=False) + "\n"); sys.stdout.flush()
             return status
+
+    @safe_command
+    async def run_settings_snapshot(self, json_mode: bool = False):
+        """Everything the Settings page needs in one process start (sources, bottles, preferences)."""
+        from core import app_preferences
+        async with self:
+            registry = self.manager.plugin_registry if self.manager else None
+            snapshot = {
+                "plugins": registry.list_plugins() if registry else [],
+                "bottles": await self._bottles_status(registry),
+                "appPreferences": app_preferences.read_preferences(self.config),
+                "config": self.config.data,
+            }
+            if json_mode: sys.stdout.write(json.dumps(snapshot, ensure_ascii=False) + "\n"); sys.stdout.flush()
+            return snapshot
 
     @safe_command
     async def run_set_bottle_listed(self, bottle: str, listed: bool, json_mode: bool = False) -> bool:

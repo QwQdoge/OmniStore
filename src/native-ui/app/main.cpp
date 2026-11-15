@@ -6,13 +6,17 @@
 #include "transactionclient.h"
 
 #include <QCoreApplication>
+#include <QEventLoop>
 #include <QFile>
 #include <QGuiApplication>
 #include <QLocale>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlComponent>
+#include <QQuickItem>
 #include <QQuickStyle>
+#include <QQuickWindow>
+#include <QTimer>
 #include <QStandardPaths>
 #include <QTranslator>
 #include <QVariantMap>
@@ -106,6 +110,55 @@ int main(int argc, char *argv[])
                                              installedLicenseFile(QStringLiteral("LICENSE")));
     engine.rootContext()->setContextProperty(QStringLiteral("appNoticesText"),
                                              installedLicenseFile(QStringLiteral("THIRD_PARTY_NOTICES.md")));
+
+    if (app.arguments().mid(1) == QStringList{QStringLiteral("--smoke-pages")}) {
+        // Instantiate every page (wide and narrow) against the real bridges and fail on
+        // any QML runtime warning: undefined properties, bad bindings, type errors.
+        static int warnings = 0;
+        qInstallMessageHandler([](QtMsgType type, const QMessageLogContext &, const QString &message) {
+            if (type >= QtWarningMsg && message.contains(QStringLiteral(".qml"))) {
+                ++warnings;
+                std::fprintf(stderr, "QML warning: %s\n", qPrintable(message));
+            }
+        });
+        const QStringList types = {QStringLiteral("HomePage"), QStringLiteral("ExplorePage"),
+            QStringLiteral("InstalledPage"), QStringLiteral("UpdatesPage"), QStringLiteral("SearchPage"),
+            QStringLiteral("TasksPage"), QStringLiteral("SettingsPage")};
+        const QStringList categories = {QStringLiteral("appearance"), QStringLiteral("sources"),
+            QStringLiteral("updates"), QStringLiteral("ai"), QStringLiteral("notifications"),
+            QStringLiteral("privacy"), QStringLiteral("advanced")};
+        for (const QSize &size : {QSize(1280, 800), QSize(480, 800)}) {
+            for (const auto &type : types) {
+                QQmlComponent component(&engine);
+                component.loadFromModule(QStringLiteral("OmniStore.Native"), type);
+                if (!component.isReady()) {
+                    std::fprintf(stderr, "%s: %s\n", qPrintable(type), qPrintable(component.errorString()));
+                    return 1;
+                }
+                QQuickWindow window;
+                window.resize(size);
+                auto *item = qobject_cast<QQuickItem *>(component.create());
+                if (!item) {
+                    std::fprintf(stderr, "%s: could not be created\n", qPrintable(type));
+                    return 1;
+                }
+                item->setParentItem(window.contentItem());
+                item->setSize(size);
+                window.show();
+                const bool settings = type == QLatin1String("SettingsPage");
+                for (const QString &category : settings ? categories : QStringList{QString()}) {
+                    if (settings)
+                        item->setProperty("category", category);
+                    QEventLoop loop;
+                    QTimer::singleShot(250, &loop, &QEventLoop::quit);
+                    loop.exec();
+                }
+                delete item;
+            }
+        }
+        std::fprintf(stderr, "smoke: %d QML warning(s)\n", warnings);
+        return warnings == 0 ? 0 : 1;
+    }
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);

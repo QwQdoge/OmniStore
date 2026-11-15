@@ -161,6 +161,10 @@ Window {
             outcomeSnackbar.actionText = success ? ""
                 : (outcomeSnackbar.openStorage ? qsTr("Open storage") : qsTr("View log"))
             outcomeSnackbar.open()
+            // Away from the window the in-app notice would be missed.
+            if (Qt.application.state !== Qt.ApplicationActive && systemBridge.taskNotifications)
+                systemBridge.notify(success ? qsTr("Done") : qsTr("Something needs attention"),
+                                    outcomeSnackbar.message)
         }
     }
 

@@ -127,3 +127,15 @@ def test_catalog_installs_disabled_and_delegates(tmp_path, monkeypatch):
 def test_split_id_requires_separator():
     assert BottlesSource.split_id({"id": "Office::Word"}) == ("Office", "Word")
     assert BottlesSource.split_id({"id": "Word", "name": "Word"}) == ("", "")
+
+
+def test_aur_build_uses_all_cores_unless_user_chose(tmp_path):
+    from core.sources.aur.aur import build_environment
+    none = tmp_path / "none.conf"
+    none.write_text("#MAKEFLAGS=\"-j2\"\n")
+    chosen = tmp_path / "chosen.conf"
+    chosen.write_text('MAKEFLAGS="-j2"\n')
+    assert build_environment({"A": "1"}, cpu_count=8, conf_paths=[none])["MAKEFLAGS"] == "-j8"
+    assert "MAKEFLAGS" not in build_environment({}, cpu_count=8, conf_paths=[chosen])
+    assert build_environment({"MAKEFLAGS": "-j1"}, cpu_count=8, conf_paths=[none])["MAKEFLAGS"] == "-j1"
+    assert "MAKEFLAGS" not in build_environment({}, cpu_count=1, conf_paths=[none])

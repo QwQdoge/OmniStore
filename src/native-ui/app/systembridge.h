@@ -10,6 +10,7 @@ class SystemBridge final : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool busy READ busy NOTIFY stateChanged)
+    Q_PROPERTY(bool taskNotifications READ taskNotifications WRITE setTaskNotifications NOTIFY taskNotificationsChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY stateChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
     Q_PROPERTY(QVariantMap channelState READ channelState NOTIFY dataChanged)
@@ -23,6 +24,13 @@ public:
     ~SystemBridge() override;
 
     bool busy() const { return m_process != nullptr; }
+    bool taskNotifications() const;
+    void setTaskNotifications(bool enabled);
+    // Desktop notification through the session's notification server, so Meo Settings'
+    // per-app rules (Do Not Disturb, popups, history) apply. Returns false if it could not be sent.
+    Q_INVOKABLE bool notify(const QString &title, const QString &body);
+    // Open a Meo Settings route (for example "notifications"). False when it cannot be started.
+    Q_INVOKABLE bool openMeoSettings(const QString &route);
     QString statusMessage() const { return m_statusMessage; }
     QString errorMessage() const { return m_errorMessage; }
     QVariantMap channelState() const { return m_channelState; }
@@ -44,6 +52,7 @@ public:
     Q_INVOKABLE void clearError();
 
 signals:
+    void taskNotificationsChanged();
     void stateChanged();
     void dataChanged();
 

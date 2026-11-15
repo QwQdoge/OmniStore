@@ -146,6 +146,9 @@ if(BUILD_TESTING)
     target_link_libraries(friendly-error-test PRIVATE Qt6::Core Qt6::Test)
     add_test(NAME friendly-error COMMAND friendly-error-test)
     set_tests_properties(friendly-error PROPERTIES TIMEOUT 10)
+    add_test(NAME native-qml-smoke COMMAND omnistore-native --smoke-pages)
+    set_tests_properties(native-qml-smoke PROPERTIES
+        TIMEOUT 120 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")
     add_test(NAME native-qml-components COMMAND omnistore-native --check-qml)
     set_tests_properties(native-qml-components PROPERTIES
         TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")

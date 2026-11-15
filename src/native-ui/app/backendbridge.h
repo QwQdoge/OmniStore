@@ -27,19 +27,20 @@ class BackendBridge final : public QObject
     Q_PROPERTY(QString taskSpeed READ taskSpeed NOTIFY taskChanged)
     Q_PROPERTY(QString taskLog READ taskLog NOTIFY taskChanged)
 
-    Q_PROPERTY(QVariantList searchResults READ searchResults NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList categoryResults READ categoryResults NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList featuredApps READ featuredApps NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList trendingApps READ trendingApps NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList forYouApps READ forYouApps NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList installedApps READ installedApps NOTIFY dataChanged)
-    Q_PROPERTY(QVariantMap installedUsage READ installedUsage NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList updates READ updates NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList plugins READ plugins NOTIFY dataChanged)
-    Q_PROPERTY(QVariantMap bottles READ bottles NOTIFY dataChanged)
-    Q_PROPERTY(QVariantMap config READ config NOTIFY dataChanged)
-    Q_PROPERTY(QVariantMap storageInfo READ storageInfo NOTIFY dataChanged)
-    Q_PROPERTY(QVariantMap selectedApp READ selectedApp NOTIFY dataChanged)
+    Q_PROPERTY(QVariantList searchResults READ searchResults NOTIFY searchChanged)
+    Q_PROPERTY(QVariantList categoryResults READ categoryResults NOTIFY categoryChanged)
+    Q_PROPERTY(QVariantList featuredApps READ featuredApps NOTIFY recommendationsChanged)
+    Q_PROPERTY(QVariantList trendingApps READ trendingApps NOTIFY recommendationsChanged)
+    Q_PROPERTY(QVariantList forYouApps READ forYouApps NOTIFY recommendationsChanged)
+    Q_PROPERTY(QVariantList installedApps READ installedApps NOTIFY installedChanged)
+    Q_PROPERTY(QVariantMap installedUsage READ installedUsage NOTIFY usageChanged)
+    Q_PROPERTY(QVariantList updates READ updates NOTIFY updatesChanged)
+    Q_PROPERTY(QVariantList plugins READ plugins NOTIFY pluginsChanged)
+    Q_PROPERTY(QVariantMap bottles READ bottles NOTIFY bottlesChanged)
+    Q_PROPERTY(QVariantMap appPreferences READ appPreferences NOTIFY preferencesChanged)
+    Q_PROPERTY(QVariantMap config READ config NOTIFY configChanged)
+    Q_PROPERTY(QVariantMap storageInfo READ storageInfo NOTIFY storageChanged)
+    Q_PROPERTY(QVariantMap selectedApp READ selectedApp NOTIFY selectedChanged)
 
 public:
     explicit BackendBridge(QObject *parent = nullptr);
@@ -72,6 +73,7 @@ public:
     QVariantList updates() const { return m_updates; }
     QVariantList plugins() const { return m_plugins; }
     QVariantMap bottles() const { return m_bottles; }
+    QVariantMap appPreferences() const { return m_appPreferences; }
     QVariantMap config() const { return m_config; }
     QVariantMap storageInfo() const { return m_storageInfo; }
     QVariantMap selectedApp() const { return m_selectedApp; }
@@ -85,6 +87,11 @@ public:
     Q_INVOKABLE void loadUpdates();
     Q_INVOKABLE void loadPlugins();
     Q_INVOKABLE void loadBottles();
+    Q_INVOKABLE void loadAppPreferences();
+    // Sources, Bottles and preferences in a single backend start (each start costs ~0.3-0.5 s).
+    Q_INVOKABLE void loadSettingsSnapshot();
+    // key: autoUpdate | notifyUpdates (bool) or cacheLimitMb (int); applied by the backend.
+    Q_INVOKABLE void setAppPreference(const QString &key, const QVariant &value);
     Q_INVOKABLE void loadConfig();
     Q_INVOKABLE void loadStorageInfo();
     Q_INVOKABLE void loadDetails(const QString &appId, const QString &source = {});
@@ -108,6 +115,21 @@ public:
 signals:
     void stateChanged();
     void taskChanged();
+    // Each list notifies on its own so a refresh of one (say sources) does not
+    // rebuild the delegates of another (say Installed). dataChanged remains the
+    // aggregate for listeners that need any change.
+    void searchChanged();
+    void categoryChanged();
+    void recommendationsChanged();
+    void installedChanged();
+    void usageChanged();
+    void updatesChanged();
+    void pluginsChanged();
+    void bottlesChanged();
+    void preferencesChanged();
+    void configChanged();
+    void storageChanged();
+    void selectedChanged();
     void dataChanged();
     void operationFinished(const QString &action, bool success);
 
@@ -122,6 +144,8 @@ private:
         Updates,
         Plugins,
         Bottles,
+        AppPrefs,
+        SettingsSnapshot,
         Config,
         Storage,
         Details,
@@ -133,6 +157,7 @@ private:
         Locate,
         PluginToggle,
         BottleListed,
+        AppPrefsSet,
         CatalogAdd,
     };
 
@@ -163,6 +188,7 @@ private:
     static QVariantList asList(const QVariant &value);
     static QVariantMap asMap(const QVariant &value);
     static QString operationName(Operation operation);
+    void emitDataChanged(Operation operation);
 
     QString m_backendProgram;
     QStringList m_backendPrefixArguments;
@@ -200,6 +226,7 @@ private:
     QString m_lastUpdated;  // localized time of the last successful read
     QVariantList m_plugins;
     QVariantMap m_bottles;
+    QVariantMap m_appPreferences;
     QVariantMap m_config;
     QVariantMap m_storageInfo;
     QVariantMap m_selectedApp;

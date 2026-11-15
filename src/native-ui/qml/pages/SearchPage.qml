@@ -31,6 +31,7 @@ Item {
             MeoSearchBar {
                 id: searchBar
                 Layout.fillWidth: true
+                Layout.preferredWidth: 780 * MeoTheme.globalScale
                 Layout.maximumWidth: 780 * MeoTheme.globalScale
                 text: root.initialQuery
                 placeholder: qsTr("App or package name")

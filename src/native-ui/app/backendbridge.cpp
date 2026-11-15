@@ -423,6 +423,23 @@ void BackendBridge::applyResponse(Operation operation)
     case Operation::Bottles:
         m_bottles = asMap(payload);
         break;
+    case Operation::AppPrefs:
+        m_appPreferences = asMap(payload);
+        break;
+    case Operation::SettingsSnapshot: {
+        const QVariantMap snapshot = asMap(payload);
+        m_plugins = asList(snapshot.value(QStringLiteral("plugins")));
+        m_bottles = asMap(snapshot.value(QStringLiteral("bottles")));
+        m_appPreferences = asMap(snapshot.value(QStringLiteral("appPreferences")));
+        if (snapshot.contains(QStringLiteral("config"))) {
+            m_config = asMap(snapshot.value(QStringLiteral("config")));
+            emit configChanged();
+        }
+        emit pluginsChanged();
+        emit bottlesChanged();
+        emit preferencesChanged();
+        break;
+    }
     case Operation::Config:
         m_config = asMap(payload);
         break;
@@ -434,6 +451,27 @@ void BackendBridge::applyResponse(Operation operation)
         break;
     default:
         break;
+    }
+    emitDataChanged(operation);
+}
+
+void BackendBridge::emitDataChanged(Operation operation)
+{
+    switch (operation) {
+    case Operation::Recommendations: emit recommendationsChanged(); break;
+    case Operation::Search: emit searchChanged(); break;
+    case Operation::Category: emit categoryChanged(); break;
+    case Operation::Installed: emit installedChanged(); break;
+    case Operation::InstalledUsage: emit usageChanged(); break;
+    case Operation::Updates: emit updatesChanged(); break;
+    case Operation::Plugins: emit pluginsChanged(); break;
+    case Operation::Bottles: emit bottlesChanged(); break;
+    case Operation::AppPrefs: emit preferencesChanged(); break;
+    case Operation::SettingsSnapshot: break;  // emitted per list above
+    case Operation::Config: emit configChanged(); break;
+    case Operation::Storage: emit storageChanged(); break;
+    case Operation::Details: emit selectedChanged(); break;
+    default: break;
     }
     emit dataChanged();
 }
@@ -520,10 +558,10 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
                         {QStringLiteral("--list-installed"), QStringLiteral("--json")});
         } else if (finished.operation == Operation::PluginToggle
                    || finished.operation == Operation::CatalogAdd) {
-            enqueueRead(Operation::Plugins, tr("sources"),
-                        {QStringLiteral("--list-plugins"), QStringLiteral("--json")});
-            enqueueRead(Operation::Bottles, tr("Windows app containers"),
-                        {QStringLiteral("--bottles-status"), QStringLiteral("--json")});
+            loadSettingsSnapshot();
+        } else if (finished.operation == Operation::AppPrefsSet) {
+            enqueueRead(Operation::AppPrefs, tr("preferences"),
+                        {QStringLiteral("--app-preferences")});
         } else if (finished.operation == Operation::BottleListed) {
             enqueueRead(Operation::Bottles, tr("Windows app containers"),
                         {QStringLiteral("--bottles-status"), QStringLiteral("--json")});
@@ -563,8 +601,7 @@ void BackendBridge::autoRefresh()
 {
     if (m_process || !m_queue.isEmpty())
         return;
-    loadPlugins();
-    loadBottles();
+    loadSettingsSnapshot();
     loadUpdates();
     if (m_readFailedSinceRefresh)
         loadConfig();
@@ -581,6 +618,8 @@ QString BackendBridge::operationName(Operation operation)
     case Operation::Updates: return QStringLiteral("updates");
     case Operation::Plugins: return QStringLiteral("plugins");
     case Operation::Bottles: return QStringLiteral("bottles");
+    case Operation::AppPrefs: return QStringLiteral("preferences");
+    case Operation::SettingsSnapshot: return QStringLiteral("settings");
     case Operation::Config: return QStringLiteral("config");
     case Operation::Storage: return QStringLiteral("storage");
     case Operation::Details: return QStringLiteral("details");
@@ -592,6 +631,7 @@ QString BackendBridge::operationName(Operation operation)
     case Operation::Locate: return QStringLiteral("locate");
     case Operation::PluginToggle: return QStringLiteral("plugin-toggle");
     case Operation::BottleListed: return QStringLiteral("bottle-listed");
+    case Operation::AppPrefsSet: return QStringLiteral("preferences-set");
     case Operation::CatalogAdd: return QStringLiteral("catalog-add");
     default: return QStringLiteral("idle");
     }
@@ -608,6 +648,7 @@ void BackendBridge::search(const QString &query)
     const QString normalized = query.trimmed();
     if (normalized.isEmpty()) {
         m_searchResults.clear();
+        emit searchChanged();
         emit dataChanged();
         return;
     }
@@ -618,6 +659,7 @@ void BackendBridge::search(const QString &query)
 void BackendBridge::browseCategory(const QString &category)
 {
     m_categoryResults.clear();
+    emit categoryChanged();
     emit dataChanged();
     enqueueRead(Operation::Category, tr("category"),
                 {QStringLiteral("--search"), QStringLiteral("category:") + category.trimmed(),
@@ -643,6 +685,7 @@ void BackendBridge::loadInstalled(bool forceRefresh)
 void BackendBridge::loadInstalledUsage()
 {
     m_installedUsage.clear();
+    emit usageChanged();
     emit dataChanged();
     enqueueRead(Operation::InstalledUsage, tr("installed app usage"),
                 {QStringLiteral("--export-installed-usage")});
@@ -722,6 +765,31 @@ void BackendBridge::launchApp(const QString &name, const QString &source)
                    sourceOrNative(source), QStringLiteral("--json")});
 }
 
+void BackendBridge::loadSettingsSnapshot()
+{
+    enqueueRead(Operation::SettingsSnapshot, tr("settings"),
+                {QStringLiteral("--settings-snapshot"), QStringLiteral("--json")});
+}
+
+void BackendBridge::loadAppPreferences()
+{
+    enqueueRead(Operation::AppPrefs, tr("preferences"), {QStringLiteral("--app-preferences")});
+}
+
+void BackendBridge::setAppPreference(const QString &key, const QVariant &value)
+{
+    static const QStringList allowed{QStringLiteral("autoUpdate"), QStringLiteral("notifyUpdates"),
+                                     QStringLiteral("cacheLimitMb")};
+    if (!allowed.contains(key))
+        return;
+    QJsonObject change;
+    change.insert(key, key == QLatin1String("cacheLimitMb") ? QJsonValue(value.toInt())
+                                                           : QJsonValue(value.toBool()));
+    startMutation(Operation::AppPrefsSet, tr("save preference"),
+                  {QStringLiteral("--set-app-preferences"),
+                   QString::fromUtf8(QJsonDocument(change).toJson(QJsonDocument::Compact))});
+}
+
 void BackendBridge::loadBottles()
 {
     enqueueRead(Operation::Bottles, tr("Windows app containers"),
@@ -793,9 +861,8 @@ void BackendBridge::startBackend()
     emit stateChanged();
     loadRecommendations();
     loadInstalled(true);
-    loadPlugins();
+    loadSettingsSnapshot();  // sources, Bottles, preferences and config in one start
     loadUpdates();
-    loadConfig();
 }
 
 void BackendBridge::clearError()
