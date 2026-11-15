@@ -49,6 +49,7 @@ class PluginInfo:
     index: str = ""           # third-party catalog URL
     experimental: bool = False
     app_class: str = "native"  # "native" | "wrapped" (runs through a runtime like Wine)
+    requires: List[str] = field(default_factory=list)  # tools installed on demand when enabled
     detected: bool = False
     offered: bool = False
 
@@ -73,6 +74,7 @@ class PluginInfo:
             index=str(data.get("index") or ""),
             experimental=bool(data.get("experimental", False)),
             app_class=str(data.get("app_class") or "native"),
+            requires=[str(r) for r in data.get("requires", [])],
             path=str(path.parent),
         )
 
@@ -102,6 +104,7 @@ class PluginInfo:
             "index": self.index,
             "experimental": self.experimental,
             "app_class": self.app_class,
+            "requires": self.requires,
             "detected": self.detected,
             "offered": self.offered,
         }

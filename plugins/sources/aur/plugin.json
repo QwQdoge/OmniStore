@@ -28,5 +28,8 @@
   "trusted": false,
   "default_enabled": false,
   "requires_review": true,
-  "notes": "AUR/yay helper is never enabled by default; users must review and explicitly enable it."
+  "notes": "AUR/yay helper is never enabled by default; users must review and explicitly enable it.",
+  "requires": [
+    "aur_helper"
+  ]
 }

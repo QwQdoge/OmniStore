@@ -176,6 +176,59 @@ class EnvManager:
             return False
         return await self._install_yay(callback)
 
+    async def ensure(self, requirement: str, callback=None) -> bool:
+        """Make sure a tool a source needs exists. Present means skip, never reinstall."""
+        handler = {
+            "flatpak": self._ensure_flatpak,
+            "aur_helper": self._ensure_aur_helper,
+            "bottles": self._ensure_bottles,
+        }.get(requirement)
+        if handler is None:
+            if callback:
+                await callback(f"[ERROR] Don't know how to set up {requirement}.")
+            return False
+        return await handler(callback)
+
+    async def _ensure_flatpak(self, callback=None) -> bool:
+        if self._has_cmd("flatpak"):
+            return True
+        if callback:
+            await callback("[INFO] Flatpak is missing; installing it first.")
+        return await self.bootstrap(callback) and self._has_cmd("flatpak")
+
+    async def _ensure_aur_helper(self, callback=None) -> bool:
+        if self._aur_helper():
+            return True
+        if callback:
+            await callback("[INFO] No AUR helper found; installing yay.")
+        return await self.bootstrap_aur(callback)
+
+    async def _flatpak_app_installed(self, app_id: str) -> bool:
+        try:
+            async with safe_subprocess("flatpak", "info", app_id,
+                                       stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL) as proc:
+                await asyncio.wait_for(proc.wait(), timeout=15)
+                return proc.returncode == 0
+        except Exception:
+            return False
+
+    async def _ensure_bottles(self, callback=None) -> bool:
+        from core.sources.bottles import FLATPAK_APP_ID
+        if self.profile.platform != "linux":
+            if callback:
+                await callback("[ERROR] Bottles is only available on Linux.")
+            return False
+        if self._has_cmd("bottles-cli") or (self._has_cmd("flatpak") and await self._flatpak_app_installed(FLATPAK_APP_ID)):
+            return True
+        if not await self._ensure_flatpak(callback) or not await self._ensure_flathub(callback):
+            return False
+        if callback:
+            await callback("[INFO] Installing Bottles from Flathub for the current user.")
+        return await self._run_command(
+            ["flatpak", "install", "--user", "-y", "--noninteractive", "flathub", FLATPAK_APP_ID],
+            callback, timeout=1800,
+        )
+
     async def _run_command(self, command, callback=None, timeout=1800, **kwargs):
         try:
             async with safe_subprocess(

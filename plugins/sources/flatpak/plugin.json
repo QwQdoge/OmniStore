@@ -28,5 +28,8 @@
   "builtin": true,
   "trusted": true,
   "default_enabled": true,
-  "requires_review": false
+  "requires_review": false,
+  "requires": [
+    "flatpak"
+  ]
 }

@@ -11,6 +11,8 @@ Item {
 
     property string pendingPluginId: ""
     property string pendingPluginName: ""
+    property bool pendingNeedsSetup: false
+    property bool pendingNeedsReview: true
     // Stable stored values; the labels below are presentation only.
     readonly property var themeValues: ["system", "light", "dark"]
     property string themePreference: "system"
@@ -154,7 +156,10 @@ Item {
         const pluginId = String(plugin.id || "")
         if (pluginId.length === 0 || !plugin.available)
             return
-        if (value && plugin.requires_review) {
+        const needsSetup = Array.isArray(plugin.requires) && plugin.requires.length > 0
+        if (value && (plugin.requires_review || needsSetup)) {
+            root.pendingNeedsSetup = needsSetup
+            root.pendingNeedsReview = !!plugin.requires_review
             root.pendingPluginId = pluginId
             root.pendingPluginName = String(plugin.name || plugin.id || qsTr("Source"))
             sourceReviewDialog.open()
@@ -536,7 +541,12 @@ Item {
         id: sourceReviewDialog
         parent: Overlay.overlay
         title: qsTr("Enable %1?").arg(root.pendingPluginName)
-        message: qsTr("This source is marked as requiring review. Packages from it may not receive the same trust or verification guarantees as the default system sources. Enable it only if you want OmniStore to search and install from this source.")
+        message: (root.pendingNeedsReview
+                  ? qsTr("This source is marked as requiring review. Packages from it may not receive the same trust or verification guarantees as the default system sources. Enable it only if you want OmniStore to search and install from this source.")
+                  : qsTr("OmniStore will use this source to search and install apps."))
+                 + (root.pendingNeedsSetup
+                    ? " " + qsTr("If a tool it needs is missing, OmniStore installs it first and skips anything already installed. You may be asked to authorize.")
+                    : "")
         icon: "warning"
         confirmText: qsTr("Enable source")
         cancelText: qsTr("Cancel")

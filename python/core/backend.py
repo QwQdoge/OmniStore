@@ -747,6 +747,15 @@ class OmnistoreBackend:
     async def run_set_plugin_enabled(self, plugin_id: str, enabled: bool, json_mode: bool = False) -> bool:
         SecurityValidator.validate_string(plugin_id, "Plugin ID")
         async with self:
+            registry = self.manager.plugin_registry if self.manager else None
+            info = registry.plugins.get(plugin_id) if registry else None
+            if enabled and info and info.requires:
+                # Turning a source on installs what it needs; tools already present are skipped.
+                async def cb(m): await self._flutter_callback(m, json_mode)
+                for requirement in info.requires:
+                    if not await self.env.ensure(requirement, cb):
+                        if json_mode: sys.stdout.write(json.dumps({"status": "error", "plugin_id": plugin_id, "enabled": False, "error": f"Could not set up {requirement}."}) + "\n"); sys.stdout.flush()
+                        return False
             ok = bool(self.manager and self.manager.plugin_registry and self.manager.plugin_registry.enable(plugin_id, enabled))
             self.cache.invalidate_installed_cache()
             if json_mode: sys.stdout.write(json.dumps({"status": "success" if ok else "error", "plugin_id": plugin_id, "enabled": enabled}) + "\n"); sys.stdout.flush()
