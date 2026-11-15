@@ -86,6 +86,7 @@ public:
     Q_INVOKABLE void updateAll();
     Q_INVOKABLE void launchApp(const QString &name, const QString &source);
     Q_INVOKABLE void setPluginEnabled(const QString &pluginId, bool enabled);
+    Q_INVOKABLE void addCatalog(const QString &url);
     Q_INVOKABLE void setBottleListed(const QString &bottle, bool listed);
     Q_INVOKABLE void cancelOperation();
     Q_INVOKABLE void clearTaskLog();
@@ -122,6 +123,7 @@ private:
         Locate,
         PluginToggle,
         BottleListed,
+        CatalogAdd,
     };
 
     struct Request {

@@ -505,7 +505,8 @@ void BackendBridge::finishProcess(int exitCode, QProcess::ExitStatus exitStatus)
                         {QStringLiteral("--check-updates"), QStringLiteral("--json")});
             enqueueRead(Operation::Installed, tr("installed apps"),
                         {QStringLiteral("--list-installed"), QStringLiteral("--json")});
-        } else if (finished.operation == Operation::PluginToggle) {
+        } else if (finished.operation == Operation::PluginToggle
+                   || finished.operation == Operation::CatalogAdd) {
             enqueueRead(Operation::Plugins, tr("sources"),
                         {QStringLiteral("--list-plugins"), QStringLiteral("--json")});
             enqueueRead(Operation::Bottles, tr("Windows app containers"),
@@ -578,6 +579,7 @@ QString BackendBridge::operationName(Operation operation)
     case Operation::Locate: return QStringLiteral("locate");
     case Operation::PluginToggle: return QStringLiteral("plugin-toggle");
     case Operation::BottleListed: return QStringLiteral("bottle-listed");
+    case Operation::CatalogAdd: return QStringLiteral("catalog-add");
     default: return QStringLiteral("idle");
     }
 }
@@ -711,6 +713,12 @@ void BackendBridge::loadBottles()
 {
     enqueueRead(Operation::Bottles, tr("Windows app containers"),
                 {QStringLiteral("--bottles-status"), QStringLiteral("--json")});
+}
+
+void BackendBridge::addCatalog(const QString &url)
+{
+    startMutation(Operation::CatalogAdd, tr("add source list"),
+                  {QStringLiteral("--add-catalog"), url.trimmed(), QStringLiteral("--json")});
 }
 
 void BackendBridge::setBottleListed(const QString &bottle, bool listed)

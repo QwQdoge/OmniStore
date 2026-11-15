@@ -392,6 +392,56 @@ Item {
                 model: root.sourceRows("advanced")
             }
 
+            MeoCard {
+                Layout.fillWidth: true
+                type: "filled"
+                padding: 18 * MeoTheme.globalScale
+
+                ColumnLayout {
+                    width: parent.width
+                    spacing: 10 * MeoTheme.globalScale
+
+                    MeoText {
+                        text: qsTr("Add a third-party source")
+                        typeRole: "title"
+                        typeSize: "small"
+                        emphasized: true
+                        color: MeoTheme.contentOnSurface
+                    }
+                    MeoText {
+                        Layout.fillWidth: true
+                        text: qsTr("A source list is a public file that points to apps your installed sources can install. It runs no code and stays off until you review and turn it on.")
+                        typeRole: "body"
+                        typeSize: "small"
+                        color: MeoTheme.contentOnSurfaceVariant
+                        wrapMode: Text.WordWrap
+                    }
+                    MeoTextField {
+                        id: catalogUrl
+                        Layout.fillWidth: true
+                        label: qsTr("Source list address")
+                        placeholder: "https://example.org/apps/index.json"
+                        leadingIcon: "link"
+                        maxLength: 2048
+                        supportingText: qsTr("Must start with https://")
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Item { Layout.fillWidth: true }
+                        MeoButton {
+                            text: qsTr("Add source list")
+                            type: "filled"
+                            icon.name: "add"
+                            enabled: !backend.busy && catalogUrl.text.trim().indexOf("https://") === 0
+                            onClicked: {
+                                backend.addCatalog(catalogUrl.text.trim())
+                                catalogUrl.text = ""
+                            }
+                        }
+                    }
+                }
+            }
+
             Store.RepositoryManager {
                 Layout.fillWidth: true
             }
