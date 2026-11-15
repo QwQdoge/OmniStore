@@ -127,7 +127,7 @@ backend.insert('selectedApp', dict(id='org.example.Demo', source='Flatpak', inst
 transactions.insert('installPlan', dict(request=dict(name='org.example.Demo', source='Flatpak', url=None), planHash='new'))
 app.processEvents()
 assert pane.property('planMatches')
-pane.findChild(QObject, 'installButton').clicked.emit()
+pane.findChild(QObject, 'installButtonControl').clicked.emit()
 assert transactions.requests == [('org.example.Demo', 'Flatpak', '')]
 # Allow layout and rendering to complete before retaining a review image.
 from PySide6.QtCore import QTimer

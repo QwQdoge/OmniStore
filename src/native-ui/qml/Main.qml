@@ -143,6 +143,15 @@ Window {
         function onOperationFinished(action, success) {
             if (success)
                 root.refreshPackageState()
+            // One message per outcome (STORE_FEEDBACK.md section 4): success is a
+            // short notice; a failure names what failed and offers the log.
+            outcomeSnackbar.failed = !success
+            outcomeSnackbar.message = success
+                ? qsTr("%1 finished.").arg(action)
+                : (transactions.errorMessage.length > 0 ? transactions.errorMessage
+                                                         : qsTr("%1 didn't finish.").arg(action))
+            outcomeSnackbar.actionText = success ? "" : qsTr("View log")
+            outcomeSnackbar.open()
         }
     }
 
@@ -283,6 +292,21 @@ Window {
             noticesText: appNoticesText
             sourceUrl: "https://github.com/QwQdoge/OmniStore/blob/main/THIRD_PARTY_NOTICES.md"
             copyright: qsTr("© MeoArch contributors")
+        }
+    }
+
+    MeoSnackbar {
+        id: outcomeSnackbar
+        property bool failed: false
+        parent: Overlay.overlay
+        x: Math.round((parent.width - width) / 2)
+        y: parent.height - height - edgeMargin
+        icon: failed ? "error" : "check_circle"
+        dismissible: failed
+        duration: failed ? 8000 : 4000
+        onActionClicked: {
+            outcomeSnackbar.close()
+            root.openTasks()
         }
     }
 

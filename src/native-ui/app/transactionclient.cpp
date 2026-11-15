@@ -1,4 +1,5 @@
 #include "transactionclient.h"
+#include "friendlyerror.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -228,9 +229,9 @@ void TransactionClient::handleResponse(RequestKind kind, const QJsonObject &resp
             m_planning = false;
         if (kind == RequestKind::Submit)
             m_submitting = false;
-        m_errorMessage = response.value(QStringLiteral("error")).toString();
-        if (m_errorMessage.isEmpty())
-            m_errorMessage = tr("The transaction service rejected the request.");
+        m_errorDetail = response.value(QStringLiteral("error")).toString();
+        m_errorMessage = m_errorDetail.isEmpty() ? tr("The transaction service rejected the request.")
+                                                 : FriendlyError::message(m_errorDetail);
         emit stateChanged();
         return;
     }
@@ -295,6 +296,8 @@ void TransactionClient::applyTask(const QJsonObject &task)
     m_status = task.value(QStringLiteral("status")).toString();
     const QString kind = task.value(QStringLiteral("kind")).toString();
     const QString name = task.value(QStringLiteral("name")).toString();
+    m_taskName = name;
+    m_taskKind = kind;
     if (kind == QStringLiteral("update_all"))
         m_actionName = tr("Update all software");
     else if (kind == QStringLiteral("update"))
@@ -313,7 +316,8 @@ void TransactionClient::applyTask(const QJsonObject &task)
     m_log = task.value(QStringLiteral("log")).toString();
     m_progress = task.contains(QStringLiteral("progress"))
         ? task.value(QStringLiteral("progress")).toDouble(-1.0) : -1.0;
-    m_errorMessage = task.value(QStringLiteral("error")).toString();
+    m_errorDetail = task.value(QStringLiteral("error")).toString();
+    m_errorMessage = m_errorDetail.isEmpty() ? QString{} : FriendlyError::message(m_errorDetail, kind, name);
     m_available = true;
 
     emit taskChanged();

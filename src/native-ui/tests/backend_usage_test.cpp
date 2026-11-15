@@ -98,7 +98,7 @@ private slots:
         bridge.launchApp("missing", "Pacman");
         QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 3000);
         QCOMPARE(finished.first().at(1).toBool(), false);
-        QCOMPARE(bridge.errorMessage(), "Application is not installed");
+        QCOMPARE(bridge.errorMessage(), "That app isn't installed.");
     }
 
     void queuedReadCannotOverwriteRequestStartedBetweenCompletions()

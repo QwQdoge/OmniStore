@@ -36,6 +36,7 @@ qt_add_executable(omnistore-native
     app/main.cpp
     app/accountaibridge.cpp app/accountaibridge.h
     app/externalinstallrequest.cpp app/externalinstallrequest.h
+    app/friendlyerror.h
     app/backendbridge.cpp
     app/backendbridge.h
     app/repositorybridge.cpp
@@ -54,6 +55,7 @@ qt_add_qml_module(omnistore-native
         qml/components/AccountAiPanel.qml
         qml/components/AppDetailsPane.qml
         qml/components/AppRow.qml
+        qml/components/InstallButton.qml
         qml/components/InstallPlanReview.qml
         qml/components/StoreAppCard.qml
         qml/components/RepositoryManager.qml
@@ -136,6 +138,11 @@ if(BUILD_TESTING)
     target_link_libraries(transaction-authentication-test PRIVATE Qt6::Core Qt6::Network Qt6::Test)
     add_test(NAME transaction-authentication COMMAND transaction-authentication-test)
     set_tests_properties(transaction-authentication PROPERTIES TIMEOUT 10)
+    qt_add_executable(friendly-error-test tests/friendly_error_test.cpp app/friendlyerror.h)
+    target_include_directories(friendly-error-test PRIVATE app)
+    target_link_libraries(friendly-error-test PRIVATE Qt6::Core Qt6::Test)
+    add_test(NAME friendly-error COMMAND friendly-error-test)
+    set_tests_properties(friendly-error PROPERTIES TIMEOUT 10)
     add_test(NAME native-qml-components COMMAND omnistore-native --check-qml)
     set_tests_properties(native-qml-components PROPERTIES
         TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")

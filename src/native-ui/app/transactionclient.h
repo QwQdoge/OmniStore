@@ -27,6 +27,9 @@ class TransactionClient final : public QObject
     Q_PROPERTY(QString speed READ speed NOTIFY taskChanged)
     Q_PROPERTY(QString log READ log NOTIFY taskChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
+    Q_PROPERTY(QString errorDetail READ errorDetail NOTIFY stateChanged)
+    Q_PROPERTY(QString taskName READ taskName NOTIFY taskChanged)
+    Q_PROPERTY(QString taskKind READ taskKind NOTIFY taskChanged)
     Q_PROPERTY(double progress READ progress NOTIFY taskChanged)
 
 public:
@@ -47,6 +50,9 @@ public:
     QString speed() const { return m_speed; }
     QString log() const { return m_log; }
     QString errorMessage() const { return m_errorMessage; }
+    QString errorDetail() const { return m_errorDetail; }
+    QString taskName() const { return m_taskName; }
+    QString taskKind() const { return m_taskKind; }
     double progress() const { return m_progress; }
 
     Q_INVOKABLE void reconnect();
@@ -110,5 +116,8 @@ private:
     QString m_speed;
     QString m_log;
     QString m_errorMessage;
+    QString m_errorDetail;  // raw backend text, for the log only
+    QString m_taskName;
+    QString m_taskKind;
     double m_progress = -1.0;
 };

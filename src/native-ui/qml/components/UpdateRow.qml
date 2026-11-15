@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MeoUI 1.0
+import OmniStore.Native 1.0 as Store
 
 MeoCard {
     id: root
@@ -59,12 +60,12 @@ MeoCard {
             }
         }
 
-        MeoButton {
-            text: qsTr("Update")
-            type: "tonal"
-            icon.name: "upgrade"
-            enabled: !backend.busy && !transactions.busy && transactions.available
-            onClicked: updateDialog.open()
+        Store.InstallButton {
+            appName: root.packageName()
+            installed: true
+            forceUpdate: true
+            onUpdateRequested: updateDialog.open()
+            onInstallRequested: updateDialog.open()
         }
     }
 

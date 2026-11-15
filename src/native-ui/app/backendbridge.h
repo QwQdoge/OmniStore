@@ -16,6 +16,7 @@ class BackendBridge final : public QObject
     Q_PROPERTY(QString busyAction READ busyAction NOTIFY stateChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY stateChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
+    Q_PROPERTY(QString errorDetail READ errorDetail NOTIFY stateChanged)
     Q_PROPERTY(QString backendDescription READ backendDescription CONSTANT)
 
     Q_PROPERTY(double progress READ progress NOTIFY taskChanged)
@@ -45,6 +46,7 @@ public:
     QString busyAction() const { return m_busyAction; }
     QString statusMessage() const { return m_statusMessage; }
     QString errorMessage() const { return m_errorMessage; }
+    QString errorDetail() const { return m_errorDetail; }
     QString backendDescription() const { return m_backendDescription; }
 
     double progress() const { return m_progress; }
@@ -185,6 +187,7 @@ private:
     QVariantList m_installedApps;
     QVariantMap m_installedUsage;
     QVariantList m_updates;
+    QString m_errorDetail;
     QVariantList m_plugins;
     QVariantMap m_bottles;
     QVariantMap m_config;

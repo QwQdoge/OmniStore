@@ -1,4 +1,5 @@
 #include "backendbridge.h"
+#include "friendlyerror.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -162,7 +163,8 @@ void BackendBridge::startRequest(const Request &request)
     connect(process, &QProcess::errorOccurred, this, [this, process](QProcess::ProcessError error) {
         if (m_process != process || error != QProcess::FailedToStart)
             return;
-        m_errorMessage = tr("The OmniStore backend could not start: %1").arg(process->errorString());
+        m_errorDetail = process->errorString();
+        m_errorMessage = tr("The store service isn't running.");
         appendTaskLog(m_errorMessage);
         emit stateChanged();
         emit taskChanged();
@@ -292,8 +294,10 @@ void BackendBridge::consumeCallback(const QByteArray &json)
             appendTaskLog(message);
         if (type == QStringLiteral("error")) {
             m_callbackError = true;
-            if (!message.isEmpty())
-                m_errorMessage = message;
+            if (!message.isEmpty()) {
+                m_errorDetail = message;
+                m_errorMessage = FriendlyError::message(message);
+            }
         }
     }
     emit taskChanged();
@@ -334,11 +338,11 @@ QVariant BackendBridge::payloadFromDocument(bool *ok)
     if (object.contains(QStringLiteral("status"))) {
         const QString status = object.value(QStringLiteral("status")).toString();
         if (status == QStringLiteral("error")) {
-            m_errorMessage = object.value(QStringLiteral("message")).toString();
-            if (m_errorMessage.isEmpty())
-                m_errorMessage = object.value(QStringLiteral("error")).toString();
-            if (m_errorMessage.isEmpty())
-                m_errorMessage = tr("The backend reported an error.");
+            m_errorDetail = object.value(QStringLiteral("message")).toString();
+            if (m_errorDetail.isEmpty())
+                m_errorDetail = object.value(QStringLiteral("error")).toString();
+            m_errorMessage = m_errorDetail.isEmpty() ? tr("The backend reported an error.")
+                                                     : FriendlyError::message(m_errorDetail);
             return {};
         }
         if (object.contains(QStringLiteral("response"))) {

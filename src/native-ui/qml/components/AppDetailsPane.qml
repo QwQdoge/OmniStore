@@ -279,16 +279,15 @@ Flickable {
                 enabled: !backend.busy && !transactions.busy && transactions.available
                 onClicked: removeDialog.open()
             }
-            MeoButton {
+            Store.InstallButton {
+                id: installButton
                 objectName: "installButton"
-                visible: !root.selectedInstalled
                 Layout.fillWidth: true
-                text: transactions.planning ? qsTr("Preparing…") : qsTr("Install")
-                type: "filled"
-                icon.name: transactions.planning ? "hourglass_top" : "download"
-                enabled: root.packageIdentity().length > 0 && !backend.busy && !transactions.busy
-                         && !transactions.planning && transactions.available
-                onClicked: transactions.planInstall(root.packageIdentity(), root.sourceName(), root.installUrl())
+                appName: root.packageIdentity()
+                installed: !!root.selectedInstalled
+                ready: root.packageIdentity().length > 0
+                onInstallRequested: transactions.planInstall(root.packageIdentity(), root.sourceName(), root.installUrl())
+                onUpdateRequested: transactions.updateApp(root.packageIdentity(), root.sourceName())
             }
         }
 
@@ -322,20 +321,26 @@ Flickable {
         MeoBanner {
             Layout.fillWidth: true
             visible: !transactions.available && !transactions.busy
-            title: qsTr("Transaction service unavailable")
-            text: transactions.errorMessage.length > 0
-                  ? transactions.errorMessage
-                  : qsTr("Install, remove and update actions require the OmniStore background transaction service.")
+            title: qsTr("The store service isn't running.")
+            text: qsTr("Install, remove and update need the OmniStore background service.")
             icon: "cloud_off"
             tone: "warning"
+        }
+
+        MeoButton {
+            visible: !transactions.available && !transactions.busy
+            text: qsTr("Start service")
+            type: "tonal"
+            icon.name: "play_arrow"
+            onClicked: transactions.reconnect()
         }
 
         MeoBanner {
             Layout.fillWidth: true
             visible: transactions.available && transactions.errorMessage.length > 0
-                     && !transactions.busy && !transactions.planning
+                     && !transactions.busy && !transactions.planning && !installButton.showsFailure
             title: qsTr("Package action unavailable")
-            text: transactions.errorMessage + root.logTail()
+            text: transactions.errorMessage
             icon: "error"
             tone: "error"
         }
