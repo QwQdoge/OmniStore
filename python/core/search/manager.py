@@ -3,6 +3,7 @@ from core.subprocess_utils import safe_subprocess
 import aiohttp
 from typing import List, Dict, Any, Optional
 from core.sources.base import UnifiedSource
+from core.sources.resolve import resolve_source
 from .scoring import SmartScoring
 from core.platform_profile import detect_system_profile
 from core.habit_tracker import HabitTracker
@@ -17,6 +18,7 @@ _SOURCE_PRIORITY = {
     "Winget": 6, "Flatpak": 6, "Pacman": 5, "APT": 5, "DNF": 5, "Zypper": 5,
     "Scoop": 4, "Chocolatey": 4, "Homebrew": 4,
     "APK": 3, "F-Droid": 3, "AUR": 2, "AppImage": 1,
+    "Homebrew Cask": 4, "Bottles": 1,
 }
 
 class SearchManager:
@@ -44,6 +46,9 @@ class SearchManager:
         for name, weight in weights.items():
             if name in self.sources:
                 self.sources[name].weight = weight
+
+    def resolve_source(self, name: str) -> Optional[UnifiedSource]:
+        return resolve_source(self.sources, name)
 
     def _get_active_sources(self) -> List[UnifiedSource]:
         active = []
@@ -92,7 +97,7 @@ class SearchManager:
             remaining = (match.group(2) or "").strip()
             if source_filter == "native":
                 source_filter = detect_system_profile().native_manager
-            source_obj = self.sources.get(source_filter)
+            source_obj = self.resolve_source(source_filter)
             if not source_obj or not source_obj.enabled or not self.cm.get(
                 f"search.sources.{source_filter}", True
             ):

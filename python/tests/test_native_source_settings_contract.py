@@ -33,7 +33,7 @@ def test_advanced_unavailable_sources_do_not_pollute_normal_settings():
 
 def test_review_required_source_needs_confirmation_before_enable():
     source = text()
-    assert "value && plugin.requires_review" in source
+    assert "value && (plugin.requires_review || needsSetup)" in source
     assert "sourceReviewDialog.open()" in source
     assert 'confirmText: qsTr("Enable source")' in source
     assert "backend.setPluginEnabled(root.pendingPluginId, true)" in source

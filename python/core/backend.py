@@ -358,6 +358,9 @@ def safe_command(func):
 
     return wrapper
 
+from core.sources.resolve import resolve_source
+
+
 class OmnistoreBackend:
     def __init__(self, json_mode: bool = False, emit_stdout: bool = True):
         self.config = ConfigManager()
@@ -661,7 +664,7 @@ class OmnistoreBackend:
                 source_id = source.strip().lower()
                 if source_id == "native":
                     source_id = detect_system_profile().native_manager
-                provider = self.manager.sources.get(source_id) if self.manager else None
+                provider = resolve_source(self.manager.sources, source_id) if self.manager else None
                 if provider is None or not provider.enabled:
                     raise RuntimeError(f"Software source '{source}' is unavailable.")
                 details = await asyncio.wait_for(provider.get_details(v_id), timeout=15)
@@ -1000,7 +1003,7 @@ class OmnistoreBackend:
             src = source.strip().lower()
             if src in ("native", ""):
                 src = detect_system_profile().native_manager
-            provider = self.manager.sources.get(src) if self.manager else None
+            provider = resolve_source(self.manager.sources, src) if self.manager else None
             success = False
             error = ""
             try:

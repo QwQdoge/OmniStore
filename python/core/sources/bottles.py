@@ -60,7 +60,7 @@ class BottlesSource(UnifiedSource):
         self.argv = bottles_command()
         self.enabled = bool(self.argv)
         self.capabilities.update({
-            "install": True,  # run a Windows installer inside a chosen bottle
+            "install": False,  # programmatic only: the store has no installer-file flow yet
             "uninstall": False,
             "update": False,
             "details": True,
@@ -163,8 +163,20 @@ class BottlesSource(UnifiedSource):
             bottle, _, program = str(package.get("id") or "").partition("::")
         return bottle.strip(), program.strip()
 
+    async def _find_bottle(self, program: str) -> str:
+        """Programs launched by bare name: find the listed bottle that has it."""
+        listed = self._listed_map()
+        for bottle in await self.bottles():
+            if listed.get(bottle) and program in await self.programs(bottle):
+                return bottle
+        return ""
+
     async def launch(self, package: Dict[str, Any]) -> bool:
         bottle, program = self.split_id(package)
+        if not program:
+            program = str(package.get("name") or "").strip()
+        if self.enabled and program and not bottle:
+            bottle = await self._find_bottle(program)
         if not (self.enabled and bottle and program):
             return False
         code, _ = await self._run("run", "-b", bottle, "-p", program, timeout=20)

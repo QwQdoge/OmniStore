@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, Callable, Awaitable
 from core.subprocess_utils import safe_subprocess
 from core.security_validator import SecurityValidator
 from core.sources.utils import PrivilegeManager
+from core.sources.resolve import resolve_source
 
 class InstallExecutor:
     """
@@ -103,11 +104,10 @@ class InstallExecutor:
                     if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'. Ensure required tools are installed and supported on this platform.")
                     return False
 
-                if not self.backend.manager or source_name not in self.backend.manager.sources:
+                source = resolve_source(self.backend.manager.sources, source_name) if self.backend.manager else None
+                if source is None:
                     if callback: await callback(f"[ERROR] Installation source '{source_name}' is currently unavailable.")
                     return False
-
-                source = self.backend.manager.sources[source_name]
 
                 try:
                     self.is_running = True
@@ -179,11 +179,10 @@ class InstallExecutor:
                     if callback: await callback(f"[ERROR] Environment check failed for '{source_name}'.")
                     return False
 
-                if not self.backend.manager or source_name not in self.backend.manager.sources:
+                source = resolve_source(self.backend.manager.sources, source_name) if self.backend.manager else None
+                if source is None:
                     if callback: await callback(f"[ERROR] Uninstallation source '{source_name}' not found.")
                     return False
-
-                source = self.backend.manager.sources[source_name]
                 try:
                     self.is_running = True
                     async def run_uninstall_with_watchdog():

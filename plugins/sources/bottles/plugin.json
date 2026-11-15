@@ -9,7 +9,6 @@
   ],
   "capabilities": [
     "search",
-    "install",
     "details",
     "list_installed",
     "launch"
