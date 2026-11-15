@@ -45,6 +45,7 @@ Item {
             spacing: 26 * MeoTheme.globalScale
 
             MeoButton {
+                visible: !!accountAi.features.recommend
                 text: qsTr("AI pick of the day")
                 icon.name: "auto_awesome"; type: "tonal"
                 enabled: !backend.busy && !accountAi.busy

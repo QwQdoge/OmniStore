@@ -12,7 +12,7 @@
 #include <utility>
 
 namespace {
-constexpr int PollIntervalMs = 650;
+constexpr int PollIntervalMs = 250;
 constexpr int ReconnectDelayMs = 250;
 constexpr int MaxReconnectAttempts = 8;
 
@@ -30,8 +30,9 @@ TransactionClient::TransactionClient(QObject *parent)
     m_pollTimer.setInterval(PollIntervalMs);
     m_pollTimer.setSingleShot(false);
     connect(&m_pollTimer, &QTimer::timeout, this, [this] {
-        if (m_taskId.isEmpty() || !busy()) {
-            m_pollTimer.stop();
+        if (m_taskId.isEmpty() || m_submitting || !busy()) {
+            if (!m_submitting)
+                m_pollTimer.stop();
             return;
         }
         enqueue(RequestKind::Get, {
@@ -58,6 +59,7 @@ TransactionClient::TransactionClient(QObject *parent)
     connect(&m_socket, &QLocalSocket::readyRead, this, &TransactionClient::consumeSocketData);
     connect(&m_socket, &QLocalSocket::disconnected, this, [this] {
         m_available = false;
+        m_submitting = false;
         if (m_current.kind == RequestKind::Plan && m_planning) {
             m_planning = false;
             emit stateChanged();
@@ -202,6 +204,8 @@ void TransactionClient::consumeSocketData()
         if (error.error != QJsonParseError::NoError || !document.isObject()) {
             if (m_current.kind == RequestKind::Plan)
                 m_planning = false;
+            if (m_current.kind == RequestKind::Submit)
+                m_submitting = false;
             m_errorMessage = tr("The transaction service returned invalid JSON.");
             emit stateChanged();
         } else {
@@ -222,6 +226,8 @@ void TransactionClient::handleResponse(RequestKind kind, const QJsonObject &resp
     if (topStatus != QStringLiteral("success")) {
         if (kind == RequestKind::Plan)
             m_planning = false;
+        if (kind == RequestKind::Submit)
+            m_submitting = false;
         m_errorMessage = response.value(QStringLiteral("error")).toString();
         if (m_errorMessage.isEmpty())
             m_errorMessage = tr("The transaction service rejected the request.");
@@ -266,6 +272,8 @@ void TransactionClient::handleResponse(RequestKind kind, const QJsonObject &resp
         return;
     }
 
+    if (kind == RequestKind::Submit)
+        m_submitting = false;
     if ((kind == RequestKind::Submit || kind == RequestKind::Get) && value.isObject()) {
         const QJsonObject task = value.toObject();
         applyTask(task);
@@ -379,6 +387,11 @@ void TransactionClient::applyInstallPlan()
     }
 
     m_errorMessage.clear();
+    m_submitting = true;
+    m_stage = tr("Sending request…");
+    m_progress = -1.0;
+    emit taskChanged();
+    emit stateChanged();
     enqueue(RequestKind::Submit, {
         {QStringLiteral("action"), QStringLiteral("task.submit")},
         {QStringLiteral("args"), QJsonArray{}},
@@ -414,6 +427,11 @@ void TransactionClient::submit(const QString &kind, const QString &name,
         kwargs.insert(QStringLiteral("url"), url.trimmed());
 
     m_errorMessage.clear();
+    m_submitting = true;
+    m_stage = tr("Sending request…");
+    m_progress = -1.0;
+    emit taskChanged();
+    emit stateChanged();
     enqueue(RequestKind::Submit, {
         {QStringLiteral("action"), QStringLiteral("task.submit")},
         {QStringLiteral("args"), QJsonArray{}},

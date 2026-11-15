@@ -45,7 +45,7 @@ def test_details_consumes_real_metadata_and_hides_optional_sections():
 def test_store_utilities_use_shared_meoui_top_app_bar():
     main = read(QML / "Main.qml")
 
-    assert "topAppBarActions: [searchAction, tasksAction]" in main
+    assert "topAppBarActions: [searchAction, tasksAction, overflowAction]" in main
     assert "showTopAppBarOnExpanded: true" in main
     assert "id: globalActions" not in main
     assert 'id: searchSheet' in main

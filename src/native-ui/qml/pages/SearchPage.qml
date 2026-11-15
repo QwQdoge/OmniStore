@@ -50,6 +50,7 @@ Item {
         }
 
         RowLayout {
+            visible: !!accountAi.features.search
             MeoButton {
                 text: qsTr("AI search")
                 icon.name: "auto_awesome"; type: "tonal"

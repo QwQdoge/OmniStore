@@ -15,6 +15,7 @@ class TransactionClient final : public QObject
     Q_PROPERTY(bool available READ available NOTIFY stateChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY stateChanged)
     Q_PROPERTY(bool planning READ planning NOTIFY stateChanged)
+    Q_PROPERTY(bool submitting READ submitting NOTIFY stateChanged)
     Q_PROPERTY(bool hasInstallPlan READ hasInstallPlan NOTIFY planChanged)
     Q_PROPERTY(QVariantMap installPlan READ installPlan NOTIFY planChanged)
     Q_PROPERTY(QString taskId READ taskId NOTIFY taskChanged)
@@ -32,8 +33,9 @@ public:
     explicit TransactionClient(QObject *parent = nullptr);
 
     bool available() const { return m_available; }
-    bool busy() const { return m_status == QStringLiteral("queued") || m_status == QStringLiteral("running"); }
+    bool busy() const { return m_submitting || m_status == QStringLiteral("queued") || m_status == QStringLiteral("running"); }
     bool planning() const { return m_planning; }
+    bool submitting() const { return m_submitting; }
     bool hasInstallPlan() const { return !m_installPlan.isEmpty(); }
     QVariantMap installPlan() const { return m_installPlan.toVariantMap(); }
     QString taskId() const { return m_taskId; }
@@ -95,6 +97,7 @@ private:
     bool m_available = false;
     bool m_requestInFlight = false;
     bool m_planning = false;
+    bool m_submitting = false;
     int m_reconnectAttempts = 0;
 
     QJsonObject m_installPlan;

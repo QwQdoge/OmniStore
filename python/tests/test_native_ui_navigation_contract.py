@@ -13,12 +13,15 @@ def test_primary_navigation_matches_meoui_product_contract():
     main = read(NATIVE / "qml" / "Main.qml")
     navigation = main.split("navigationModel: [", 1)[1].split("]\n        pages:", 1)[0]
 
-    for route in ("home", "explore", "installed", "updates", "settings"):
+    # Settings is never primary navigation (MeoUI App Shell): it lives in the
+    # sidebar footer and the overflow menu.
+    for route in ("home", "explore", "installed", "updates"):
         assert f'"id": "{route}"' in navigation
 
     assert '"label": qsTr("Search")' not in navigation
     assert '"label": qsTr("Tasks")' not in navigation
-    assert "pages: [homePage, explorePage, installedPage, updatesPage, settingsPage]" in main
+    assert "pages: [homePage, explorePage, installedPage, updatesPage, settingsPage, aboutPage]" in main
+    assert "sidebarFooter: sidebarSettings" in main
 
 
 def test_search_and_tasks_are_store_level_utility_sheets():
@@ -30,7 +33,7 @@ def test_search_and_tasks_are_store_level_utility_sheets():
     assert "TasksPage {}" in main
     assert 'Accessible.name: qsTr("Search packages")' in main
     assert 'qsTr("Active package task") : qsTr("Tasks")' in main
-    assert "topAppBarActions: [searchAction, tasksAction]" in main
+    assert "topAppBarActions: [searchAction, tasksAction, overflowAction]" in main
 
 
 def test_explore_page_is_built_and_uses_runtime_backend_data():

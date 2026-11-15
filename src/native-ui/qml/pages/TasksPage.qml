@@ -45,6 +45,11 @@ Item {
         return transactions.available ? "download_done" : "cloud_off"
     }
 
+    function logTail() {
+        const lines = String(transactions.log || "").split("\n").filter(l => l.trim().length > 0)
+        return lines.length > 0 ? "\n\n" + lines.slice(-5).join("\n") : ""
+    }
+
     Component.onCompleted: transactions.reconnect()
 
     ColumnLayout {
@@ -145,6 +150,14 @@ Item {
                 }
 
                 MeoText {
+                    visible: transactions.progress >= 0
+                    text: qsTr("%1% · %2").arg(Math.round(transactions.progress * 100)).arg(root.statusLabel())
+                    typeRole: "label"
+                    typeSize: "medium"
+                    color: MeoTheme.contentOnSurfaceVariant
+                }
+
+                MeoText {
                     visible: transactions.sourceUpdates.length > 0
                     text: root.sourceSummary()
                     typeRole: "label"
@@ -236,7 +249,7 @@ Item {
             Layout.fillWidth: true
             visible: transactions.errorMessage.length > 0 && transactions.available
             title: qsTr("Task error")
-            text: transactions.errorMessage
+            text: transactions.errorMessage + root.logTail()
             icon: "error"
             tone: "error"
             confirmText: qsTr("Dismiss")
