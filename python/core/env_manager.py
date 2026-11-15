@@ -1,5 +1,6 @@
 import asyncio
 import os
+import platform
 import shutil
 import tempfile
 from pathlib import Path
@@ -220,6 +221,10 @@ class EnvManager:
             return False
         if self._has_cmd("bottles-cli") or (self._has_cmd("flatpak") and await self._flatpak_app_installed(FLATPAK_APP_ID)):
             return True
+        if platform.machine().lower() not in ("x86_64", "amd64"):
+            if callback:
+                await callback("[ERROR] Bottles on Flathub is only published for x86_64 computers, not this one.")
+            return False
         if not await self._ensure_flatpak(callback) or not await self._ensure_flathub(callback):
             return False
         if callback:

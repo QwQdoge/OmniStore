@@ -34,7 +34,8 @@ def test_present_tools_are_skipped():
     assert env.calls == []
 
 
-def test_bottles_installs_from_flathub_when_missing():
+def test_bottles_installs_from_flathub_when_missing(monkeypatch):
+    monkeypatch.setattr("platform.machine", lambda: "x86_64")
     env = manager({"flatpak"})
     assert asyncio.run(env.ensure("bottles")) is True
     assert env.calls == [["flatpak", "install", "--user", "-y", "--noninteractive", "flathub", "com.usebottles.bottles"]]
@@ -43,3 +44,10 @@ def test_bottles_installs_from_flathub_when_missing():
 def test_bottles_refused_off_linux_and_unknown_requirement_fails():
     assert asyncio.run(manager(set(), platform="macos", native="brew").ensure("bottles")) is False
     assert asyncio.run(manager(set()).ensure("nonsense")) is False
+
+
+def test_bottles_refused_on_arm(monkeypatch):
+    monkeypatch.setattr("platform.machine", lambda: "aarch64")
+    env = manager({"flatpak"})
+    assert asyncio.run(env.ensure("bottles")) is False
+    assert env.calls == []

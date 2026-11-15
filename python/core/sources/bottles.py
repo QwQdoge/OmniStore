@@ -160,7 +160,9 @@ class BottlesSource(UnifiedSource):
         bottle = str(package.get("bottle") or "")
         program = str(package.get("program") or "")
         if not (bottle and program):
-            bottle, _, program = str(package.get("id") or "").partition("::")
+            package_id = str(package.get("id") or "")
+            if "::" in package_id:
+                bottle, _, program = package_id.partition("::")
         return bottle.strip(), program.strip()
 
     async def _find_bottle(self, program: str) -> str:

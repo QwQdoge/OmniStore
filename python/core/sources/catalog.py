@@ -128,7 +128,8 @@ class CatalogSource(UnifiedSource):
         if not app:
             return None, None
         inst = app["install"]
-        return self.resolver(inst["source"]), {**package, "id": inst["id"], "name": app["name"]}
+        # Built-in sources identify packages by their own id, not our display name.
+        return self.resolver(inst["source"]), {**package, "id": inst["id"], "name": inst["id"]}
 
     async def search(self, query: str, page: int = 1, filters: Optional[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         needle = (query or "").strip().lower()

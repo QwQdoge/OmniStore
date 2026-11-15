@@ -115,10 +115,15 @@ def test_catalog_installs_disabled_and_delegates(tmp_path, monkeypatch):
         async def check_update(self, *a, **k): return None
 
         async def install(self, package, callback=None):
-            calls.append(package["id"])
+            calls.append((package["id"], package["name"]))
             return True
 
     source = CatalogSource.from_dir(plugin_id, "Acme", reg.user_dir / plugin_id, lambda key: Fake())
     assert [r["id"] for r in asyncio.run(source.search("alp"))] == ["a"]
     assert asyncio.run(source.install({"id": "a"})) is True
-    assert calls == ["org.a.A"]
+    assert calls == [("org.a.A", "org.a.A")]
+
+
+def test_split_id_requires_separator():
+    assert BottlesSource.split_id({"id": "Office::Word"}) == ("Office", "Word")
+    assert BottlesSource.split_id({"id": "Word", "name": "Word"}) == ("", "")
