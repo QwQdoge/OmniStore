@@ -134,7 +134,7 @@ Item {
     }
 
     function notificationRows() {
-        return [{
+        const rows = root.linuxDesktop ? [{
             "title": qsTr("Notify when updates are available"),
             "subtitle": qsTr("Sent by the background update check. Delivery follows your desktop's notification rules."),
             "leadingIcon": "notifications_active",
@@ -143,7 +143,8 @@ Item {
             "enabled": !backend.busy,
             "interactive": true,
             "onToggled": function(value) { backend.setAppPreference("notifyUpdates", value) }
-        }, {
+        }] : []
+        rows.push({
             "title": qsTr("Notify when a task finishes in the background"),
             "subtitle": qsTr("Only when the OmniStore window is not in front. An install or update keeps running either way."),
             "leadingIcon": "task_alt",
@@ -151,7 +152,8 @@ Item {
             "checked": systemBridge.taskNotifications,
             "interactive": true,
             "onToggled": function(value) { systemBridge.taskNotifications = value }
-        }, {
+        })
+        if (systemBridge.canOpenMeoSettings) rows.push({
             "title": qsTr("Open notification settings in Meo Settings"),
             "subtitle": root.meoSettingsMissing
                 ? qsTr("Meo Settings isn't installed on this computer.")
@@ -160,7 +162,8 @@ Item {
             "trailingKind": "navigation",
             "interactive": true,
             "action": function() { root.meoSettingsMissing = !systemBridge.openMeoSettings("notifications") }
-        }]
+        })
+        return rows
     }
 
     function capabilityLabel(capability) {
@@ -380,7 +383,10 @@ Item {
     readonly property MeoWindowMetrics metrics: MeoWindowMetrics { availableWidth: root.width }
     readonly property bool twoPane: metrics.supportsTwoPane
     property string category: ""
-    readonly property var categories: [
+    // Background update checks, Flatpak/pacman repositories and the Meo channel are Linux
+    // features; Windows and macOS use their own sources (winget/Scoop/Chocolatey, Homebrew).
+    readonly property bool linuxDesktop: String((backend.systemProfile || ({})).platform || "linux") === "linux"
+    readonly property var allCategories: [
         { "id": "appearance", "title": qsTr("Appearance"), "icon": "palette" },
         { "id": "sources", "title": qsTr("Sources"), "icon": "extension" },
         { "id": "updates", "title": qsTr("Updates"), "icon": "system_update" },
@@ -389,6 +395,7 @@ Item {
         { "id": "privacy", "title": qsTr("Privacy & data"), "icon": "shield" },
         { "id": "advanced", "title": qsTr("Advanced"), "icon": "tune" }
     ]
+    readonly property var categories: allCategories.filter(function(c) { return root.linuxDesktop || c.id !== "updates" })
     function categoryTitle(id) {
         for (let i = 0; i < categories.length; ++i)
             if (categories[i].id === id) return categories[i].title
@@ -608,6 +615,7 @@ Item {
                             }
 
                             Store.RepositoryManager {
+                                visible: root.linuxDesktop
                                 Layout.fillWidth: true
                             }
                         }

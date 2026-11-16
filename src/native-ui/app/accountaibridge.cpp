@@ -1,11 +1,13 @@
 #include <QSettings>
 #include <QStringList>
 #include "accountaibridge.h"
+#ifdef OMNISTORE_HAS_DBUS
 #include <QDBusArgument>
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
+#endif
 #include <QDateTime>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -16,6 +18,7 @@
 
 namespace {
 const QString client = QStringLiteral("org.meo.OmniStore");
+#ifdef OMNISTORE_HAS_DBUS
 QDBusInterface *broker(QObject *parent) {
     return new QDBusInterface(QStringLiteral("org.meo.Accounts1"), QStringLiteral("/org/meo/Accounts1"),
                              QStringLiteral("org.meo.Accounts1"), QDBusConnection::sessionBus(), parent);
@@ -24,6 +27,9 @@ QVariantMap map(const QVariant &value) {
     return value.metaType().id() == qMetaTypeId<QDBusArgument>()
         ? qdbus_cast<QVariantMap>(value.value<QDBusArgument>()) : value.toMap();
 }
+#else
+QVariantMap map(const QVariant &value) { return value.toMap(); }
+#endif
 QJsonObject responseObject(QString text) {
     text = text.trimmed();
     if (text.startsWith(QStringLiteral("```"))) {
@@ -106,6 +112,10 @@ void AccountAiBridge::clearPresentation() {
     m_text.clear(); m_error.clear(); m_recommended.clear(); emit changed();
 }
 void AccountAiBridge::refreshConnections() {
+#ifndef OMNISTORE_HAS_DBUS
+    fail(tr("AI assistance needs Meo Account, which is only available on the Meo desktop."));
+    return;
+#else
     if (m_busy) return;
     auto *api = broker(this);
     auto *watcher = new QDBusPendingCallWatcher(api->asyncCall(QStringLiteral("ListAvailableLocalAiConnections"), client), this);
@@ -121,6 +131,8 @@ void AccountAiBridge::refreshConnections() {
         m_error = m_connections.isEmpty() ? tr("No system AI connections are available. Configure one in Meo Settings.") : QString();
         emit changed();
     });
+
+#endif
 }
 void AccountAiBridge::prepare(const QString &mode, const QString &query, const QVariantList &candidates) {
     if (!featureAllowed(mode)) { fail(tr("This AI feature is turned off in OmniStore settings.")); return; }
@@ -171,6 +183,10 @@ void AccountAiBridge::prepare(const QString &mode, const QString &query, const Q
     start(rememberedConsent() ? "invoke" : "prepare_inference");
 }
 void AccountAiBridge::start(const QString &action) {
+#ifndef OMNISTORE_HAS_DBUS
+    fail(tr("AI assistance needs Meo Account, which is only available on the Meo desktop."));
+    return;
+#else
     m_busy = true; m_action = action; m_ticks = 0; m_requestId.clear(); emit changed();
     auto *api = broker(this);
     auto *watcher = new QDBusPendingCallWatcher(api->asyncCall(QStringLiteral("StartLocalAiOperation"), client, action, m_arguments), this);
@@ -180,6 +196,8 @@ void AccountAiBridge::start(const QString &action) {
         if (!reply.isValid() || reply.value().isEmpty()) { fail(tr("Meo Account rejected the AI request. Check the installed client permission and system AI connection.")); return; }
         m_requestId = reply.value(); m_poll.start(); poll();
     });
+
+#endif
 }
 void AccountAiBridge::decide(bool approved, bool remember) {
     if (m_busy || m_consent.isEmpty()) return;
@@ -203,6 +221,10 @@ QVariantList AccountAiBridge::groundedRecommendations(const QString &text, const
     return result;
 }
 void AccountAiBridge::poll() {
+#ifndef OMNISTORE_HAS_DBUS
+    fail(tr("AI assistance needs Meo Account, which is only available on the Meo desktop."));
+    return;
+#else
     if (m_pollPending || m_requestId.isEmpty()) return;
     if (++m_ticks > 180) { fail(tr("Meo Account AI request timed out.")); return; }
     m_pollPending = true;
@@ -252,4 +274,6 @@ void AccountAiBridge::poll() {
         if (m_action == "invoke") refreshConnections();
         emit changed();
     });
+
+#endif
 }

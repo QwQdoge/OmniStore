@@ -38,6 +38,8 @@ class BackendBridge final : public QObject
     Q_PROPERTY(QVariantList plugins READ plugins NOTIFY pluginsChanged)
     Q_PROPERTY(QVariantMap bottles READ bottles NOTIFY bottlesChanged)
     Q_PROPERTY(QVariantMap appPreferences READ appPreferences NOTIFY preferencesChanged)
+    // platform: linux | macos | windows, plus native_manager and recommended sources.
+    Q_PROPERTY(QVariantMap systemProfile READ systemProfile NOTIFY pluginsChanged)
     Q_PROPERTY(QVariantMap config READ config NOTIFY configChanged)
     Q_PROPERTY(QVariantMap storageInfo READ storageInfo NOTIFY storageChanged)
     Q_PROPERTY(QVariantMap selectedApp READ selectedApp NOTIFY selectedChanged)
@@ -74,6 +76,7 @@ public:
     QVariantList plugins() const { return m_plugins; }
     QVariantMap bottles() const { return m_bottles; }
     QVariantMap appPreferences() const { return m_appPreferences; }
+    QVariantMap systemProfile() const { return m_systemProfile; }
     QVariantMap config() const { return m_config; }
     QVariantMap storageInfo() const { return m_storageInfo; }
     QVariantMap selectedApp() const { return m_selectedApp; }
@@ -227,6 +230,7 @@ private:
     QVariantList m_plugins;
     QVariantMap m_bottles;
     QVariantMap m_appPreferences;
+    QVariantMap m_systemProfile;
     QVariantMap m_config;
     QVariantMap m_storageInfo;
     QVariantMap m_selectedApp;

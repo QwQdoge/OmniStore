@@ -150,7 +150,9 @@ int main(int argc, char *argv[])
                     if (settings)
                         item->setProperty("category", category);
                     QEventLoop loop;
-                    QTimer::singleShot(250, &loop, &QEventLoop::quit);
+                    QTimer::singleShot(qEnvironmentVariableIntValue("OMNISTORE_SMOKE_WAIT_MS") > 0
+                                           ? qEnvironmentVariableIntValue("OMNISTORE_SMOKE_WAIT_MS") : 250,
+                                       &loop, &QEventLoop::quit);
                     loop.exec();
                     // Optional visual evidence: OMNISTORE_SMOKE_SHOTS=<dir> saves a PNG per page.
                     const QString shots = qEnvironmentVariable("OMNISTORE_SMOKE_SHOTS");

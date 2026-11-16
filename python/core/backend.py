@@ -20,6 +20,7 @@ from core.search.manager import SearchManager
 from core.habit_tracker import HabitTracker
 from core.recommendation_manager import RecommendationManager
 from core.config_loader import ConfigManager
+from core.platform_profile import detect_system_profile
 from core.cache_manager import CacheManager
 from core.env_manager import EnvManager
 from core.subprocess_utils import safe_subprocess
@@ -803,6 +804,7 @@ class OmnistoreBackend:
                 "bottles": await self._bottles_status(registry),
                 "appPreferences": app_preferences.read_preferences(self.config),
                 "config": self.config.data,
+                "system": detect_system_profile().to_dict(),
             }
             if json_mode: sys.stdout.write(json.dumps(snapshot, ensure_ascii=False) + "\n"); sys.stdout.flush()
             return snapshot

@@ -363,16 +363,58 @@ void SystemBridge::setTaskNotifications(bool enabled)
     emit taskNotificationsChanged();
 }
 
+bool SystemBridge::canOpenMeoSettings() const
+{
+    return !QStandardPaths::findExecutable(QStringLiteral("meo-settings")).isEmpty();
+}
+
 bool SystemBridge::notify(const QString &title, const QString &body)
 {
+    if (title.trimmed().isEmpty())
+        return false;
+    const QString shortTitle = title.left(120);
+    const QString shortBody = body.left(300);
+#if defined(Q_OS_MACOS)
+    // Text travels as arguments, never spliced into the script.
+    const QString osascript = QStandardPaths::findExecutable(QStringLiteral("osascript"));
+    if (osascript.isEmpty())
+        return false;
+    return QProcess::startDetached(osascript, {
+        QStringLiteral("-e"), QStringLiteral("on run argv"),
+        QStringLiteral("-e"), QStringLiteral("display notification (item 2 of argv) with title \"OmniStore\" subtitle (item 1 of argv)"),
+        QStringLiteral("-e"), QStringLiteral("end run"),
+        shortTitle, shortBody});
+#elif defined(Q_OS_WIN)
+    const QString powershell = QStandardPaths::findExecutable(QStringLiteral("powershell"));
+    if (powershell.isEmpty())
+        return false;
+    // Title and body are passed through the environment and XML-escaped by PowerShell.
+    const QString script = QStringLiteral(
+        "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null;"
+        "$x = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02);"
+        "$n = $x.GetElementsByTagName('text');"
+        "$n.Item(0).AppendChild($x.CreateTextNode($env:OMNISTORE_NOTIFY_TITLE)) | Out-Null;"
+        "$n.Item(1).AppendChild($x.CreateTextNode($env:OMNISTORE_NOTIFY_BODY)) | Out-Null;"
+        "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('OmniStore').Show([Windows.UI.Notifications.ToastNotification]::new($x))");
+    QProcess process;
+    process.setProgram(powershell);
+    process.setArguments({QStringLiteral("-NoProfile"), QStringLiteral("-NonInteractive"),
+                          QStringLiteral("-Command"), script});
+    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+    environment.insert(QStringLiteral("OMNISTORE_NOTIFY_TITLE"), shortTitle);
+    environment.insert(QStringLiteral("OMNISTORE_NOTIFY_BODY"), shortBody);
+    process.setProcessEnvironment(environment);
+    return process.startDetached();
+#else
     const QString program = QStandardPaths::findExecutable(QStringLiteral("notify-send"));
-    if (program.isEmpty() || title.trimmed().isEmpty())
+    if (program.isEmpty())
         return false;
     return QProcess::startDetached(program, {
         QStringLiteral("--app-name=OmniStore"),
         QStringLiteral("--icon=org.meo.OmniStore"),
         QStringLiteral("--hint=string:desktop-entry:org.meo.OmniStore"),
-        QStringLiteral("--"), title.left(120), body.left(300)});
+        QStringLiteral("--"), shortTitle, shortBody});
+#endif
 }
 
 bool SystemBridge::openMeoSettings(const QString &route)

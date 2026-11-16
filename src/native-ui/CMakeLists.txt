@@ -53,6 +53,18 @@ qt_add_executable(omnistore-native
     app/transactionclient.h
 )
 
+# Release builds for macOS (.app) and Windows (no console window) turn this on.
+option(OMNISTORE_BUNDLE "Build a macOS .app bundle / Windows GUI executable" OFF)
+if(OMNISTORE_BUNDLE)
+    set_target_properties(omnistore-native PROPERTIES
+        MACOSX_BUNDLE ON
+        WIN32_EXECUTABLE ON
+        MACOSX_BUNDLE_GUI_IDENTIFIER org.meo.OmniStore
+        MACOSX_BUNDLE_BUNDLE_NAME OmniStore
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${OMNISTORE_RELEASE_VERSION}"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${OMNISTORE_RELEASE_VERSION}")
+endif()
+
 qt_add_qml_module(omnistore-native
     URI OmniStore.Native
     VERSION 1.0
@@ -94,13 +106,14 @@ target_link_libraries(omnistore-native PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network
-    Qt6::DBus
+    $<$<TARGET_EXISTS:Qt6::DBus>:Qt6::DBus>
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
 )
 
 target_compile_definitions(omnistore-native PRIVATE
+    $<$<TARGET_EXISTS:Qt6::DBus>:OMNISTORE_HAS_DBUS>
     OMNISTORE_SOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/../.."
     OMNISTORE_RELEASE_VERSION="${OMNISTORE_RELEASE_VERSION}"
 )
@@ -123,11 +136,14 @@ install(TARGETS omnistore-native RUNTIME DESTINATION bin)
 include(CTest)
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
+    if(TARGET Qt6::DBus)
     qt_add_executable(account-ai-test tests/account_ai_test.cpp app/accountaibridge.cpp app/accountaibridge.h)
+    target_compile_definitions(account-ai-test PRIVATE OMNISTORE_HAS_DBUS)
     target_include_directories(account-ai-test PRIVATE app)
     target_link_libraries(account-ai-test PRIVATE Qt6::Core Qt6::DBus Qt6::Test)
     add_test(NAME account-ai-consent COMMAND dbus-run-session -- $<TARGET_FILE:account-ai-test>)
     set_tests_properties(account-ai-consent PROPERTIES TIMEOUT 15)
+    endif()
     qt_add_executable(backend-usage-test
         tests/backend_usage_test.cpp
         app/backendbridge.cpp app/backendbridge.h

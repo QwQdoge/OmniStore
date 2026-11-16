@@ -10,6 +10,7 @@ class SystemBridge final : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool busy READ busy NOTIFY stateChanged)
+    Q_PROPERTY(bool canOpenMeoSettings READ canOpenMeoSettings CONSTANT)
     Q_PROPERTY(bool taskNotifications READ taskNotifications WRITE setTaskNotifications NOTIFY taskNotificationsChanged)
     Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY stateChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY stateChanged)
@@ -24,6 +25,7 @@ public:
     ~SystemBridge() override;
 
     bool busy() const { return m_process != nullptr; }
+    bool canOpenMeoSettings() const;
     bool taskNotifications() const;
     void setTaskNotifications(bool enabled);
     // Desktop notification through the session's notification server, so Meo Settings'

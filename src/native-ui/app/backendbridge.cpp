@@ -408,6 +408,7 @@ void BackendBridge::applyResponse(Operation operation)
         m_plugins = asList(snapshot.value(QStringLiteral("plugins")));
         m_bottles = asMap(snapshot.value(QStringLiteral("bottles")));
         m_appPreferences = asMap(snapshot.value(QStringLiteral("appPreferences")));
+        m_systemProfile = asMap(snapshot.value(QStringLiteral("system")));
         if (snapshot.contains(QStringLiteral("config"))) {
             m_config = asMap(snapshot.value(QStringLiteral("config")));
             emit configChanged();
