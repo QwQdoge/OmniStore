@@ -83,11 +83,8 @@ class ConfigModel(BaseModel):
 class ConfigManager:
     def __init__(self, config_name="config.yaml"):
         # 遵循 XDG 规范
-        xdg_config = os.environ.get('XDG_CONFIG_HOME')
-        if xdg_config:
-            self.config_dir = Path(xdg_config) / "omnistore"
-        else:
-            self.config_dir = Path.home() / ".config" / "omnistore"
+        from core.platform_paths import config_dir
+        self.config_dir = config_dir()
 
         self.config_path = self.config_dir / config_name
 

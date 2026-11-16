@@ -10,6 +10,8 @@ from core.transaction_manager import TransactionRecord, _TaskCapture
 
 @pytest.mark.asyncio
 async def test_pam_prompt_is_forwarded_before_authentication_finishes(monkeypatch):
+    monkeypatch.setattr(utils.sys, "platform", "linux")  # the sudo/askpass flow is Linux-only
+    monkeypatch.setattr(utils, "is_root", lambda: False)
     delivered = asyncio.Event()
     commands = []
     messages = []

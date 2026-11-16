@@ -1,5 +1,5 @@
 import asyncio
-import fcntl
+from core import filelock
 from core.subprocess_utils import safe_subprocess
 import shutil
 import re
@@ -41,7 +41,7 @@ class UpdateManager:
         try:
             return await self._apply_all_updates_locked(callback)
         finally:
-            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+            filelock.unlock(lock_file)
             lock_file.close()
 
     async def _apply_all_updates_locked(
@@ -160,17 +160,13 @@ class UpdateManager:
     @staticmethod
     def _acquire_update_lock():
         """Take a per-user, non-blocking lock for the mutating update path."""
-        runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
-        if runtime_dir:
-            lock_root = Path(runtime_dir)
-        else:
-            preferred = Path("/run/user") / str(os.getuid())
-            lock_root = preferred if preferred.is_dir() else Path.home() / ".cache" / "omnistore"
+        from core.platform_paths import runtime_dir
+        lock_root = runtime_dir()
         try:
             lock_root.mkdir(mode=0o700, parents=True, exist_ok=True)
             lock_file = (lock_root / "meo-update.lock").open("a+", encoding="utf-8")
             os.chmod(lock_file.name, 0o600)
-            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            filelock.try_lock(lock_file)
             lock_file.seek(0)
             lock_file.truncate()
             lock_file.write(f"{os.getpid()}\n")

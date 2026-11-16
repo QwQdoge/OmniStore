@@ -8,12 +8,8 @@ class CacheManager:
     INSTALLED_CACHE_VERSION = 2
 
     def __init__(self):
-        xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
-        self.cache_dir = (
-            Path(xdg_cache_home) / "omnistore"
-            if xdg_cache_home
-            else Path.home() / ".cache" / "omnistore"
-        )
+        from core.platform_paths import cache_dir
+        self.cache_dir = cache_dir()
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.installed_cache_path = self.cache_dir / "installed_packages.json"
 

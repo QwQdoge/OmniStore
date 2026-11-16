@@ -299,3 +299,29 @@ async def daemon_watchdog(stop_event: asyncio.Event):
             stop_event.set()
             break
         await asyncio.sleep(10)
+
+
+TCP_AUTH_TIMEOUT_SECONDS = 5
+
+
+def authenticated(handler, token: str):
+    """Wrap a client handler so the first line must be {"auth": "<token>"}.
+
+    Used where there is no private filesystem socket (Windows): the daemon listens on
+    loopback, and the token, kept in a file only the current user can read, keeps other
+    local users and processes out.
+    """
+    import hmac
+
+    async def wrapped(reader, writer):
+        try:
+            line = await asyncio.wait_for(reader.readline(), timeout=TCP_AUTH_TIMEOUT_SECONDS)
+            offered = json.loads(line.decode("utf-8", errors="replace") or "{}").get("auth", "")
+            if not (isinstance(offered, str) and hmac.compare_digest(offered, token)):
+                raise PermissionError("bad token")
+        except (asyncio.TimeoutError, ValueError, PermissionError, AttributeError):
+            writer.close()
+            return
+        await handler(reader, writer)
+
+    return wrapped

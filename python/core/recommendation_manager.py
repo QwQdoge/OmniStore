@@ -15,12 +15,8 @@ class RecommendationManager:
         self.backend = backend
         self.flathub_popular_url = "https://flathub.org/api/v2/collection/popular"
         self.flathub_trending_url = "https://flathub.org/api/v2/collection/trending"
-        xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
-        self.cache_dir = (
-            Path(xdg_cache_home) / "omnistore"
-            if xdg_cache_home
-            else Path.home() / ".cache" / "omnistore"
-        )
+        from core.platform_paths import cache_dir
+        self.cache_dir = cache_dir()
         self.cache_path = self.cache_dir / "recommendations.json"
         self.metadata_cache_path = self.cache_dir / "metadata_cache.json"
         self.featured_config_path = Path(__file__).with_name("featured_apps.json")

@@ -21,10 +21,8 @@ MAX_STATE_BYTES = 4 * 1024 * 1024
 
 
 def state_path() -> Path:
-    root = os.environ.get("XDG_STATE_HOME")
-    if root:
-        return Path(root) / "meo-update" / "state.json"
-    return Path.home() / ".local" / "state" / "meo-update" / "state.json"
+    from core.platform_paths import state_root
+    return state_root() / "meo-update" / "state.json"
 
 
 def normalize_candidate(candidate: dict[str, Any]) -> dict[str, Any]:

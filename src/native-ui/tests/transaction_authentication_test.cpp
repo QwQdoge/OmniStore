@@ -17,6 +17,7 @@ private slots:
         QVERIFY(server.listen(path));
         qputenv("OMNISTORE_DAEMON_SOCKET", path.toUtf8());
         qputenv("OMNISTORE_NO_SYSTEMD_START", "1");
+        qputenv("OMNISTORE_NO_DAEMON_SPAWN", "1");
         const QString prompt = "Place your finger on the fingerprint reader";
         bool finished = false;
         connect(&server, &QLocalServer::newConnection, this, [&] {

@@ -14,7 +14,7 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from core.backend import OmnistoreBackend, console, setup_stdout_hijack, hijacked_print
-from core.daemon_server import handle_daemon_client, daemon_watchdog
+from core.daemon_server import handle_daemon_client, daemon_watchdog, authenticated
 from core.cli_handler import handle_cli
 from core.friendly_messages import get_friendly_message
 from core.logging_config import configure_logging
@@ -102,6 +102,11 @@ async def main():
     parser.add_argument(
         "--daemon-socket",
         help="Run --daemon on this private Unix socket instead of the legacy TCP endpoint",
+    )
+    parser.add_argument(
+        "--daemon-tcp-file",
+        help="Run --daemon on 127.0.0.1 (ephemeral port) and write {port, token} to this file; "
+             "clients must authenticate with the token. For Windows, which has no private Unix socket.",
     )
 
     args = parser.parse_args()
@@ -267,6 +272,7 @@ async def main():
 
     if args.daemon:
         daemon_socket_path = None
+        daemon_tcp_file = None
         try:
             async with backend:
                 if args.daemon_socket:
@@ -285,6 +291,27 @@ async def main():
                     )
                     daemon_socket_path.chmod(0o600)
                     logger.info("OmniStore daemon started on %s", daemon_socket_path)
+                elif args.daemon_tcp_file:
+                    import json as _json
+                    import secrets
+                    token = secrets.token_urlsafe(32)
+                    server = await asyncio.start_server(
+                        authenticated(lambda r, w: handle_daemon_client(backend, r, w, stop_event), token),
+                        "127.0.0.1",
+                        0,
+                        limit=512 * 1024,
+                    )
+                    port = server.sockets[0].getsockname()[1]
+                    daemon_tcp_file = Path(args.daemon_tcp_file).expanduser()
+                    daemon_tcp_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                    temporary = daemon_tcp_file.with_suffix(".tmp")
+                    temporary.write_text(_json.dumps({"port": port, "token": token, "pid": os.getpid()}), encoding="utf-8")
+                    try:
+                        os.chmod(temporary, 0o600)
+                    except OSError:
+                        pass
+                    os.replace(temporary, daemon_tcp_file)
+                    logger.info("OmniStore daemon started on 127.0.0.1:%d (token file %s)", port, daemon_tcp_file)
                 else:
                     # Legacy development transport. MeoArch release packaging
                     # uses the private per-user Unix socket service instead.
@@ -297,8 +324,12 @@ async def main():
                     logger.info("OmniStore legacy daemon started on 127.0.0.1:9081")
 
                 async with server:
+                    # A service started with its own socket/endpoint outlives whoever started
+                    # it (closing the UI must not cancel an install); only the legacy
+                    # development transport follows its parent process.
+                    own_endpoint = bool(args.daemon_socket or args.daemon_tcp_file)
                     watchdog_task = asyncio.create_task(
-                        daemon_watchdog(stop_event),
+                        stop_event.wait() if own_endpoint else daemon_watchdog(stop_event),
                         name="omnistore-daemon-watchdog",
                     )
                     serve_task = asyncio.create_task(
@@ -333,6 +364,11 @@ async def main():
             await backend._handle_error("Daemon Fatal Error", exc, json_mode)
             raise SystemExit(1) from exc
         finally:
+            if daemon_tcp_file is not None:
+                try:
+                    daemon_tcp_file.unlink()
+                except OSError:
+                    pass
             if daemon_socket_path is not None:
                 try:
                     if daemon_socket_path.exists() and daemon_socket_path.is_socket():

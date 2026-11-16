@@ -1,4 +1,5 @@
 #include "backendbridge.h"
+#include "backendlocator.h"
 #include "friendlyerror.h"
 
 #include <QCoreApplication>
@@ -59,40 +60,16 @@ BackendBridge::~BackendBridge()
 
 void BackendBridge::resolveBackend()
 {
-    const QString explicitBackend = qEnvironmentVariable("OMNISTORE_BACKEND").trimmed();
-    if (!explicitBackend.isEmpty()) {
-        m_backendProgram = explicitBackend;
-        m_workingDirectory = QFileInfo(explicitBackend).absolutePath();
-        m_backendDescription = QStringLiteral("OMNISTORE_BACKEND · %1").arg(explicitBackend);
+    const BackendCommand command = BackendLocator::locate();
+    m_backendDescription = command.description;
+    if (!command.valid()) {
+        m_errorMessage = QStringLiteral(
+            "OmniStore could not find its backend. Install the release backend or set OMNISTORE_BACKEND.");
         return;
     }
-
-    const QString bundled = QStringLiteral("/opt/omnistore/backends/python_server");
-    if (QFileInfo(bundled).isExecutable()) {
-        m_backendProgram = bundled;
-        m_workingDirectory = QStringLiteral("/opt/omnistore");
-        m_backendDescription = QStringLiteral("Bundled Python backend");
-        return;
-    }
-
-#ifdef OMNISTORE_SOURCE_ROOT
-    const QString sourceRoot = QString::fromUtf8(OMNISTORE_SOURCE_ROOT);
-    const QString sourceBackend = QDir(sourceRoot).absoluteFilePath(QStringLiteral("python/main.py"));
-    if (QFileInfo(sourceBackend).isFile()) {
-        QString python = qEnvironmentVariable("OMNISTORE_PYTHON").trimmed();
-        if (python.isEmpty())
-            python = QStringLiteral("/usr/bin/python3");
-        m_backendProgram = python;
-        m_backendPrefixArguments = {sourceBackend};
-        m_workingDirectory = sourceRoot;
-        m_backendDescription = QStringLiteral("Source Python backend · %1").arg(sourceBackend);
-        return;
-    }
-#endif
-
-    m_backendDescription = QStringLiteral("Backend unavailable");
-    m_errorMessage = QStringLiteral(
-        "OmniStore could not find its backend. Install the release backend or set OMNISTORE_BACKEND.");
+    m_backendProgram = command.program;
+    m_backendPrefixArguments = command.prefixArguments;
+    m_workingDirectory = command.workingDirectory;
 }
 
 void BackendBridge::enqueueRead(Operation operation, const QString &label,

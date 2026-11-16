@@ -5,7 +5,6 @@ import QtQuick
 import QtQuick.Controls
 import MeoUI 1.0
 import OmniStore.Native 1.0 as Store
-import Meo.System 1.0
 
 Window {
     id: root
@@ -30,8 +29,6 @@ Window {
     readonly property bool overlaySheetOpen:
         detailSheet.isOpen || searchSheet.isOpen || tasksSheet.isOpen || aiSheet.isOpen
 
-    SystemPalette { id: desktopPalette }
-
     // App-local appearance override. "system" follows the desktop and is the
     // default; the system-wide theme itself is owned by Meo Settings.
     Settings {
@@ -51,16 +48,17 @@ Window {
         target: Application.styleHints
         function onColorSchemeChanged() { root.applyThemePreference() }
     }
+    // The Meo desktop supplies a dynamic colour scheme. On other desktops (Windows,
+    // macOS, other Linux) the component cannot load and MeoUI's palette is used.
+    Loader {
+        id: systemColors
+        source: "components/SystemColors.qml"
+        asynchronous: false
+    }
+    readonly property bool systemColorsAvailable: systemColors.status === Loader.Ready
     function syncDynamicColor() {
-        const lightScheme = typeof MaterialColors.currentScheme === "function"
-            ? MaterialColors.currentScheme(false) : MaterialColors.schemeFor(desktopPalette.highlight, false)
-        const darkScheme = typeof MaterialColors.currentScheme === "function"
-            ? MaterialColors.currentScheme(true) : MaterialColors.schemeFor(desktopPalette.highlight, true)
-        MeoTheme.applyDynamicColorSchemes(
-            lightScheme,
-            darkScheme,
-            "kde-" + MaterialColors.sourceId()
-        )
+        if (systemColors.item)
+            systemColors.item.sync()
     }
 
     function openSearch(query) {
@@ -136,14 +134,6 @@ Window {
     // Package mutations are owned by omnistore-task.service rather than this
     // Window. Closing the UI must therefore never cancel an install, remove or
     // update operation; reopening OmniStore reconnects through task.list.
-
-    Connections {
-        target: MaterialColors
-        ignoreUnknownSignals: true
-        function onSchemeChanged() {
-            root.syncDynamicColor()
-        }
-    }
 
     Connections {
         target: transactions
@@ -355,7 +345,7 @@ Window {
     MeoBanner {
         id: dynamicColorWarning
         z: 120
-        visible: !root.dynamicColorReady
+        visible: root.systemColorsAvailable && !root.dynamicColorReady
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right

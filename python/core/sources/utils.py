@@ -4,6 +4,9 @@ from core.subprocess_utils import safe_subprocess
 import sys
 from typing import Optional, Callable, Awaitable
 
+from core.platform_paths import is_root
+
+
 class PrivilegeManager:
     """Handles cross-platform privilege escalation (sudo ASKPASS)."""
 
@@ -27,8 +30,9 @@ class PrivilegeManager:
 
     async def ensure_privileged(self, callback: Optional[Callable[[str], Awaitable[None]]] = None) -> bool:
         """Acquire sudo privileges safely without a TTY."""
-        # Check if we are already root
-        if os.getuid() == 0:
+        # Only Linux package managers need our sudo/askpass flow. Homebrew refuses
+        # root, and winget/Chocolatey raise their own UAC prompt.
+        if not sys.platform.startswith("linux") or is_root():
             return True
 
         # Let sudo handle cached credentials and PAM in the same conversation.

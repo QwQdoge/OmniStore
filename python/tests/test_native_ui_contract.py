@@ -41,15 +41,21 @@ def test_native_ui_uses_meoui_adaptive_shell():
 
 def test_native_ui_requires_shared_kde_dynamic_color_contract():
     main = read(QML_ROOT / "Main.qml")
-    assert "import Meo.System 1.0" in main
-    assert "MaterialColors.currentScheme(false)" in main
-    assert "MaterialColors.currentScheme(true)" in main
-    assert "MeoTheme.applyDynamicColorSchemes(" in main
+    colors = read(QML_ROOT / "components" / "SystemColors.qml")
+    # The Meo.System import lives in an optional component so the app still starts
+    # on Windows, macOS and non-Meo Linux desktops.
+    assert "import Meo.System" not in main
+    assert "import Meo.System 1.0" in colors
+    assert "MaterialColors.currentScheme(false)" in colors
+    assert "MaterialColors.currentScheme(true)" in colors
+    assert "MeoTheme.applyDynamicColorSchemes(" in colors
+    assert "target: MaterialColors" in colors
+    assert "function onSchemeChanged()" in colors
+    assert 'source: "components/SystemColors.qml"' in main
+    assert "systemColors.status === Loader.Ready" in main
     assert "MeoTheme.colorSchemeMode === \"dynamic\"" in main
     assert "MeoTheme.hasActiveDynamicColorScheme" in main
     assert "Dynamic color unavailable" in main
-    assert "target: MaterialColors" in main
-    assert "function onSchemeChanged()" in main
 
 
 def test_every_native_qml_file_is_declared_in_cmake_module():

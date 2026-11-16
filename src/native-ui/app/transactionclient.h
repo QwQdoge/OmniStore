@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QLocalSocket>
+#include <QTcpSocket>
 #include <QQueue>
 #include <QString>
 #include <QTimer>
@@ -94,7 +95,24 @@ private:
                 const QString &source, const QString &url = {});
     static bool terminalStatus(const QString &status);
 
-    QLocalSocket m_socket;
+    // Unix-domain socket (Linux, macOS) or token-authenticated loopback TCP (Windows).
+    QLocalSocket m_local;
+    QTcpSocket m_tcp;
+    bool m_useTcp = false;
+    bool m_daemonSpawned = false;
+    QString m_tcpToken;
+    bool transportConnected() const;
+    bool transportIdle() const;
+    void transportAbort();
+    void transportConnect();
+    QString transportError() const;
+    qint64 transportWrite(const QByteArray &data);
+    QByteArray transportReadAll();
+    void onTransportConnected();
+    void onTransportDisconnected();
+    void onTransportError();
+    void spawnDaemon();
+    QString tcpFilePath() const;
     QTimer m_pollTimer;
     QTimer m_reconnectTimer;
     QQueue<PendingRequest> m_queue;

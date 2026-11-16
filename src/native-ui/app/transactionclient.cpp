@@ -1,8 +1,11 @@
 #include "transactionclient.h"
+#include "backendlocator.h"
 #include "friendlyerror.h"
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QHostAddress>
+#include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -47,49 +50,167 @@ TransactionClient::TransactionClient(QObject *parent)
     m_reconnectTimer.setInterval(ReconnectDelayMs);
     connect(&m_reconnectTimer, &QTimer::timeout, this, &TransactionClient::reconnect);
 
-    connect(&m_socket, &QLocalSocket::connected, this, [this] {
-        m_available = true;
-        m_reconnectAttempts = 0;
-        m_errorMessage.clear();
-        emit stateChanged();
-        if (m_queue.isEmpty())
-            reconnect(); // Restore tasks after initial connection or a service restart.
-        else
-            startNext();
-    });
-    connect(&m_socket, &QLocalSocket::readyRead, this, &TransactionClient::consumeSocketData);
-    connect(&m_socket, &QLocalSocket::disconnected, this, [this] {
-        m_available = false;
-        m_submitting = false;
-        if (m_current.kind == RequestKind::Plan && m_planning) {
-            m_planning = false;
-            emit stateChanged();
-        }
-        emit stateChanged();
-        if (m_requestInFlight) {
-            // Never blindly retry a mutation submit: the daemon may already own
-            // the transaction even if the reply was lost. Reconnect and
-            // task.list instead so the UI recovers state without duplication.
-            m_requestInFlight = false;
-            m_current = {};
-            if (!m_queue.isEmpty())
-                m_queue.dequeue();
-        }
-        scheduleReconnect();
-    });
-    connect(&m_socket, &QLocalSocket::errorOccurred, this,
-            [this](QLocalSocket::LocalSocketError) {
-        m_available = false;
-        if (m_reconnectAttempts >= MaxReconnectAttempts) {
-            m_errorMessage = tr("OmniStore transaction service is unavailable: %1")
-                                 .arg(m_socket.errorString());
-            emit stateChanged();
-        }
-        scheduleReconnect();
-    });
+    m_useTcp = qEnvironmentVariableIntValue("OMNISTORE_DAEMON_TCP") != 0
+#ifdef Q_OS_WIN
+        || true
+#endif
+        ;
+    connect(&m_local, &QLocalSocket::connected, this, &TransactionClient::onTransportConnected);
+    connect(&m_tcp, &QTcpSocket::connected, this, &TransactionClient::onTransportConnected);
+    connect(&m_local, &QLocalSocket::readyRead, this, &TransactionClient::consumeSocketData);
+    connect(&m_tcp, &QTcpSocket::readyRead, this, &TransactionClient::consumeSocketData);
+    connect(&m_local, &QLocalSocket::disconnected, this, &TransactionClient::onTransportDisconnected);
+    connect(&m_tcp, &QTcpSocket::disconnected, this, &TransactionClient::onTransportDisconnected);
+    connect(&m_local, &QLocalSocket::errorOccurred, this, [this](QLocalSocket::LocalSocketError) { onTransportError(); });
+    connect(&m_tcp, &QTcpSocket::errorOccurred, this, [this](QAbstractSocket::SocketError) { onTransportError(); });
 
     startUserService();
     QTimer::singleShot(120, this, &TransactionClient::reconnect);
+}
+
+bool TransactionClient::transportConnected() const
+{
+    return m_useTcp ? m_tcp.state() == QAbstractSocket::ConnectedState
+                    : m_local.state() == QLocalSocket::ConnectedState;
+}
+
+bool TransactionClient::transportIdle() const
+{
+    return m_useTcp ? m_tcp.state() == QAbstractSocket::UnconnectedState
+                    : m_local.state() == QLocalSocket::UnconnectedState;
+}
+
+void TransactionClient::transportAbort()
+{
+    if (m_useTcp)
+        m_tcp.abort();
+    else
+        m_local.abort();
+}
+
+QString TransactionClient::transportError() const
+{
+    return m_useTcp ? m_tcp.errorString() : m_local.errorString();
+}
+
+qint64 TransactionClient::transportWrite(const QByteArray &data)
+{
+    return m_useTcp ? m_tcp.write(data) : m_local.write(data);
+}
+
+QByteArray TransactionClient::transportReadAll()
+{
+    return m_useTcp ? m_tcp.readAll() : m_local.readAll();
+}
+
+QString TransactionClient::tcpFilePath() const
+{
+    // Chosen here and handed to the daemon, so both sides agree without guessing.
+    const QString explicitPath = qEnvironmentVariable("OMNISTORE_DAEMON_TCP_FILE").trimmed();
+    if (!explicitPath.isEmpty())
+        return explicitPath;
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+    return base.isEmpty() ? QString{} : QDir(base).filePath(QStringLiteral("OmniStore/daemon.json"));
+}
+
+void TransactionClient::transportConnect()
+{
+    if (!m_useTcp) {
+        m_local.connectToServer(m_socketPath, QIODevice::ReadWrite);
+        return;
+    }
+    QFile file(tcpFilePath());
+    if (!file.open(QIODevice::ReadOnly)) {
+        // The daemon has not written its endpoint yet; the reconnect timer retries.
+        onTransportError();
+        return;
+    }
+    const QJsonObject endpoint = QJsonDocument::fromJson(file.readAll()).object();
+    const int port = endpoint.value(QStringLiteral("port")).toInt();
+    m_tcpToken = endpoint.value(QStringLiteral("token")).toString();
+    if (port <= 0 || m_tcpToken.isEmpty()) {
+        onTransportError();
+        return;
+    }
+    m_tcp.connectToHost(QHostAddress::LocalHost, static_cast<quint16>(port));
+}
+
+void TransactionClient::onTransportConnected()
+{
+    if (m_useTcp) {
+        // First line authenticates this client; the daemon drops anyone else.
+        m_tcp.write(QJsonDocument(QJsonObject{{QStringLiteral("auth"), m_tcpToken}})
+                        .toJson(QJsonDocument::Compact) + '\n');
+    }
+    m_available = true;
+    m_reconnectAttempts = 0;
+    m_errorMessage.clear();
+    emit stateChanged();
+    if (m_queue.isEmpty())
+        reconnect(); // Restore tasks after initial connection or a service restart.
+    else
+        startNext();
+}
+
+void TransactionClient::onTransportDisconnected()
+{
+    m_available = false;
+    m_submitting = false;
+    if (m_current.kind == RequestKind::Plan && m_planning) {
+        m_planning = false;
+        emit stateChanged();
+    }
+    emit stateChanged();
+    if (m_requestInFlight) {
+        // Never blindly retry a mutation submit: the daemon may already own
+        // the transaction even if the reply was lost. Reconnect and
+        // task.list instead so the UI recovers state without duplication.
+        m_requestInFlight = false;
+        m_current = {};
+        if (!m_queue.isEmpty())
+            m_queue.dequeue();
+    }
+    scheduleReconnect();
+}
+
+void TransactionClient::onTransportError()
+{
+    m_available = false;
+    // No systemd to start the service for us (macOS, Windows): launch it ourselves once.
+    if (!m_daemonSpawned)
+        spawnDaemon();
+    if (m_reconnectAttempts >= MaxReconnectAttempts) {
+        m_errorMessage = tr("OmniStore transaction service is unavailable: %1").arg(transportError());
+        emit stateChanged();
+    }
+    scheduleReconnect();
+}
+
+void TransactionClient::spawnDaemon()
+{
+    if (qEnvironmentVariableIntValue("OMNISTORE_NO_DAEMON_SPAWN") != 0)
+        return;
+#ifdef Q_OS_LINUX
+    if (!m_useTcp)
+        return;  // systemd owns the service
+#endif
+    const BackendCommand command = BackendLocator::locate();
+    if (!command.valid())
+        return;
+    m_daemonSpawned = true;
+    QStringList arguments = command.prefixArguments;
+    arguments << QStringLiteral("--daemon");
+    if (m_useTcp) {
+        const QString file = tcpFilePath();
+        if (file.isEmpty())
+            return;
+        QDir().mkpath(QFileInfo(file).absolutePath());
+        arguments << QStringLiteral("--daemon-tcp-file") << file;
+    } else {
+        QDir().mkpath(QFileInfo(m_socketPath).absolutePath());
+        arguments << QStringLiteral("--daemon-socket") << m_socketPath;
+    }
+    QProcess::startDetached(command.program, arguments, command.workingDirectory);
 }
 
 QString TransactionClient::resolveSocketPath() const
@@ -98,24 +219,36 @@ QString TransactionClient::resolveSocketPath() const
     if (!explicitPath.isEmpty())
         return explicitPath;
 
+#ifdef Q_OS_LINUX
     const QString runtime = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     if (runtime.isEmpty())
         return {};
     return QDir(runtime).filePath(QStringLiteral("omnistore/daemon.sock"));
+#else
+    // macOS has no per-user runtime directory; keep the path short because
+    // Unix socket paths are limited (about 100 bytes).
+    const QString cache = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+    QString path = QDir(cache).filePath(QStringLiteral("OmniStore/daemon.sock"));
+    if (cache.isEmpty() || path.toUtf8().size() > 100)
+        path = QDir::temp().filePath(QStringLiteral("omnistore-%1.sock").arg(qEnvironmentVariable("USER")));
+    return path;
+#endif
 }
 
 void TransactionClient::startUserService()
 {
-    if (qEnvironmentVariableIntValue("OMNISTORE_NO_SYSTEMD_START") != 0)
+#ifdef Q_OS_LINUX
+    if (m_useTcp || qEnvironmentVariableIntValue("OMNISTORE_NO_SYSTEMD_START") != 0)
         return;
     QProcess::startDetached(QStringLiteral("systemctl"),
                             {QStringLiteral("--user"), QStringLiteral("start"),
                              QStringLiteral("omnistore-task.service")});
+#endif
 }
 
 void TransactionClient::scheduleReconnect()
 {
-    if (m_socketPath.isEmpty() || m_reconnectTimer.isActive())
+    if ((m_useTcp ? tcpFilePath() : m_socketPath).isEmpty() || m_reconnectTimer.isActive())
         return;
     if (m_reconnectAttempts >= MaxReconnectAttempts)
         return;
@@ -125,12 +258,12 @@ void TransactionClient::scheduleReconnect()
 
 void TransactionClient::reconnect()
 {
-    if (m_socketPath.isEmpty()) {
+    if ((m_useTcp ? tcpFilePath() : m_socketPath).isEmpty()) {
         m_errorMessage = tr("No user runtime directory is available for the OmniStore transaction socket.");
         emit stateChanged();
         return;
     }
-    if (m_socket.state() == QLocalSocket::ConnectedState) {
+    if (transportConnected()) {
         enqueue(RequestKind::List, {
             {QStringLiteral("action"), QStringLiteral("task.list")},
             {QStringLiteral("args"), QJsonArray{}},
@@ -138,9 +271,9 @@ void TransactionClient::reconnect()
         });
         return;
     }
-    if (m_socket.state() != QLocalSocket::UnconnectedState)
-        m_socket.abort();
-    m_socket.connectToServer(m_socketPath, QIODevice::ReadWrite);
+    if (!transportIdle())
+        transportAbort();
+    transportConnect();
 }
 
 void TransactionClient::enqueue(RequestKind kind, const QJsonObject &payload)
@@ -161,7 +294,7 @@ void TransactionClient::startNext()
 {
     if (m_requestInFlight || m_queue.isEmpty())
         return;
-    if (m_socket.state() != QLocalSocket::ConnectedState) {
+    if (!transportConnected()) {
         reconnect();
         return;
     }
@@ -173,7 +306,7 @@ void TransactionClient::startNext()
 void TransactionClient::sendCurrent()
 {
     const QByteArray payload = QJsonDocument(m_current.payload).toJson(QJsonDocument::Compact) + '\n';
-    if (m_socket.write(payload) < 0) {
+    if (transportWrite(payload) < 0) {
         if (m_current.kind == RequestKind::Plan)
             m_planning = false;
         m_errorMessage = tr("Could not send request to the OmniStore transaction service.");
@@ -185,12 +318,12 @@ void TransactionClient::sendCurrent()
         scheduleReconnect();
         return;
     }
-    m_socket.flush();
+    if (m_useTcp) m_tcp.flush(); else m_local.flush();
 }
 
 void TransactionClient::consumeSocketData()
 {
-    m_buffer.append(m_socket.readAll());
+    m_buffer.append(transportReadAll());
     while (true) {
         const qsizetype newline = m_buffer.indexOf('\n');
         if (newline < 0)

@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from core.platform_paths import is_root
 from core.platform_profile import detect_system_profile, recommended_sources
 from core.sources.utils import PrivilegeManager
 from core.subprocess_utils import safe_subprocess
@@ -263,7 +264,7 @@ class EnvManager:
     async def _run_host_command(self, command: List[str], callback=None, timeout=1800):
         environment = None
         final_command = list(command)
-        if os.geteuid() != 0:
+        if not is_root():
             if not self._has_cmd("sudo"):
                 return False
             try:
@@ -339,7 +340,7 @@ class EnvManager:
     async def _install_yay(self, callback=None) -> bool:
         # AUR builds execute package-maintainer scripts, which must never run
         # as root. The existing AUR origin remains the explicit bootstrap path.
-        if os.geteuid() == 0:
+        if is_root():
             if callback:
                 await callback("[ERROR] AUR helper builds require an unprivileged user.")
             return False

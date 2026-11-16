@@ -152,6 +152,13 @@ int main(int argc, char *argv[])
                     QEventLoop loop;
                     QTimer::singleShot(250, &loop, &QEventLoop::quit);
                     loop.exec();
+                    // Optional visual evidence: OMNISTORE_SMOKE_SHOTS=<dir> saves a PNG per page.
+                    const QString shots = qEnvironmentVariable("OMNISTORE_SMOKE_SHOTS");
+                    if (!shots.isEmpty()) {
+                        const QString name = QStringLiteral("%1/%2-%3%4.png").arg(shots, type)
+                            .arg(size.width()).arg(category.isEmpty() ? QString() : QLatin1Char('-') + category);
+                        window.grabWindow().save(name);
+                    }
                 }
                 delete item;
             }

@@ -10,7 +10,11 @@ set(QT_QML_GENERATE_QMLLS_INI ON)
 # builds deliberately report "development" rather than a stale product version.
 set(OMNISTORE_RELEASE_VERSION "development" CACHE STRING "OmniStore release version shown by the native client")
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui LinguistTools Network DBus Qml Quick QuickControls2)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui LinguistTools Network Qml Quick QuickControls2)
+# D-Bus (the Meo Account credential bridge) exists only on Linux desktops.
+if(UNIX AND NOT APPLE)
+    find_package(Qt6 6.8 REQUIRED COMPONENTS DBus)
+endif()
 # QTP0004 redirects subdirectory implicit imports to this QML module.
 # Without it Main/pages/components cannot reliably resolve sibling types.
 qt_standard_project_setup(REQUIRES 6.8)
@@ -39,6 +43,8 @@ qt_add_executable(omnistore-native
     app/friendlyerror.h
     app/backendbridge.cpp
     app/backendbridge.h
+    app/backendlocator.cpp
+    app/backendlocator.h
     app/repositorybridge.cpp
     app/repositorybridge.h
     app/systembridge.cpp
@@ -59,6 +65,7 @@ qt_add_qml_module(omnistore-native
         qml/components/ListSkeleton.qml
         qml/components/LoadStateBanner.qml
         qml/components/SourceBadge.qml
+        qml/components/SystemColors.qml
         qml/components/InstallPlanReview.qml
         qml/components/StoreAppCard.qml
         qml/components/RepositoryManager.qml
@@ -94,7 +101,7 @@ target_link_libraries(omnistore-native PRIVATE
 )
 
 target_compile_definitions(omnistore-native PRIVATE
-    OMNISTORE_SOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+    OMNISTORE_SOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/../.."
     OMNISTORE_RELEASE_VERSION="${OMNISTORE_RELEASE_VERSION}"
 )
 
@@ -124,6 +131,7 @@ if(BUILD_TESTING)
     qt_add_executable(backend-usage-test
         tests/backend_usage_test.cpp
         app/backendbridge.cpp app/backendbridge.h
+        app/backendlocator.cpp app/backendlocator.h
     )
     target_include_directories(backend-usage-test PRIVATE app)
     target_link_libraries(backend-usage-test PRIVATE Qt6::Core Qt6::Test)
@@ -136,6 +144,7 @@ if(BUILD_TESTING)
     qt_add_executable(transaction-authentication-test
         tests/transaction_authentication_test.cpp
         app/transactionclient.cpp app/transactionclient.h
+        app/backendlocator.cpp app/backendlocator.h
     )
     target_include_directories(transaction-authentication-test PRIVATE app)
     target_link_libraries(transaction-authentication-test PRIVATE Qt6::Core Qt6::Network Qt6::Test)
@@ -146,6 +155,16 @@ if(BUILD_TESTING)
     target_link_libraries(friendly-error-test PRIVATE Qt6::Core Qt6::Test)
     add_test(NAME friendly-error COMMAND friendly-error-test)
     set_tests_properties(friendly-error PROPERTIES TIMEOUT 10)
+    qt_add_executable(transaction-daemon-test
+        tests/transaction_daemon_test.cpp
+        app/transactionclient.cpp app/transactionclient.h
+        app/backendlocator.cpp app/backendlocator.h
+    )
+    target_include_directories(transaction-daemon-test PRIVATE app)
+    target_compile_definitions(transaction-daemon-test PRIVATE OMNISTORE_SOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/../..")
+    target_link_libraries(transaction-daemon-test PRIVATE Qt6::Core Qt6::Network Qt6::Test)
+    add_test(NAME transaction-daemon COMMAND transaction-daemon-test)
+    set_tests_properties(transaction-daemon PROPERTIES TIMEOUT 120)
     add_test(NAME native-qml-smoke COMMAND omnistore-native --smoke-pages)
     set_tests_properties(native-qml-smoke PROPERTIES
         TIMEOUT 120 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")
