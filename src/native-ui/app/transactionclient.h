@@ -32,10 +32,12 @@ class TransactionClient final : public QObject
     Q_PROPERTY(QString errorCategory READ errorCategory NOTIFY stateChanged)
     Q_PROPERTY(QString taskName READ taskName NOTIFY taskChanged)
     Q_PROPERTY(QString taskKind READ taskKind NOTIFY taskChanged)
+    Q_PROPERTY(QString taskSource READ taskSource NOTIFY taskChanged)
     Q_PROPERTY(double progress READ progress NOTIFY taskChanged)
 
 public:
     explicit TransactionClient(QObject *parent = nullptr);
+    ~TransactionClient() override;
 
     bool available() const { return m_available; }
     bool busy() const { return m_submitting || m_status == QStringLiteral("queued") || m_status == QStringLiteral("running"); }
@@ -56,6 +58,7 @@ public:
     QString errorCategory() const;
     QString taskName() const { return m_taskName; }
     QString taskKind() const { return m_taskKind; }
+    QString taskSource() const { return m_taskSource; }
     double progress() const { return m_progress; }
 
     Q_INVOKABLE void reconnect();
@@ -100,6 +103,7 @@ private:
     QTcpSocket m_tcp;
     bool m_useTcp = false;
     bool m_daemonSpawned = false;
+    bool m_systemdManaged = false;
     QString m_tcpToken;
     bool transportConnected() const;
     bool transportIdle() const;
@@ -139,5 +143,6 @@ private:
     QString m_errorDetail;  // raw backend text, for the log only
     QString m_taskName;
     QString m_taskKind;
+    QString m_taskSource;
     double m_progress = -1.0;
 };

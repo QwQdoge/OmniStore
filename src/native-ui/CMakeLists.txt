@@ -183,7 +183,7 @@ if(BUILD_TESTING)
     set_tests_properties(transaction-daemon PROPERTIES TIMEOUT 120)
     add_test(NAME native-qml-smoke COMMAND omnistore-native --smoke-pages)
     set_tests_properties(native-qml-smoke PROPERTIES
-        TIMEOUT 120 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")
+        TIMEOUT 120 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1;OMNISTORE_NO_DAEMON_SPAWN=1")
     add_test(NAME native-qml-components COMMAND omnistore-native --check-qml)
     set_tests_properties(native-qml-components PROPERTIES
         TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_FORCE_STDERR_LOGGING=1")

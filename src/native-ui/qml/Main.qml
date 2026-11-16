@@ -148,8 +148,13 @@ Window {
                 : (transactions.errorMessage.length > 0 ? transactions.errorMessage
                                                          : qsTr("%1 didn't finish.").arg(action))
             outcomeSnackbar.openStorage = !success && transactions.errorCategory === "space"
+            // A cancelled install is retried from here; the plan review still asks again.
+            outcomeSnackbar.retryName = (!success && transactions.errorCategory === "cancelled"
+                                         && transactions.taskKind === "install") ? transactions.taskName : ""
+            outcomeSnackbar.retrySource = transactions.taskSource
             outcomeSnackbar.actionText = success ? ""
-                : (outcomeSnackbar.openStorage ? qsTr("Open storage") : qsTr("View log"))
+                : (outcomeSnackbar.openStorage ? qsTr("Open storage")
+                   : (outcomeSnackbar.retryName.length > 0 ? qsTr("Try again") : qsTr("View log")))
             outcomeSnackbar.open()
             // Away from the window the in-app notice would be missed.
             if (Qt.application.state !== Qt.ApplicationActive && systemBridge.taskNotifications)
@@ -314,6 +319,8 @@ Window {
         id: outcomeSnackbar
         property bool failed: false
         property bool openStorage: false
+        property string retryName: ""
+        property string retrySource: ""
         parent: Overlay.overlay
         x: Math.round((parent.width - width) / 2)
         y: parent.height - height - edgeMargin
@@ -322,7 +329,9 @@ Window {
         duration: failed ? 8000 : 4000
         onActionClicked: {
             outcomeSnackbar.close()
-            if (outcomeSnackbar.openStorage)
+            if (outcomeSnackbar.retryName.length > 0)
+                transactions.planInstall(outcomeSnackbar.retryName, outcomeSnackbar.retrySource)
+            else if (outcomeSnackbar.openStorage)
                 root.openSettings()   // Storage lives under Advanced
             else
                 root.openTasks()

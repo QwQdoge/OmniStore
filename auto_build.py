@@ -26,6 +26,9 @@ PYINSTALLER_SOURCE_MODULES = (
     "core.sources.appimage.appimage",
     "core.sources.github.github",
     "core.sources.bitu.bitu",
+    "core.sources.bottles",
+    "core.sources.brew_cask",
+    "core.sources.catalog",
 )
 
 

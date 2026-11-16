@@ -190,10 +190,8 @@ void TransactionClient::spawnDaemon()
 {
     if (qEnvironmentVariableIntValue("OMNISTORE_NO_DAEMON_SPAWN") != 0)
         return;
-#ifdef Q_OS_LINUX
-    if (!m_useTcp)
+    if (m_systemdManaged)
         return;  // systemd owns the service
-#endif
     const BackendCommand command = BackendLocator::locate();
     if (!command.valid())
         return;
@@ -210,7 +208,24 @@ void TransactionClient::spawnDaemon()
         QDir().mkpath(QFileInfo(m_socketPath).absolutePath());
         arguments << QStringLiteral("--daemon-socket") << m_socketPath;
     }
-    QProcess::startDetached(command.program, arguments, command.workingDirectory);
+    // The service must not inherit the UI's stdio (it would keep a terminal or pipe open).
+    QProcess process;
+    process.setProgram(command.program);
+    process.setArguments(arguments);
+    process.setWorkingDirectory(command.workingDirectory);
+    process.setStandardInputFile(QProcess::nullDevice());
+    process.setStandardOutputFile(QProcess::nullDevice());
+    process.setStandardErrorFile(QProcess::nullDevice());
+    process.startDetached();
+}
+
+TransactionClient::~TransactionClient()
+{
+    // Sockets are destroyed after the state their handlers touch; silence them first.
+    QObject::disconnect(&m_local, nullptr, this, nullptr);
+    QObject::disconnect(&m_tcp, nullptr, this, nullptr);
+    m_pollTimer.stop();
+    m_reconnectTimer.stop();
 }
 
 QString TransactionClient::resolveSocketPath() const
@@ -240,6 +255,12 @@ void TransactionClient::startUserService()
 #ifdef Q_OS_LINUX
     if (m_useTcp || qEnvironmentVariableIntValue("OMNISTORE_NO_SYSTEMD_START") != 0)
         return;
+    // Without the packaged unit (no systemd, or a source checkout) the client starts the service itself.
+    if (QStandardPaths::findExecutable(QStringLiteral("systemctl")).isEmpty()
+        || !(QFile::exists(QStringLiteral("/usr/lib/systemd/user/omnistore-task.service"))
+             || QFile::exists(QStringLiteral("/etc/systemd/user/omnistore-task.service"))))
+        return;
+    m_systemdManaged = true;
     QProcess::startDetached(QStringLiteral("systemctl"),
                             {QStringLiteral("--user"), QStringLiteral("start"),
                              QStringLiteral("omnistore-task.service")});
@@ -436,6 +457,7 @@ void TransactionClient::applyTask(const QJsonObject &task)
     const QString name = task.value(QStringLiteral("name")).toString();
     m_taskName = name;
     m_taskKind = kind;
+    m_taskSource = task.value(QStringLiteral("source")).toString();
     if (kind == QStringLiteral("update_all"))
         m_actionName = tr("Update all software");
     else if (kind == QStringLiteral("update"))
