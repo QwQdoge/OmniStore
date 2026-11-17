@@ -6,6 +6,7 @@
 #include "transactionclient.h"
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QEventLoop>
 #include <QFile>
 #include <QGuiApplication>
@@ -30,8 +31,14 @@
 // list compiled into QML; an empty result is shown as "not available".
 static QString installedLicenseFile(const QString &name)
 {
-    const QString path = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
-                                                QStringLiteral("licenses/omnistore-bin/") + name);
+    QString path = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
+                                          QStringLiteral("licenses/omnistore-bin/") + name);
+#ifdef OMNISTORE_SOURCE_ROOT
+    // Development builds are not installed from a package; read the files
+    // from the source checkout instead of reporting them as unavailable.
+    if (path.isEmpty())
+        path = QDir(QString::fromUtf8(OMNISTORE_SOURCE_ROOT)).absoluteFilePath(name);
+#endif
     QFile file(path);
     if (path.isEmpty() || !file.open(QIODevice::ReadOnly | QIODevice::Text))
         return {};

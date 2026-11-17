@@ -91,14 +91,38 @@ Window {
         aiSheet.isOpen = false
     }
 
+    // Settings and About are routes with a real parent: remember where they
+    // were opened from so the top bar's back arrow returns there.
+    property int settingsReturnIndex: 0
+    property int aboutReturnIndex: 0
+    readonly property bool onSubRoute: root.navigationIndex === root.settingsIndex
+                                       || root.navigationIndex === root.aboutIndex
+
     function openSettings() {
         root.closeSheets()
+        if (!root.onSubRoute)
+            root.settingsReturnIndex = root.navigationIndex
         root.navigationIndex = root.settingsIndex
     }
 
     function openAbout() {
         root.closeSheets()
+        if (root.navigationIndex === root.aboutIndex)
+            return
+        if (root.navigationIndex === root.settingsIndex) {
+            root.aboutReturnIndex = root.settingsIndex
+        } else {
+            root.settingsReturnIndex = root.navigationIndex
+            root.aboutReturnIndex = root.navigationIndex
+        }
         root.navigationIndex = root.aboutIndex
+    }
+
+    function goBack() {
+        if (root.navigationIndex === root.aboutIndex)
+            root.navigationIndex = root.aboutReturnIndex
+        else if (root.navigationIndex === root.settingsIndex)
+            root.navigationIndex = root.settingsReturnIndex
     }
 
     function openHelp() {
@@ -114,6 +138,11 @@ Window {
         sequence: "Esc"
         enabled: root.overlaySheetOpen
         onActivated: root.closeSheets()
+    }
+    Shortcut {
+        sequences: [StandardKey.Back]
+        enabled: root.onSubRoute && !root.overlaySheetOpen
+        onActivated: root.goBack()
     }
 
     function refreshPackageState() {
@@ -235,7 +264,6 @@ Window {
     MeoAppLayout {
         id: appLayout
         anchors.fill: parent
-        currentIndex: root.navigationIndex
         navigationModel: [
             { "id": "home", "label": qsTr("Home"), "icon": "home" },
             { "id": "explore", "label": qsTr("Explore"), "icon": "explore" },
@@ -252,6 +280,28 @@ Window {
         showTopAppBarOnExpanded: true
         topAppBarActions: [searchAction, tasksAction, overflowAction]
         onCurrentIndexChanged: root.navigationIndex = currentIndex
+        // showBackButton/backRequested come from newer MeoUI; against an older
+        // installed MeoUI the arrow is simply absent (the shortcut still works).
+        Component.onCompleted: {
+            if ("showBackButton" in appLayout)
+                appLayout.showBackButton = Qt.binding(function() { return root.onSubRoute })
+        }
+    }
+
+    Connections {
+        target: appLayout
+        ignoreUnknownSignals: true
+        function onBackRequested() { root.goBack() }
+    }
+
+    // MeoAppLayout assigns currentIndex itself when a sidebar row is clicked,
+    // which would permanently break a plain `currentIndex: root.navigationIndex`
+    // binding (Settings, About and Back then silently stop working). A Binding
+    // element keeps driving the layout after such an assignment.
+    Binding {
+        target: appLayout
+        property: "currentIndex"
+        value: root.navigationIndex
     }
 
     Component {
