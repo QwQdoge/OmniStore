@@ -402,6 +402,15 @@ Item {
         return qsTr("Settings")
     }
     onTwoPaneChanged: if (twoPane && category === "") category = "appearance"
+    function categoryRows() {
+        const kind = root.twoPane ? "none" : "navigation"
+        const rows = root.categories.map(function(c) {
+            return { "id": c.id, "title": c.title, "icon": c.icon, "kind": kind,
+                     "interactive": true, "selected": root.twoPane && root.category === c.id }
+        })
+        rows.push({ "id": "about", "title": qsTr("About OmniStore"), "icon": "info", "kind": kind, "interactive": true })
+        return rows
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -431,25 +440,16 @@ Item {
                     subtitle: qsTr("Manage appearance, software sources and updates.")
                     icon: "settings"
                 }
-                Repeater {
-                    model: root.categories
-                    delegate: MeoSettingsRow {
-                        id: categoryRow
-                        required property var modelData
-                        Layout.fillWidth: true
-                        title: modelData.title
-                        leadingIcon: modelData.icon
-                        trailingKind: root.twoPane ? "none" : "navigation"
-                        selected: root.twoPane && root.category === modelData.id
-                        onActivated: root.category = modelData.id
-                    }
-                }
-                MeoSettingsRow {
+                // One connected group (like the sidebar), not loose bubbles.
+                MeoSettingsGroup {
                     Layout.fillWidth: true
-                    title: qsTr("About OmniStore")
-                    leadingIcon: "info"
-                    trailingKind: root.twoPane ? "none" : "navigation"
-                    onActivated: root.aboutRequested()
+                    model: root.categoryRows()
+                    onRowActivated: function(index, row) {
+                        if (row.id === "about")
+                            root.aboutRequested()
+                        else
+                            root.category = row.id
+                    }
                 }
             }
         }

@@ -216,6 +216,7 @@ Item {
             GridLayout {
                 Layout.fillWidth: true
                 columns: root.metrics.supportsTwoPane ? 2 : 1
+                uniformCellWidths: true
                 columnSpacing: 14 * MeoTheme.globalScale
                 rowSpacing: 14 * MeoTheme.globalScale
 
@@ -260,6 +261,7 @@ Item {
             GridLayout {
                 Layout.fillWidth: true
                 columns: root.metrics.preferredColumns
+                uniformCellWidths: true
                 columnSpacing: 12 * MeoTheme.globalScale
                 rowSpacing: 12 * MeoTheme.globalScale
 
@@ -290,6 +292,7 @@ Item {
                 GridLayout {
                     Layout.fillWidth: true
                     columns: root.metrics.preferredColumns
+                    uniformCellWidths: true
                     columnSpacing: 12 * MeoTheme.globalScale
                     rowSpacing: 12 * MeoTheme.globalScale
 

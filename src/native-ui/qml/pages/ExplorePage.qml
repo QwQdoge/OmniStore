@@ -113,6 +113,7 @@ Item {
             GridLayout {
                 Layout.fillWidth: true
                 columns: root.metrics.preferredColumns
+                uniformCellWidths: true
                 columnSpacing: 12 * MeoTheme.globalScale
                 rowSpacing: 12 * MeoTheme.globalScale
 
