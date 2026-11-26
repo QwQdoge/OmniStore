@@ -277,5 +277,5 @@ def test_settings_follow_app_shell_category_order_and_reset_confirms():
     order = [s.index(f'"title": qsTr("{name}")') for name in names]
     assert order == sorted(order)
     # About is last in the category list and opens the About route.
-    assert s.index('title: qsTr("About OmniStore")') > order[-1]
+    assert s.index('"id": "about", "title": qsTr("About OmniStore")') > order[-1]
     assert "resetDialog.open()" in s and "accountAi.resetFeatures()" in s
