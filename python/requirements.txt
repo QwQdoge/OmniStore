@@ -6,7 +6,7 @@ python-multipart==0.0.34
 
 # --- 异步网络与并发 ---
 aiohttp==3.14.5
-httpx==0.28.1
+httpx==0.29.0
 
 # --- 系统与工具 ---
 psutil==7.2.2
